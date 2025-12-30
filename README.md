@@ -220,7 +220,9 @@ Found a bug or have a feature request? Please [open an issue](https://github.com
 > 
 > RetireSmart does not provide professional financial, tax, legal, or investment advice. The calculations and strategies presented are based on general tax rules and may not account for your complete financial situation.
 > 
-> Always consult with a qualified financial advisor, tax professional, or fiduciary before making any financial decisions. Tax laws change frequently, and individual circumstances vary significantly.
+> Always consult with a qualified financial advisor, tax professional, or fiduciary before making any financial decisions. Tax laws change frequently, and individual circumstances vary significantly. USE AT YOUR OWN RISK! By using this code, you agree that the author is not liable for any financial loss, IRS penalties, or "tax torpedoes" you may encounter.
+
+
 
 ## 📄 License
 
