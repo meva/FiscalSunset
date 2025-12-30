@@ -2,7 +2,7 @@ import { FilingStatus } from './types';
 
 // 2025 Standard Deductions (Estimated)
 export const STANDARD_DEDUCTION = {
-  [FilingStatus.Single]: 15000, 
+  [FilingStatus.Single]: 15000,
   [FilingStatus.MarriedJoint]: 30000,
 };
 
@@ -67,3 +67,56 @@ export const UNIFORM_LIFETIME_TABLE: Record<number, number> = {
 };
 
 export const RMD_START_AGE = 73;
+
+// ============================================================================
+// OBBBA (One Big Beautiful Bill Act) 2025-2028 Constants
+// ============================================================================
+
+// Senior Deduction (Additional deduction for taxpayers 65+)
+export const SENIOR_DEDUCTION = {
+  [FilingStatus.Single]: 6000,
+  [FilingStatus.MarriedJoint]: 12000, // $6k per spouse if both 65+
+};
+
+// Senior Deduction Phase-Out (reduces by 6 cents per dollar over threshold)
+export const SENIOR_DEDUCTION_PHASEOUT = {
+  [FilingStatus.Single]: { start: 75000, end: 175000, rate: 0.06 },
+  [FilingStatus.MarriedJoint]: { start: 150000, end: 250000, rate: 0.06 },
+};
+
+// Social Security Taxation Thresholds (Fixed, NOT indexed for inflation)
+// Combined Income = AGI (excluding SS) + Tax-Exempt Interest + 0.5 * SS Benefit
+export const SS_TAX_THRESHOLDS = {
+  [FilingStatus.Single]: { base1: 25000, base2: 34000 },
+  [FilingStatus.MarriedJoint]: { base1: 32000, base2: 44000 },
+};
+
+// Medicare IRMAA Thresholds (2025 MAGI triggers 2027 premiums)
+// Each tier is a cliff - crossing by $1 triggers full annual surcharge
+export interface IRMAATier {
+  limit: number;
+  monthlyPartB: number;
+  monthlyPartD: number;
+}
+
+export const IRMAA_THRESHOLDS: Record<FilingStatus, IRMAATier[]> = {
+  [FilingStatus.Single]: [
+    { limit: 106000, monthlyPartB: 0, monthlyPartD: 0 },
+    { limit: 133000, monthlyPartB: 74.00, monthlyPartD: 13.70 },
+    { limit: 167000, monthlyPartB: 185.00, monthlyPartD: 35.30 },
+    { limit: 200000, monthlyPartB: 295.90, monthlyPartD: 57.00 },
+    { limit: 500000, monthlyPartB: 406.90, monthlyPartD: 78.60 },
+    { limit: Infinity, monthlyPartB: 443.90, monthlyPartD: 85.80 },
+  ],
+  [FilingStatus.MarriedJoint]: [
+    { limit: 212000, monthlyPartB: 0, monthlyPartD: 0 },
+    { limit: 266000, monthlyPartB: 74.00, monthlyPartD: 13.70 },
+    { limit: 334000, monthlyPartB: 185.00, monthlyPartD: 35.30 },
+    { limit: 400000, monthlyPartB: 295.90, monthlyPartD: 57.00 },
+    { limit: 750000, monthlyPartB: 406.90, monthlyPartD: 78.60 },
+    { limit: Infinity, monthlyPartB: 443.90, monthlyPartD: 85.80 },
+  ],
+};
+
+// IRMAA Safety Buffer (avoid getting within $1k of a cliff)
+export const IRMAA_SAFETY_BUFFER = 1000;

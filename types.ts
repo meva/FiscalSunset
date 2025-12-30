@@ -54,6 +54,7 @@ export interface StrategyResult {
   gapFilled: boolean;
   withdrawalPlan: WithdrawalSource[];
   rothConversionAmount: number;
+  rothConversionDetail?: RothConversionRecommendation; // Detailed optimization info
   estimatedFederalTax: number;
   effectiveTaxRate: number;
   rmdAmount: number;
@@ -77,4 +78,29 @@ export interface LongevityResult {
   depletionAge: number | null;
   initialWithdrawalRate: number;
   sustainable: boolean;
+}
+
+// ============================================================================
+// Roth Conversion Optimization Types
+// ============================================================================
+
+export type ConversionConstraintType = 'bracket' | 'irmaa' | 'senior_phaseout' | 'ss_torpedo';
+
+export interface ConversionConstraint {
+  type: ConversionConstraintType;
+  headroom: number;
+  description: string;
+  effectiveRate?: number; // Includes phantom rates from multipliers/phase-outs
+  annualCost?: number; // For IRMAA, the annual surcharge if crossed
+}
+
+export interface RothConversionRecommendation {
+  recommendedAmount: number;
+  effectiveMarginalRate: number;
+  constraints: ConversionConstraint[];
+  bindingConstraint: ConversionConstraintType | null; // Which constraint capped the recommendation
+  reasoning: string[];
+  warnings: string[];
+  inTorpedoZone: boolean;
+  torpedoMultiplier: number; // 1.0, 1.5, or 1.85
 }
