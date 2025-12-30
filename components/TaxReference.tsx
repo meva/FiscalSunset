@@ -20,7 +20,12 @@ import {
     ArrowDown,
     Zap,
     CheckCircle2,
-    XCircle
+    XCircle,
+    User,
+    Linkedin,
+    Mail,
+    Heart,
+    Sparkles
 } from 'lucide-react';
 
 interface AccordionSectionProps {
@@ -581,6 +586,90 @@ const TaxReference: React.FC = () => {
 
                     <p className="text-sm text-slate-600 dark:text-slate-400 text-center pt-2">
                         Always verify calculations with a qualified tax professional or financial advisor before making major financial decisions.
+                    </p>
+                </div>
+            </AccordionSection>
+
+            {/* About the Creator */}
+            <AccordionSection
+                title="About the Creator"
+                icon={<User className="w-5 h-5" />}
+                accentColor="blue"
+            >
+                <div className="space-y-6">
+                    {/* Creator Header */}
+                    <div className="flex items-center gap-4">
+                        <div className="w-16 h-16 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white text-2xl font-bold shadow-lg">
+                            MV
+                        </div>
+                        <div>
+                            <h3 className="text-xl font-bold text-slate-800 dark:text-white">Miguel Velasco</h3>
+                            <p className="text-sm text-slate-600 dark:text-slate-400">IT Manager & AI Enthusiast</p>
+                        </div>
+                    </div>
+
+                    {/* Origin Story */}
+                    <div className={cardClass}>
+                        <div className="flex items-center gap-2 mb-3">
+                            <Sparkles className="w-5 h-5 text-amber-500" />
+                            <h4 className="font-bold text-slate-800 dark:text-white">The Story Behind RetireSmart</h4>
+                        </div>
+                        <p className="text-sm text-slate-600 dark:text-slate-400 leading-relaxed">
+                            RetireSmart was born from a conversation I had with a coworker about the need for a tool to help plan retirement withdrawals efficiently.
+                            Having previously worked in the Financial Services industry, I saw firsthand how complex and confusing tax-efficient retirement planning can be for everyday people.
+                        </p>
+                        <p className="text-sm text-slate-600 dark:text-slate-400 leading-relaxed mt-3">
+                            This entire application was created with the help of AI — a testament to how powerful these tools have become for building real-world solutions.
+                            As an AI enthusiast, I wanted to demonstrate what's possible when you combine domain knowledge with modern AI capabilities.
+                        </p>
+                    </div>
+
+                    {/* Free & Passion Project */}
+                    <div className="flex items-start gap-3 p-4 bg-emerald-50 dark:bg-emerald-900/20 text-emerald-800 dark:text-emerald-300 rounded-lg">
+                        <Heart className="w-5 h-5 shrink-0 mt-0.5" />
+                        <div className="text-sm">
+                            <p className="font-semibold">Free to Use</p>
+                            <p className="mt-1">
+                                RetireSmart is currently free to use. I'm personally covering the infrastructure and AI costs because I believe in making financial planning tools accessible to everyone.
+                            </p>
+                        </div>
+                    </div>
+
+                    {/* Contact Information */}
+                    <div className={cardClass}>
+                        <h4 className="font-bold text-slate-800 dark:text-white mb-4">Get in Touch</h4>
+                        <div className="space-y-3">
+                            <a
+                                href="https://www.linkedin.com/in/miguelvelasco/"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="flex items-center gap-3 p-3 bg-white dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-700 hover:border-blue-400 dark:hover:border-blue-500 transition-colors group"
+                            >
+                                <div className="w-10 h-10 rounded-lg bg-blue-600 flex items-center justify-center">
+                                    <Linkedin className="w-5 h-5 text-white" />
+                                </div>
+                                <div>
+                                    <p className="font-medium text-slate-800 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">Connect on LinkedIn</p>
+                                    <p className="text-xs text-slate-500 dark:text-slate-400">linkedin.com/in/miguelvelasco</p>
+                                </div>
+                            </a>
+                            <a
+                                href="mailto:financepro@me.com"
+                                className="flex items-center gap-3 p-3 bg-white dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-700 hover:border-emerald-400 dark:hover:border-emerald-500 transition-colors group"
+                            >
+                                <div className="w-10 h-10 rounded-lg bg-emerald-600 flex items-center justify-center">
+                                    <Mail className="w-5 h-5 text-white" />
+                                </div>
+                                <div>
+                                    <p className="font-medium text-slate-800 dark:text-white group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition-colors">Send an Email</p>
+                                    <p className="text-xs text-slate-500 dark:text-slate-400">financepro@me.com</p>
+                                </div>
+                            </a>
+                        </div>
+                    </div>
+
+                    <p className="text-center text-sm text-slate-500 dark:text-slate-400 pt-2">
+                        Made with <Heart className="w-4 h-4 inline text-rose-500" /> and AI in 2025
                     </p>
                 </div>
             </AccordionSection>

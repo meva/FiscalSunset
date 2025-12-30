@@ -214,7 +214,7 @@ Found a bug or have a feature request? Please [open an issue](https://github.com
 - Expected vs actual behavior
 - Screenshots if applicable
 
-## ⚠️ Disclaimer
+## ⚠️ Disclaimer | 🛑 LEGAL DISCLAIMER
 
 > **This tool is for educational purposes only.**
 > 
