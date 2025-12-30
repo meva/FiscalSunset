@@ -8,28 +8,66 @@ interface InputSectionProps {
 }
 
 const FormattedNumberInput = ({ value, onChange, className }: { value: number; onChange: (val: number) => void; className?: string; }) => {
-    const [displayValue, setDisplayValue] = useState(value.toLocaleString());
-    useEffect(() => {
-        const rawClean = displayValue.replace(/,/g, '');
-        const currentParsed = rawClean === '' ? 0 : parseFloat(rawClean);
-        if (Math.abs(currentParsed - value) > 0.001) {
-            setDisplayValue(value.toLocaleString());
-        }
-    }, [value]);
-    const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const raw = e.target.value;
-        if (!/^[\d,.]*$/.test(raw)) return;
-        setDisplayValue(raw);
-        const clean = raw.replace(/,/g, '');
-        const parsed = parseFloat(clean);
-        if (!isNaN(parsed)) onChange(parsed); else if (clean === '') onChange(0);
-    };
-    const handleBlur = () => {
-        const clean = displayValue.replace(/,/g, '');
-        const parsed = parseFloat(clean);
-        setDisplayValue(!isNaN(parsed) ? parsed.toLocaleString() : value.toLocaleString());
-    };
-    return <input type="text" value={displayValue} onChange={handleChange} onBlur={handleBlur} className={className} />;
+  const [displayValue, setDisplayValue] = useState(value.toLocaleString());
+  useEffect(() => {
+    const rawClean = displayValue.replace(/,/g, '');
+    const currentParsed = rawClean === '' ? 0 : parseFloat(rawClean);
+    if (Math.abs(currentParsed - value) > 0.001) {
+      setDisplayValue(value.toLocaleString());
+    }
+  }, [value]);
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const raw = e.target.value;
+    if (!/^[\d,.]*$/.test(raw)) return;
+    setDisplayValue(raw);
+    const clean = raw.replace(/,/g, '');
+    const parsed = parseFloat(clean);
+    if (!isNaN(parsed)) onChange(parsed); else if (clean === '') onChange(0);
+  };
+  const handleBlur = () => {
+    const clean = displayValue.replace(/,/g, '');
+    const parsed = parseFloat(clean);
+    setDisplayValue(!isNaN(parsed) ? parsed.toLocaleString() : value.toLocaleString());
+  };
+  return <input type="text" value={displayValue} onChange={handleChange} onBlur={handleBlur} className={className} />;
+};
+
+// Handles percentage inputs (stored as decimal, displayed as percentage)
+const PercentageInput = ({ value, onChange, className, step = 0.1 }: { value: number; onChange: (val: number) => void; className?: string; step?: number; }) => {
+  const [displayValue, setDisplayValue] = useState((value * 100).toFixed(1));
+
+  useEffect(() => {
+    // Only update display if the external value changed significantly
+    const currentParsed = displayValue === '' ? 0 : parseFloat(displayValue);
+    if (Math.abs(currentParsed - value * 100) > 0.01) {
+      setDisplayValue((value * 100).toFixed(1));
+    }
+  }, [value]);
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const raw = e.target.value;
+    // Allow empty string, digits, decimal point, and minus sign
+    if (!/^-?[\d.]*$/.test(raw)) return;
+    setDisplayValue(raw);
+
+    const parsed = parseFloat(raw);
+    if (!isNaN(parsed)) {
+      onChange(parsed / 100);
+    }
+  };
+
+  const handleBlur = () => {
+    const parsed = parseFloat(displayValue);
+    if (isNaN(parsed) || displayValue === '') {
+      // Restore the previous valid value
+      setDisplayValue((value * 100).toFixed(1));
+    } else {
+      // Format the value nicely
+      setDisplayValue(parsed.toFixed(1));
+    }
+  };
+
+  return <input type="number" step={step} value={displayValue} onChange={handleChange} onBlur={handleBlur} className={className} />;
 };
 
 const InputSection: React.FC<InputSectionProps> = ({ profile, setProfile }) => {
@@ -40,10 +78,10 @@ const InputSection: React.FC<InputSectionProps> = ({ profile, setProfile }) => {
   const handleAssumptionChange = (field: keyof UserProfile['assumptions'], value: number) => setProfile({ ...profile, assumptions: { ...profile.assumptions, [field]: value } });
 
   const resetToToday = () => {
-      setProfile({
-          ...profile,
-         age: Number(profile.baseAge), // Force it to be a number on reset
-      });
+    setProfile({
+      ...profile,
+      age: Number(profile.baseAge), // Force it to be a number on reset
+    });
   };
 
   const inputClass = "w-full rounded-md border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-900 dark:text-white shadow-sm focus:border-blue-500 focus:ring-blue-500 border p-2 transition-colors";
@@ -59,19 +97,19 @@ const InputSection: React.FC<InputSectionProps> = ({ profile, setProfile }) => {
       {/* Personal Details */}
       <div>
         <div className="flex justify-between items-center mb-4">
-            <h2 className="text-xl font-bold text-slate-800 dark:text-white flex items-center gap-2">
-                <Briefcase className="w-5 h-5 text-blue-600" />
-                Personal Details
-            </h2>
-            {isFutureScenario && (
-                <button 
-                    onClick={resetToToday}
-                    className="flex items-center gap-1 text-xs font-bold text-blue-600 hover:text-blue-700 bg-blue-50 dark:bg-blue-900/30 px-2 py-1 rounded-md border border-blue-200 dark:border-blue-800"
-                >
-                    <RotateCcw className="w-3 h-3" />
-                    Reset to Age {profile.baseAge}
-                </button>
-            )}
+          <h2 className="text-xl font-bold text-slate-800 dark:text-white flex items-center gap-2">
+            <Briefcase className="w-5 h-5 text-blue-600" />
+            Personal Details
+          </h2>
+          {isFutureScenario && (
+            <button
+              onClick={resetToToday}
+              className="flex items-center gap-1 text-xs font-bold text-blue-600 hover:text-blue-700 bg-blue-50 dark:bg-blue-900/30 px-2 py-1 rounded-md border border-blue-200 dark:border-blue-800"
+            >
+              <RotateCcw className="w-3 h-3" />
+              Reset to Age {profile.baseAge}
+            </button>
+          )}
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
@@ -87,11 +125,11 @@ const InputSection: React.FC<InputSectionProps> = ({ profile, setProfile }) => {
                 const updatedValue = rawValue === '' ? '' : parseInt(rawValue, 10);
                 handleChange('age', updatedValue);
               }}
-                onBlur={() => {
-                  if (profile.age === '') {
+              onBlur={() => {
+                if (profile.age === '') {
                   handleChange('age', profile.baseAge || 0);
-                  }
-                }}
+                }
+              }}
               className={inputClass}
               placeholder="Enter age"
             />
@@ -109,17 +147,17 @@ const InputSection: React.FC<InputSectionProps> = ({ profile, setProfile }) => {
           </div>
           <div className="md:col-span-2">
             <div className="flex items-center justify-between mb-1">
-                <label className="text-sm font-medium text-slate-600 dark:text-slate-300">Annual Spending Need</label>
-                <div className="flex bg-slate-100 dark:bg-slate-800 p-0.5 rounded-md border border-slate-200 dark:border-slate-700 text-[10px] font-bold">
-                    <button 
-                        onClick={() => handleChange('isSpendingReal', true)}
-                        className={`px-2 py-0.5 rounded ${profile.isSpendingReal ? 'bg-white dark:bg-slate-600 text-blue-600 dark:text-blue-300 shadow-sm' : 'text-slate-500'}`}
-                    >Today's $</button>
-                    <button 
-                        onClick={() => handleChange('isSpendingReal', false)}
-                        className={`px-2 py-0.5 rounded ${!profile.isSpendingReal ? 'bg-white dark:bg-slate-600 text-blue-600 dark:text-blue-300 shadow-sm' : 'text-slate-500'}`}
-                    >Future $</button>
-                </div>
+              <label className="text-sm font-medium text-slate-600 dark:text-slate-300">Annual Spending Need</label>
+              <div className="flex bg-slate-100 dark:bg-slate-800 p-0.5 rounded-md border border-slate-200 dark:border-slate-700 text-[10px] font-bold">
+                <button
+                  onClick={() => handleChange('isSpendingReal', true)}
+                  className={`px-2 py-0.5 rounded ${profile.isSpendingReal ? 'bg-white dark:bg-slate-600 text-blue-600 dark:text-blue-300 shadow-sm' : 'text-slate-500'}`}
+                >Today's $</button>
+                <button
+                  onClick={() => handleChange('isSpendingReal', false)}
+                  className={`px-2 py-0.5 rounded ${!profile.isSpendingReal ? 'bg-white dark:bg-slate-600 text-blue-600 dark:text-blue-300 shadow-sm' : 'text-slate-500'}`}
+                >Future $</button>
+              </div>
             </div>
             <div className="relative">
               <span className={iconClass}>$</span>
@@ -200,50 +238,47 @@ const InputSection: React.FC<InputSectionProps> = ({ profile, setProfile }) => {
           <div>
             <label className={labelClass}>Social Security Benefit</label>
             <div className="relative">
-                <span className={iconClass}>$</span>
-                <FormattedNumberInput
+              <span className={iconClass}>$</span>
+              <FormattedNumberInput
                 value={profile.income.socialSecurity}
                 onChange={(val) => handleIncomeChange('socialSecurity', val)}
                 className={`${inputClass} pl-8`}
-                />
+              />
             </div>
           </div>
           <div>
             <label className={labelClass}>Pension / Annuity</label>
             <div className="relative">
-                <span className={iconClass}>$</span>
-                <FormattedNumberInput
+              <span className={iconClass}>$</span>
+              <FormattedNumberInput
                 value={profile.income.pension}
                 onChange={(val) => handleIncomeChange('pension', val)}
                 className={`${inputClass} pl-8`}
-                />
+              />
             </div>
           </div>
           <div>
             <label className={labelClass}>Brokerage Dividends</label>
             <div className="relative">
-                <span className={iconClass}>$</span>
-                <FormattedNumberInput
+              <span className={iconClass}>$</span>
+              <FormattedNumberInput
                 value={profile.income.brokerageDividends}
                 onChange={(val) => handleIncomeChange('brokerageDividends', val)}
                 className={`${inputClass} pl-8`}
-                />
+              />
             </div>
           </div>
           <div>
             <label className={labelClass}>Qualified Div. Ratio (%)</label>
-            <input 
-                type="number" 
-                min="0" 
-                max="100" 
-                value={profile.income.qualifiedDividendRatio * 100} 
-                onChange={(e) => handleIncomeChange('qualifiedDividendRatio', parseFloat(e.target.value) / 100)} 
-                className={inputClass} 
+            <PercentageInput
+              value={profile.income.qualifiedDividendRatio}
+              onChange={(val) => handleIncomeChange('qualifiedDividendRatio', val)}
+              className={inputClass}
             />
           </div>
         </div>
       </div>
-      
+
       {/* Market Assumptions */}
       <div>
         <h2 className={headerClass}>
@@ -251,14 +286,22 @@ const InputSection: React.FC<InputSectionProps> = ({ profile, setProfile }) => {
           Market Assumptions
         </h2>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
+          <div>
             <label className={labelClass}>Annual Return (%)</label>
-            <input type="number" step="0.1" value={(profile.assumptions.rateOfReturn * 100).toFixed(1)} onChange={(e) => handleAssumptionChange('rateOfReturn', parseFloat(e.target.value) / 100)} className={inputClass} />
-            </div>
-            <div>
+            <PercentageInput
+              value={profile.assumptions.rateOfReturn}
+              onChange={(val) => handleAssumptionChange('rateOfReturn', val)}
+              className={inputClass}
+            />
+          </div>
+          <div>
             <label className={labelClass}>Inflation (%)</label>
-            <input type="number" step="0.1" value={(profile.assumptions.inflationRate * 100).toFixed(1)} onChange={(e) => handleAssumptionChange('inflationRate', parseFloat(e.target.value) / 100)} className={inputClass} />
-            </div>
+            <PercentageInput
+              value={profile.assumptions.inflationRate}
+              onChange={(val) => handleAssumptionChange('inflationRate', val)}
+              className={inputClass}
+            />
+          </div>
         </div>
       </div>
     </div>

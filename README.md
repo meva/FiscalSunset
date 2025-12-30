@@ -12,7 +12,8 @@ View your app in AI Studio: https://ai.studio/apps/drive/1PIF1OC1escGde34BZzUJjP
 
 **Prerequisites:**  Node.js
 
-
+1. macos set virtual environment
+2.
 1. Install dependencies:
    `npm install`
 2. Set the `GEMINI_API_KEY` in [.env.local](.env.local) to your Gemini API key
