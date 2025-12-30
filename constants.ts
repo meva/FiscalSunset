@@ -2,8 +2,8 @@ import { FilingStatus } from './types';
 
 // 2025 Standard Deductions (Estimated)
 export const STANDARD_DEDUCTION = {
-  [FilingStatus.Single]: 15000,
-  [FilingStatus.MarriedJoint]: 30000,
+  [FilingStatus.Single]: 15750,
+  [FilingStatus.MarriedJoint]: 31500,
 };
 
 // Additional deduction for Age 65+ (per person)

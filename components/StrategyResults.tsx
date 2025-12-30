@@ -87,7 +87,7 @@ const StrategyResults: React.FC<StrategyResultsProps> = ({ result, profile, isDa
   };
 
   return (
-    <div className="space-y-6 relative pb-20">
+    <div className="space-y-6">
 
       {/* High Level Summary Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -151,8 +151,8 @@ const StrategyResults: React.FC<StrategyResultsProps> = ({ result, profile, isDa
       {/* Roth Conversion Opportunity - OBBBA Optimizer */}
       {result.rothConversionDetail && (
         <div className={`bg-white dark:bg-slate-900 p-4 rounded-xl border shadow-sm transition-colors ${result.rothConversionAmount > 0
-            ? 'border-l-4 border-l-purple-500 border-purple-200 dark:border-purple-900'
-            : 'border-slate-200 dark:border-slate-800'
+          ? 'border-l-4 border-l-purple-500 border-purple-200 dark:border-purple-900'
+          : 'border-slate-200 dark:border-slate-800'
           }`}>
           <div className="flex items-center gap-2 mb-3">
             <ArrowRightLeft className="w-4 h-4 text-purple-500" />
@@ -174,8 +174,8 @@ const StrategyResults: React.FC<StrategyResultsProps> = ({ result, profile, isDa
             <div className="p-2 bg-slate-50 dark:bg-slate-800 rounded">
               <span className="text-slate-500 text-[10px]">Effective Marginal Rate</span>
               <p className={`font-bold ${result.rothConversionDetail.effectiveMarginalRate > 0.30
-                  ? 'text-red-600 dark:text-red-400'
-                  : 'text-slate-900 dark:text-white'
+                ? 'text-red-600 dark:text-red-400'
+                : 'text-slate-900 dark:text-white'
                 }`}>
                 {(result.rothConversionDetail.effectiveMarginalRate * 100).toFixed(1)}%
               </p>
@@ -321,17 +321,48 @@ const StrategyResults: React.FC<StrategyResultsProps> = ({ result, profile, isDa
         {aiAdvice && <div className="prose prose-invert max-w-none"><div className="whitespace-pre-line text-slate-200 text-sm leading-relaxed">{aiAdvice}</div></div>}
       </div>
 
-      {/* Bottom Information Banner - Strategy Algorithm Notes */}
-      <div className="absolute bottom-0 right-0 max-w-sm">
-        <div className="bg-white dark:bg-slate-900 rounded-tl-xl border-l border-t border-slate-200 dark:border-slate-800 p-4 shadow-xl transition-colors">
-          <div className="flex items-start gap-2">
-            <Info className="w-4 h-4 text-blue-500 mt-0.5" />
-            <div>
-              <h5 className="text-[10px] font-bold uppercase tracking-wider text-slate-500 mb-1">Strategy Algorithm Notes</h5>
-              <ul className="text-[10px] space-y-1 text-slate-600 dark:text-slate-400 font-medium">
-                <li>• Prioritizes 0% Capital Gains bracket when possible.</li>
-                <li>• Models 40-year projections with inflation adjustments.</li>
-                <li>• Benchmarks against the 4-5% Safe Withdrawal Rate.</li>
+      {/* Strategy Algorithm Notes - positioned below AI Strategy Review */}
+      <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 p-5 shadow-sm transition-colors">
+        <div className="flex items-start gap-3">
+          <Info className="w-5 h-5 text-blue-500 mt-0.5 shrink-0" />
+          <div className="flex-1">
+            <h5 className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-3">Strategy Algorithm Notes</h5>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-2">
+              <ul className="text-xs space-y-2 text-slate-600 dark:text-slate-400">
+                <li className="flex items-start gap-2">
+                  <span className="text-blue-500 font-bold">•</span>
+                  <span><strong className="text-slate-700 dark:text-slate-300">Two-Layer Cake Method:</strong> Optimal stacking of ordinary income and capital gains for tax efficiency.</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="text-blue-500 font-bold">•</span>
+                  <span><strong className="text-slate-700 dark:text-slate-300">0% Capital Gains Priority:</strong> Maximizes use of the 0% long-term capital gains bracket when possible.</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="text-blue-500 font-bold">•</span>
+                  <span><strong className="text-slate-700 dark:text-slate-300">Social Security Torpedo Detection:</strong> Identifies and avoids the 50-85% benefit taxation zones.</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="text-blue-500 font-bold">•</span>
+                  <span><strong className="text-slate-700 dark:text-slate-300">IRMAA Cliff Awareness:</strong> Prevents Medicare premium surcharges by monitoring income thresholds.</span>
+                </li>
+              </ul>
+              <ul className="text-xs space-y-2 text-slate-600 dark:text-slate-400">
+                <li className="flex items-start gap-2">
+                  <span className="text-purple-500 font-bold">•</span>
+                  <span><strong className="text-slate-700 dark:text-slate-300">Roth Conversion Optimizer:</strong> "Fill Strategy" algorithm calculates optimal conversions based on tax bracket headroom.</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="text-purple-500 font-bold">•</span>
+                  <span><strong className="text-slate-700 dark:text-slate-300">RMD Calculations:</strong> Automatic Required Minimum Distribution tracking for ages 73+.</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="text-purple-500 font-bold">•</span>
+                  <span><strong className="text-slate-700 dark:text-slate-300">40-Year Projections:</strong> Long-term modeling with inflation adjustments for retirement planning.</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="text-purple-500 font-bold">•</span>
+                  <span><strong className="text-slate-700 dark:text-slate-300">Safe Withdrawal Rate:</strong> Benchmarks against the 4-5% rule of thumb for sustainable withdrawals.</span>
+                </li>
               </ul>
             </div>
           </div>
