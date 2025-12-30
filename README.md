@@ -255,7 +255,7 @@ SOFTWARE.
 - Built with [React](https://react.dev/) and [Vite](https://vitejs.dev/)
 - Icons by [Lucide](https://lucide.dev/)
 - Charts by [Recharts](https://recharts.org/)
-- Built with [Google Gemini](https://aistudio.google.com/)
+- Built with [Google Gemini](https://aistudio.google.com/) and using AntiGravity 
 
 
 ---
