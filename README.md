@@ -81,7 +81,7 @@ Before you begin, ensure you have the following installed:
 
 ```bash
 # Clone the repository
-git clone https://github.com/YOUR_USERNAME/retiresmart-tax-efficient-withdrawal-strategist.git
+git clone https://github.com/meva/retiresmart-tax-efficient-withdrawal-strategist.git
 
 # Navigate to the project directory
 cd retiresmart-tax-efficient-withdrawal-strategist
@@ -207,7 +207,7 @@ Contributions are welcome! Here's how you can help:
 
 ### Reporting Issues
 
-Found a bug or have a feature request? Please [open an issue](https://github.com/YOUR_USERNAME/retiresmart-tax-efficient-withdrawal-strategist/issues) with:
+Found a bug or have a feature request? Please [open an issue](https://github.com/meva/retiresmart-tax-efficient-withdrawal-strategist/issues) with:
 
 - Clear description of the problem/feature
 - Steps to reproduce (for bugs)
