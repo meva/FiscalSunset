@@ -1,0 +1,247 @@
+import React, { useState, useEffect } from 'react';
+import { StrategyResult, UserProfile } from '../types';
+import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Legend, CartesianGrid } from 'recharts';
+import { AlertCircle, CheckCircle, TrendingUp, Sparkles, MessageSquare, RefreshCw, ShieldAlert, Lock, Wallet, Info, AlertTriangle } from 'lucide-react';
+import { getGeminiAdvice } from '../services/geminiService';
+
+interface StrategyResultsProps {
+  result: StrategyResult;
+  profile: UserProfile;
+  isDarkMode: boolean;
+}
+
+const MAX_DAILY_REQUESTS = 5;
+const STORAGE_KEY = 'retiresmart_ai_usage';
+
+const StrategyResults: React.FC<StrategyResultsProps> = ({ result, profile, isDarkMode }) => {
+  const [aiAdvice, setAiAdvice] = useState<string | null>(null);
+  const [loadingAi, setLoadingAi] = useState(false);
+  const [requestsUsed, setRequestsUsed] = useState(0);
+
+  useEffect(() => {
+    setAiAdvice(null);
+  }, [result]);
+
+  useEffect(() => {
+    const today = new Date().toISOString().split('T')[0];
+    const stored = localStorage.getItem(STORAGE_KEY);
+    if (stored) {
+        try {
+            const parsed = JSON.parse(stored);
+            if (parsed.date === today) setRequestsUsed(parsed.count);
+            else {
+                localStorage.setItem(STORAGE_KEY, JSON.stringify({ date: today, count: 0 }));
+                setRequestsUsed(0);
+            }
+        } catch (e) { setRequestsUsed(0); }
+    }
+  }, []);
+
+  const incrementUsage = () => {
+    const today = new Date().toISOString().split('T')[0];
+    const newCount = requestsUsed + 1;
+    setRequestsUsed(newCount);
+    localStorage.setItem(STORAGE_KEY, JSON.stringify({ date: today, count: newCount }));
+  };
+
+  const COLORS = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#6366f1'];
+
+  const chartData = result.withdrawalPlan.map(w => ({
+    name: w.source,
+    value: w.amount,
+  }));
+
+  if (profile.income.socialSecurity > 0) chartData.push({ name: 'Social Security', value: profile.income.socialSecurity });
+  if (profile.income.pension > 0) chartData.push({ name: 'Pension', value: profile.income.pension });
+  if (profile.income.brokerageDividends > 0) chartData.push({ name: 'Dividends', value: profile.income.brokerageDividends });
+
+  const handleAskAI = async () => {
+    if (requestsUsed >= MAX_DAILY_REQUESTS) return;
+    setLoadingAi(true);
+    const advice = await getGeminiAdvice(profile, result);
+    setAiAdvice(advice);
+    incrementUsage();
+    setLoadingAi(false);
+  };
+
+  const requestsLeft = MAX_DAILY_REQUESTS - requestsUsed;
+  const isLimitReached = requestsLeft <= 0;
+  const axisColor = isDarkMode ? '#94a3b8' : '#64748b';
+  const gridColor = isDarkMode ? '#334155' : '#e2e8f0';
+  const tooltipBg = isDarkMode ? '#1e293b' : '#ffffff';
+  const tooltipText = isDarkMode ? '#f1f5f9' : '#0f172a';
+
+  // Feasibility Logic
+  const totalPortfolio = profile.assets.brokerage + profile.assets.rothIRA + profile.assets.traditionalIRA + profile.assets.hsa;
+  const portfolioDraw = result.withdrawalPlan.reduce((acc, curr) => acc + curr.amount, 0);
+  const withdrawalRate = totalPortfolio > 0 ? portfolioDraw / totalPortfolio : 0;
+  
+  let feasibility: 'Safe' | 'Risk' | 'Shortfall' = 'Safe';
+  if (!result.gapFilled) feasibility = 'Shortfall';
+  else if (withdrawalRate > 0.05) feasibility = 'Risk';
+
+  const feasibilityStyles = {
+    Safe: 'bg-green-50 dark:bg-green-950/30 border-green-200 dark:border-green-900 text-green-700 dark:text-green-400',
+    Risk: 'bg-amber-50 dark:bg-amber-950/30 border-amber-200 dark:border-amber-900 text-amber-700 dark:text-amber-400',
+    Shortfall: 'bg-red-50 dark:bg-red-950/30 border-red-200 dark:border-red-900 text-red-700 dark:text-red-400',
+  };
+
+  return (
+    <div className="space-y-6 relative pb-20">
+      
+      {/* High Level Summary Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="bg-white dark:bg-slate-900 p-4 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm transition-colors">
+          <h3 className="text-slate-500 dark:text-slate-400 text-xs font-bold uppercase">Spending (Net)</h3>
+          <p className="text-xl font-bold text-slate-900 dark:text-white">${result.nominalSpendingNeeded.toLocaleString()}</p>
+          <div className="flex items-center mt-1 text-[10px] text-slate-500">Required net cash flow</div>
+        </div>
+
+        <div className="bg-white dark:bg-slate-900 p-4 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm transition-colors border-l-4 border-l-red-500">
+          <h3 className="text-slate-500 dark:text-slate-400 text-xs font-bold uppercase">Est. Fed Tax</h3>
+          <p className="text-xl font-bold text-red-600 dark:text-red-400">${result.estimatedFederalTax.toLocaleString()}</p>
+          <div className="flex items-center mt-1 text-[10px] text-slate-500">Effective Rate: {(result.effectiveTaxRate * 100).toFixed(1)}%</div>
+        </div>
+        
+        <div className="bg-white dark:bg-slate-900 p-4 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm transition-colors border-l-4 border-l-blue-500">
+           <h3 className="text-slate-500 dark:text-slate-400 text-xs font-bold uppercase">Gross Withdrawal</h3>
+           <p className="text-xl font-bold text-blue-600 dark:text-blue-400">${result.totalWithdrawal.toLocaleString()}</p>
+           <p className="text-[10px] text-slate-500 mt-1">Portfolio + Benefits Needed</p>
+        </div>
+
+        <div className={`p-4 rounded-xl border shadow-sm transition-colors ${feasibilityStyles[feasibility]}`}>
+          <h3 className="text-xs font-bold uppercase">Feasibility</h3>
+          <div className="flex items-center gap-2 mt-1">
+            {feasibility === 'Safe' && <CheckCircle className="w-5 h-5" />}
+            {feasibility === 'Risk' && <AlertTriangle className="w-5 h-5" />}
+            {feasibility === 'Shortfall' && <AlertCircle className="w-5 h-5" />}
+            <span className="text-lg font-bold">
+              {feasibility}
+            </span>
+          </div>
+        </div>
+      </div>
+
+      {/* Tax Engine Explanation */}
+      <div className="bg-white dark:bg-slate-900 p-4 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm">
+          <div className="flex items-center gap-2 mb-3">
+              <ShieldAlert className="w-4 h-4 text-amber-500" />
+              <h4 className="text-sm font-bold">Tax Calculation Breakdown</h4>
+          </div>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-xs">
+              <div className="p-2 bg-slate-50 dark:bg-slate-800 rounded">
+                  <span className="text-slate-500">Standard Deduction</span>
+                  <p className="font-bold text-slate-900 dark:text-white">${result.standardDeduction.toLocaleString()}</p>
+              </div>
+              <div className="p-2 bg-slate-50 dark:bg-slate-800 rounded">
+                  <span className="text-slate-500">Taxable Soc. Security</span>
+                  <p className="font-bold text-slate-900 dark:text-white">${result.taxableSocialSecurity.toLocaleString()}</p>
+              </div>
+              <div className="p-2 bg-slate-50 dark:bg-slate-800 rounded">
+                  <span className="text-slate-500">Provisional Income</span>
+                  <p className="font-bold text-slate-900 dark:text-white">${result.provisionalIncome.toLocaleString()}</p>
+              </div>
+              <div className="p-2 bg-slate-50 dark:bg-slate-800 rounded">
+                  <span className="text-slate-500">Mandatory RMD</span>
+                  <p className="font-bold text-slate-900 dark:text-white">${result.rmdAmount.toLocaleString()}</p>
+              </div>
+          </div>
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div className="bg-white dark:bg-slate-900 p-6 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm min-h-[350px] flex flex-col transition-colors">
+          <h3 className="text-lg font-bold text-slate-800 dark:text-white mb-4 flex items-center gap-2">
+            <Wallet className="w-5 h-5 text-blue-500" />
+            Gross Income Composition
+          </h3>
+          <div className="flex-1">
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={chartData} layout="vertical" margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
+                <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke={gridColor} />
+                <XAxis type="number" tickFormatter={(val) => `$${val/1000}k`} stroke={axisColor} />
+                <YAxis dataKey="name" type="category" width={140} style={{ fontSize: '11px' }} stroke={axisColor} />
+                <Tooltip 
+                    formatter={(value: number) => `$${value.toLocaleString()}`} 
+                    contentStyle={{ backgroundColor: tooltipBg, borderColor: gridColor, color: tooltipText }}
+                />
+                <Bar dataKey="value" fill="#3b82f6" radius={[0, 4, 4, 0]}>
+                  {chartData.map((entry, index) => (
+                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                  ))}
+                </Bar>
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+        </div>
+
+        <div className="bg-white dark:bg-slate-900 p-6 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm transition-colors">
+          <h3 className="text-lg font-bold text-slate-800 dark:text-white mb-4 flex items-center gap-2">
+              <TrendingUp className="w-5 h-5 text-emerald-500" />
+              Optimal Withdrawal Path
+          </h3>
+          <p className="text-xs text-slate-500 mb-4 italic">Prioritizes 0% brackets to minimize current tax bill and preserve portfolio longevity.</p>
+          <div className="space-y-3">
+            {result.withdrawalPlan.map((step, idx) => (
+              <div key={idx} className="flex items-start gap-3 p-3 rounded-lg bg-slate-50 dark:bg-slate-800 border border-slate-100 dark:border-slate-700 transition-colors">
+                <div className="bg-blue-600 text-white w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold shrink-0 mt-0.5">{idx + 1}</div>
+                <div className="flex-1">
+                  <div className="flex justify-between items-center w-full">
+                    <span className="text-sm font-semibold text-slate-800 dark:text-slate-200">{step.source}</span>
+                    <span className="text-sm font-bold text-blue-700 dark:text-blue-400">${step.amount.toLocaleString()}</span>
+                  </div>
+                  <p className="text-[11px] text-slate-600 dark:text-slate-400 mt-1">{step.description}</p>
+                </div>
+              </div>
+            ))}
+            {result.withdrawalPlan.length === 0 && <p className="text-slate-500 dark:text-slate-400 text-sm italic">No portfolio withdrawals needed.</p>}
+          </div>
+        </div>
+      </div>
+
+      {/* AI Advisor */}
+      <div className="bg-gradient-to-r from-slate-900 to-slate-800 dark:from-slate-800 dark:to-slate-900 rounded-xl p-6 text-white shadow-lg">
+        <div className="flex items-center justify-between mb-4">
+           <h3 className="text-xl font-bold flex items-center gap-2">
+             <Sparkles className="w-5 h-5 text-yellow-400" />
+             AI Strategy Review
+           </h3>
+           {!aiAdvice && (
+             <div className="flex items-center gap-3">
+                 <span className="text-xs text-slate-400 hidden sm:inline">{isLimitReached ? "Daily limit reached" : `${requestsLeft} left`}</span>
+                 <button onClick={handleAskAI} disabled={loadingAi || isLimitReached} className={`px-4 py-2 rounded-lg text-sm font-semibold transition-colors flex items-center gap-2 ${isLimitReached ? 'bg-slate-700 text-slate-400 cursor-not-allowed' : 'bg-white text-slate-900 hover:bg-slate-100 dark:bg-slate-700 dark:text-white dark:hover:bg-slate-600'}`}>
+                   {loadingAi ? "Analyzing..." : "Review My Plan"}
+                 </button>
+             </div>
+           )}
+           {aiAdvice && (
+               <button onClick={handleAskAI} disabled={loadingAi || isLimitReached} className="flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-medium bg-slate-700 hover:bg-slate-600 text-white transition-colors">
+                <RefreshCw className={`w-3 h-3 ${loadingAi ? 'animate-spin' : ''}`} />
+                Regenerate
+              </button>
+           )}
+        </div>
+        {loadingAi && <div className="animate-pulse space-y-4 py-1"><div className="h-4 bg-slate-600 rounded w-3/4"></div><div className="h-4 bg-slate-600 rounded"></div></div>}
+        {aiAdvice && <div className="prose prose-invert max-w-none"><div className="whitespace-pre-line text-slate-200 text-sm leading-relaxed">{aiAdvice}</div></div>}
+      </div>
+
+      {/* Bottom Information Banner - Strategy Algorithm Notes */}
+      <div className="absolute bottom-0 right-0 max-w-sm">
+        <div className="bg-white dark:bg-slate-900 rounded-tl-xl border-l border-t border-slate-200 dark:border-slate-800 p-4 shadow-xl transition-colors">
+          <div className="flex items-start gap-2">
+            <Info className="w-4 h-4 text-blue-500 mt-0.5" />
+            <div>
+              <h5 className="text-[10px] font-bold uppercase tracking-wider text-slate-500 mb-1">Strategy Algorithm Notes</h5>
+              <ul className="text-[10px] space-y-1 text-slate-600 dark:text-slate-400 font-medium">
+                <li>• Prioritizes 0% Capital Gains bracket when possible.</li>
+                <li>• Models 40-year projections with inflation adjustments.</li>
+                <li>• Benchmarks against the 4-5% Safe Withdrawal Rate.</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default StrategyResults;
