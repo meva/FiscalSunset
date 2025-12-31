@@ -92,10 +92,10 @@ const AccumulationStrategy: React.FC<AccumulationStrategyProps> = ({ profile, se
             ...profile,
             age: p.age,
             assets: {
-                traditionalIRA: Math.round(p.rawTrad),
-                rothIRA: Math.round(p.rawRoth),
-                brokerage: Math.round(p.rawBrok),
-                hsa: Math.round(p.rawHSA),
+                traditionalIRA: isInflationAdjusted ? p.trad : Math.round(p.rawTrad),
+                rothIRA: isInflationAdjusted ? p.roth : Math.round(p.rawRoth),
+                brokerage: isInflationAdjusted ? p.brokerage : Math.round(p.rawBrok),
+                hsa: isInflationAdjusted ? p.hsa : Math.round(p.rawHSA),
             }
         });
         onRetire();
@@ -143,7 +143,7 @@ const AccumulationStrategy: React.FC<AccumulationStrategyProps> = ({ profile, se
                     </div>
                     <div>
                         <h3 className="text-xl font-bold leading-tight">Ready to switch to spending?</h3>
-                        <p className="text-blue-100 mt-1 max-w-sm">Apply your projected <strong>Age {profile.baseAge + investmentLength}</strong> balances to the withdrawal calculator.</p>
+                        <p className="text-blue-100 mt-1 max-w-sm">Apply your projected <strong>Age {profile.baseAge + investmentLength}</strong> balances to the withdrawal calculator. Remember to decide if you want to use nominal dollars or adjusted inflation's dollars by using the toggle above the graph.</p>
                     </div>
                 </div>
                 <button

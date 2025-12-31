@@ -156,9 +156,20 @@ const TaxReference: React.FC = () => {
 
                     <div className="flex items-start gap-3 p-4 bg-green-50 dark:bg-green-900/20 text-green-800 dark:text-green-300 rounded-lg text-sm">
                         <CheckCircle2 className="w-5 h-5 shrink-0 mt-0.5" />
-                        <p>
-                            <strong>Pro Tip:</strong> Toggle between "Today's $" and "Adj. Inflation $" using the buttons in the Accumulation tab to see values in real vs. nominal dollars.
-                        </p>
+                        <div className="space-y-2">
+                            <p><strong>Pro Tips:</strong></p>
+                            <ul className="list-disc pl-5 space-y-1.5">
+                                <li>
+                                    <strong>Real vs. Nominal:</strong> Toggle between "Today's $" and "Adj. Inflation $" in the Accumulation tab to see values in real vs. nominal dollars.
+                                </li>
+                                <li>
+                                    <strong>Return Rates:</strong> Remember to adjust your Annual Return % assumptions to match your expected returns during retirement, e.i. set at 10% while looking at numbers in the accumulation tab, and 5% while looking at numbers in the withdrawal tab.
+                                </li>
+                                <li>
+                                    <strong>Inflation Impact:</strong> Use the annual spending needs toggle (today's $ vs. adjusted $) to clearly see your spending needs adjusted for inflation or today's dollars.
+                                </li>
+                            </ul>
+                        </div>
                     </div>
                 </div>
             </AccordionSection>
