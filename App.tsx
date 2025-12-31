@@ -9,8 +9,8 @@ import { calculateStrategy, calculateLongevity } from './services/calculationEng
 import { TrendingUp, Calculator, AlertTriangle, BookOpen, Sun, Moon, PiggyBank } from 'lucide-react';
 
 const INITIAL_PROFILE: UserProfile = {
-  age: 55,
-  baseAge: 55,
+  age: 65, // Retirement Start Age
+  baseAge: 55, // Current Age
   filingStatus: FilingStatus.Single,
   spendingNeed: 60000,
   isSpendingReal: true,

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { UserProfile, FilingStatus } from '../types';
-import { HelpCircle, DollarSign, Briefcase, Activity, TrendingUp, PiggyBank, RotateCcw, PlusCircle } from 'lucide-react';
+import { HelpCircle, DollarSign, Briefcase, Activity, TrendingUp, PiggyBank, RotateCcw, PlusCircle, AlertTriangle } from 'lucide-react';
 
 interface InputSectionProps {
   profile: UserProfile;
@@ -77,12 +77,8 @@ const InputSection: React.FC<InputSectionProps> = ({ profile, setProfile }) => {
   const handleIncomeChange = (field: keyof UserProfile['income'], value: number) => setProfile({ ...profile, income: { ...profile.income, [field]: value } });
   const handleAssumptionChange = (field: keyof UserProfile['assumptions'], value: number) => setProfile({ ...profile, assumptions: { ...profile.assumptions, [field]: value } });
 
-  const resetToToday = () => {
-    setProfile({
-      ...profile,
-      age: Number(profile.baseAge), // Force it to be a number on reset
-    });
-  };
+  // Reset logic removed as we now have explicit inputs
+  // const resetToToday = () => { ... }
 
   const inputClass = "w-full rounded-md border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-900 dark:text-white shadow-sm focus:border-blue-500 focus:ring-blue-500 border p-2 transition-colors";
   const labelClass = "block text-sm font-medium text-slate-600 dark:text-slate-300 mb-1";
@@ -90,7 +86,7 @@ const InputSection: React.FC<InputSectionProps> = ({ profile, setProfile }) => {
   const containerClass = "bg-white dark:bg-slate-900 rounded-xl shadow-sm border border-slate-200 dark:border-slate-800 p-6 space-y-8 transition-colors";
   const headerClass = "text-xl font-bold text-slate-800 dark:text-white flex items-center gap-2 mb-4";
 
-  const isFutureScenario = (Number(profile.age) || 0) !== profile.baseAge;
+  // const isFutureScenario = (Number(profile.age) || 0) !== profile.baseAge;
 
   return (
     <div className={containerClass}>
@@ -101,14 +97,11 @@ const InputSection: React.FC<InputSectionProps> = ({ profile, setProfile }) => {
             <Briefcase className="w-5 h-5 text-blue-600" />
             Personal Details
           </h2>
-          {isFutureScenario && (
-            <button
-              onClick={resetToToday}
-              className="flex items-center gap-1 text-xs font-bold text-blue-600 hover:text-blue-700 bg-blue-50 dark:bg-blue-900/30 px-2 py-1 rounded-md border border-blue-200 dark:border-blue-800"
-            >
-              <RotateCcw className="w-3 h-3" />
-              Reset to Age {profile.baseAge}
-            </button>
+          {profile.age < profile.baseAge && (
+            <div className="flex items-center gap-1 text-xs font-bold text-red-600 bg-red-50 dark:bg-red-900/30 px-2 py-1 rounded-md border border-red-200 dark:border-red-800">
+              <AlertTriangle className="w-3 h-3" />
+              Retirement Age must be &ge; Current Age
+            </div>
           )}
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -116,22 +109,30 @@ const InputSection: React.FC<InputSectionProps> = ({ profile, setProfile }) => {
             <label className={labelClass}>Current Age</label>
             <input
               type="number"
-              // The '??' ensures that if age is null/undefined, it defaults to empty string
+              value={profile.baseAge}
+              onChange={(e) => {
+                const rawValue = e.target.value;
+                const updatedValue = rawValue === '' ? '' : parseInt(rawValue, 10);
+                // @ts-ignore - handling string temporarily for input
+                handleChange('baseAge', updatedValue);
+              }}
+              className={inputClass}
+              placeholder="Age Now"
+            />
+          </div>
+          <div>
+            <label className={labelClass}>Retirement Age</label>
+            <input
+              type="number"
               value={profile.age}
               onChange={(e) => {
                 const rawValue = e.target.value;
-                // If the input is empty, set it to an empty string. 
-                // Otherwise, convert the string to a number.
                 const updatedValue = rawValue === '' ? '' : parseInt(rawValue, 10);
+                // @ts-ignore - handling string temporarily for input
                 handleChange('age', updatedValue);
               }}
-              onBlur={() => {
-                if (profile.age === '') {
-                  handleChange('age', profile.baseAge || 0);
-                }
-              }}
               className={inputClass}
-              placeholder="Enter age"
+              placeholder="Target Age"
             />
           </div>
           <div>

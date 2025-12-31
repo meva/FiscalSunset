@@ -30,8 +30,8 @@ export interface MarketAssumptions {
 }
 
 export interface UserProfile {
-  age: number;
-  baseAge: number; // The age when the plan started (for inflation ref)
+  age: number; // Retirement Start Age (Start of Withdrawals)
+  baseAge: number; // Current Age (Start of Plan/Inflation Anchor)
   filingStatus: FilingStatus;
   spendingNeed: number;
   isSpendingReal: boolean; // Is the spending need in today's dollars?
