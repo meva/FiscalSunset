@@ -11,7 +11,8 @@ interface AccumulationStrategyProps {
 }
 
 const AccumulationStrategy: React.FC<AccumulationStrategyProps> = ({ profile, setProfile, isDarkMode, onRetire }) => {
-    const [investmentLength, setInvestmentLength] = useState(10);
+    // const [investmentLength, setInvestmentLength] = useState(10); // Removed local state
+    const investmentLength = Math.max(0, profile.age - profile.baseAge);
     const [isInflationAdjusted, setIsInflationAdjusted] = useState(true);
 
     const { assets, contributions, assumptions } = profile;
@@ -124,7 +125,14 @@ const AccumulationStrategy: React.FC<AccumulationStrategyProps> = ({ profile, se
                 <div className="flex flex-col sm:flex-row gap-6 items-center">
                     <div className="w-full sm:w-1/2">
                         <label className="block text-sm font-medium text-slate-600 dark:text-slate-400 mb-2">Years to Invest: <span className="font-bold text-slate-900 dark:text-white text-lg">{investmentLength}</span></label>
-                        <input type="range" min="1" max="40" value={investmentLength} onChange={(e) => setInvestmentLength(parseInt(e.target.value))} className="w-full h-2 bg-slate-200 dark:bg-slate-700 rounded-lg appearance-none cursor-pointer accent-blue-600" />
+                        <input
+                            type="range"
+                            min="0"
+                            max="50"
+                            value={investmentLength}
+                            onChange={(e) => setProfile({ ...profile, age: profile.baseAge + parseInt(e.target.value) })}
+                            className="w-full h-2 bg-slate-200 dark:bg-slate-700 rounded-lg appearance-none cursor-pointer accent-blue-600"
+                        />
                     </div>
                     <div className="w-full sm:w-1/2 flex items-center justify-between bg-slate-50 dark:bg-slate-800 p-4 rounded-lg">
                         <div><span className="block text-xs text-slate-500">Target Age</span><span className="text-xl font-bold">{profile.baseAge + investmentLength}</span></div>

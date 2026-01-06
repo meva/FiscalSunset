@@ -8,8 +8,8 @@ export const STANDARD_DEDUCTION = {
 
 // Additional deduction for Age 65+ (per person)
 export const AGE_DEDUCTION = {
-  [FilingStatus.Single]: 1950,
-  [FilingStatus.MarriedJoint]: 1550, // Per person
+  [FilingStatus.Single]: 2000,
+  [FilingStatus.MarriedJoint]: 1600, // Per person
 };
 
 // 2025 Tax Brackets (Ordinary Income) - Taxable Income limits
@@ -63,7 +63,43 @@ export const UNIFORM_LIFETIME_TABLE: Record<number, number> = {
   83: 17.7,
   84: 16.8,
   85: 16.0,
-  // Fallback logic implemented in service for ages not listed or > 85
+  86: 15.2,
+  87: 14.4,
+  88: 13.7,
+  89: 12.9,
+  90: 12.2,
+  91: 11.5,
+  92: 10.8,
+  93: 10.1,
+  94: 9.5,
+  95: 8.9,
+  96: 8.4,
+  97: 7.8,
+  98: 7.3,
+  99: 6.8,
+  100: 6.4,
+  101: 6.0,
+  102: 5.6,
+  103: 5.2,
+  104: 4.9,
+  105: 4.6,
+  106: 4.3,
+  107: 4.1,
+  108: 3.9,
+  109: 3.7,
+  110: 3.5,
+  111: 3.4,
+  112: 3.3,
+  113: 3.1,
+  114: 3.0,
+  115: 2.9,
+  116: 2.8,
+  117: 2.7,
+  118: 2.5,
+  119: 2.3,
+  120: 2.0,
+
+  // Fallback logic implemented in service for ages not listed 
 };
 
 export const RMD_START_AGE = 73;
