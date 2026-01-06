@@ -144,7 +144,7 @@ const AccumulationStrategy: React.FC<AccumulationStrategyProps> = ({ profile, se
                     </div>
                     <div>
                         <h3 className="text-xl font-bold leading-tight">Ready to switch to spending?</h3>
-                        <p className="text-blue-100 mt-1 max-w-sm">Apply your projected <strong>Age {profile.baseAge + investmentLength}</strong> balances to the withdrawal calculator. Remember to decide if you want to use nominal dollars or adjusted inflation's dollars by using the toggle above the graph.</p>
+                        <p className="text-blue-100 mt-1 max-w-sm">Move over to the withdrawal tab to see how should you withdraw your money, and the strategy to pay the least amount of taxes, values are in Nominal Dollars</p>
                     </div>
                 </div>
                 <button
