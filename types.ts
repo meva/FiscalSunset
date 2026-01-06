@@ -17,6 +17,12 @@ export interface Contributions {
   hsa: number;
 }
 
+export interface ContributionAllocation {
+  taxDeferred: number;
+  taxable: number;
+  taxExempt: number;
+}
+
 export interface IncomeProfile {
   socialSecurity: number;
   pension: number;

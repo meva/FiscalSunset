@@ -27,21 +27,39 @@ const Step1Timeline: React.FC<CheckProps> = ({ data, update }) => {
                     </label>
                     <input
                         type="number"
-                        value={data.currentAge}
-                        onChange={(e) => update({ currentAge: parseInt(e.target.value) || 0 })}
+                        value={data.currentAge || ''}
+                        onChange={(e) => {
+                            const val = e.target.value;
+                            if (val === '') {
+                                // @ts-ignore - temporary allow empty string for UX
+                                update({ currentAge: '' });
+                            } else {
+                                update({ currentAge: parseInt(val) });
+                            }
+                        }}
                         className="w-full text-center text-3xl font-bold p-4 rounded-xl border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 focus:ring-2 focus:ring-blue-500 outline-none transition-all"
+                        placeholder="0"
                     />
                 </div>
                 <div>
                     <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
-                        Age to Retire
+                        Age When You Want to Retire
                     </label>
                     <input
                         type="number"
-                        value={data.retirementAge}
-                        onChange={(e) => update({ retirementAge: parseInt(e.target.value) || 0 })}
+                        value={data.retirementAge || ''}
+                        onChange={(e) => {
+                            const val = e.target.value;
+                            if (val === '') {
+                                // @ts-ignore - temporary allow empty string for UX
+                                update({ retirementAge: '' });
+                            } else {
+                                update({ retirementAge: parseInt(val) });
+                            }
+                        }}
                         className={`w-full text-center text-3xl font-bold p-4 rounded-xl border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 focus:ring-2 outline-none transition-all ${data.retirementAge < data.currentAge ? 'ring-2 ring-red-500' : 'focus:ring-blue-500'
                             }`}
+                        placeholder="0"
                     />
                 </div>
             </div>

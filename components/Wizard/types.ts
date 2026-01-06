@@ -11,4 +11,15 @@ export interface WizardState {
         taxExempt: number;   // 0-100
     };
     annualSpending: number;
+    // New fields for expansion
+    totalAnnualContribution: number;
+    contributionAllocation: {
+        taxDeferred: number;
+        taxable: number;
+        taxExempt: number;
+    };
+    futureIncome: {
+        socialSecurity: number;
+        pension: number;
+    };
 }

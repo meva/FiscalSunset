@@ -52,11 +52,11 @@ const App: React.FC = () => {
 
   const toggleTheme = () => setIsDarkMode(!isDarkMode);
 
-  const handleWizardComplete = (newProfile: UserProfile) => {
+  const handleWizardComplete = (newProfile: UserProfile, destination: 'accumulation' | 'withdrawal' = 'accumulation') => {
     setProfile(newProfile);
     setIsWizardOpen(false);
     localStorage.setItem('wizard_completed_v1', 'true');
-    setActiveTab('accumulation'); // Start them on accumulation to see their assets
+    setActiveTab(destination);
   };
 
   const handleWizardClose = () => {

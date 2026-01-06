@@ -7,15 +7,27 @@ interface CheckProps {
     update: (fields: Partial<WizardState>) => void;
 }
 
-const Step5Goals: React.FC<CheckProps> = ({ data, update }) => {
+const Step7Goals: React.FC<CheckProps> = ({ data, update }) => {
     const [displayValue, setDisplayValue] = useState(data.annualSpending.toLocaleString());
 
+    // Sync only when data.annualSpending changes externally AND differs from display (to avoid cursor jumps)
     useEffect(() => {
-        setDisplayValue(data.annualSpending.toLocaleString());
+        // If the number value matches what we have in display (ignoring format), don't overwrite
+        // This is simple sync.
+        if (data.annualSpending.toLocaleString() !== displayValue && displayValue !== '') {
+            setDisplayValue(data.annualSpending.toLocaleString());
+        }
     }, [data.annualSpending]);
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const raw = e.target.value.replace(/,/g, '');
+
+        if (raw === '') {
+            setDisplayValue('');
+            update({ annualSpending: 0 });
+            return;
+        }
+
         if (!/^\d*$/.test(raw)) return;
 
         setDisplayValue(Number(raw).toLocaleString());
@@ -59,4 +71,4 @@ const Step5Goals: React.FC<CheckProps> = ({ data, update }) => {
     );
 };
 
-export default Step5Goals;
+export default Step7Goals;
