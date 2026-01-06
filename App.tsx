@@ -8,6 +8,7 @@ import TaxReference from './components/TaxReference';
 import { calculateStrategy, calculateLongevity } from './services/calculationEngine';
 import { TrendingUp, Calculator, AlertTriangle, BookOpen, Sun, Moon, PiggyBank } from 'lucide-react';
 import Footer from './components/Footer';
+import WizardModal from './components/Wizard/WizardModal';
 
 const INITIAL_PROFILE: UserProfile = {
   age: 65, // Retirement Start Age
@@ -27,6 +28,7 @@ const App: React.FC = () => {
   const [longevityResult, setLongevityResult] = useState<LongevityResult | null>(null);
   const [activeTab, setActiveTab] = useState<'withdrawal' | 'accumulation' | 'longevity' | 'reference'>('accumulation');
   const [isDarkMode, setIsDarkMode] = useState(false);
+  const [isWizardOpen, setIsWizardOpen] = useState(false);
 
   useEffect(() => {
     const sResult = calculateStrategy(profile);
@@ -36,14 +38,42 @@ const App: React.FC = () => {
   }, [profile]);
 
   useEffect(() => {
+    // Check if wizard has been completed in this session or previously
+    const wizardCompleted = localStorage.getItem('wizard_completed_v1');
+    if (!wizardCompleted) {
+      setIsWizardOpen(true);
+    }
+  }, []);
+
+  useEffect(() => {
     if (isDarkMode) document.documentElement.classList.add('dark');
     else document.documentElement.classList.remove('dark');
   }, [isDarkMode]);
 
   const toggleTheme = () => setIsDarkMode(!isDarkMode);
 
+  const handleWizardComplete = (newProfile: UserProfile) => {
+    setProfile(newProfile);
+    setIsWizardOpen(false);
+    localStorage.setItem('wizard_completed_v1', 'true');
+    setActiveTab('accumulation'); // Start them on accumulation to see their assets
+  };
+
+  const handleWizardClose = () => {
+    setIsWizardOpen(false);
+    // Optionally mark as viewed even if skipped, or let it reappear next time. 
+    // Let's mark it as viewed to avoid annoyance.
+    localStorage.setItem('wizard_completed_v1', 'true');
+  };
+
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-slate-950 flex flex-col transition-colors duration-200">
+      <WizardModal
+        isOpen={isWizardOpen}
+        onClose={handleWizardClose}
+        onComplete={handleWizardComplete}
+        currentProfile={profile}
+      />
       <div className="bg-amber-50 dark:bg-amber-950/30 border-b border-amber-200 dark:border-amber-900/50 px-4 py-2 transition-colors">
         <div className="max-w-7xl mx-auto flex items-center justify-center gap-2 text-[10px] md:text-xs font-medium text-amber-900 dark:text-amber-200 text-center uppercase tracking-wider">
           <AlertTriangle className="w-3 h-3 text-amber-600" />
@@ -71,7 +101,11 @@ const App: React.FC = () => {
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex-1">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
           <div className="lg:col-span-4 space-y-6">
-            <InputSection profile={profile} setProfile={setProfile} />
+            <InputSection
+              profile={profile}
+              setProfile={setProfile}
+              onRestartWizard={() => setIsWizardOpen(true)}
+            />
           </div>
 
           <div className="lg:col-span-8">

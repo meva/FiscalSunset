@@ -5,6 +5,7 @@ import { HelpCircle, DollarSign, Briefcase, Activity, TrendingUp, PiggyBank, Rot
 interface InputSectionProps {
   profile: UserProfile;
   setProfile: (profile: UserProfile) => void;
+  onRestartWizard: () => void;
 }
 
 const FormattedNumberInput = ({ value, onChange, className }: { value: number; onChange: (val: number) => void; className?: string; }) => {
@@ -70,7 +71,7 @@ const PercentageInput = ({ value, onChange, className, step = 0.1 }: { value: nu
   return <input type="number" step={step} value={displayValue} onChange={handleChange} onBlur={handleBlur} className={className} />;
 };
 
-const InputSection: React.FC<InputSectionProps> = ({ profile, setProfile }) => {
+const InputSection: React.FC<InputSectionProps> = ({ profile, setProfile, onRestartWizard }) => {
   const handleChange = (field: keyof UserProfile, value: any) => setProfile({ ...profile, [field]: value });
   const handleAssetChange = (field: keyof UserProfile['assets'], value: number) => setProfile({ ...profile, assets: { ...profile.assets, [field]: value } });
   const handleContributionChange = (field: keyof UserProfile['contributions'], value: number) => setProfile({ ...profile, contributions: { ...profile.contributions, [field]: value } });
@@ -93,10 +94,18 @@ const InputSection: React.FC<InputSectionProps> = ({ profile, setProfile }) => {
       {/* Personal Details */}
       <div>
         <div className="flex justify-between items-center mb-4">
-          <h2 className="text-xl font-bold text-slate-800 dark:text-white flex items-center gap-2">
-            <Briefcase className="w-5 h-5 text-blue-600" />
-            About You
-          </h2>
+          <div className="flex items-center gap-3">
+            <h2 className="text-xl font-bold text-slate-800 dark:text-white flex items-center gap-2">
+              <Briefcase className="w-5 h-5 text-blue-600" />
+              About You
+            </h2>
+            <button
+              onClick={onRestartWizard}
+              className="text-xs font-semibold text-blue-600 dark:text-blue-400 hover:text-blue-800 bg-blue-50 dark:bg-blue-900/30 px-2 py-1 rounded-md transition-colors"
+            >
+              Restart Wizard
+            </button>
+          </div>
           {profile.age < profile.baseAge && (
             <div className="flex items-center gap-1 text-xs font-bold text-red-600 bg-red-50 dark:bg-red-900/30 px-2 py-1 rounded-md border border-red-200 dark:border-red-800">
               <AlertTriangle className="w-3 h-3" />
