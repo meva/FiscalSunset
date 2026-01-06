@@ -89,6 +89,32 @@ const StrategyResults: React.FC<StrategyResultsProps> = ({ result, profile, isDa
   return (
     <div className="space-y-6">
 
+      {/* Starting Retirement Balances Summary */}
+      <div className="bg-white dark:bg-slate-900 p-5 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm transition-colors">
+        <h3 className="text-sm font-bold text-slate-800 dark:text-white mb-4 flex items-center gap-2">
+          <Wallet className="w-4 h-4 text-blue-600" />
+          Starting Retirement Balances <span className="text-xs font-normal text-slate-500">(Projected at Age {profile.baseAge})</span>
+        </h3>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <div className="p-3 bg-slate-50 dark:bg-slate-800 rounded-lg border border-slate-100 dark:border-slate-700">
+            <span className="block text-[10px] uppercase font-bold text-slate-500 mb-1">Traditional IRA/401k</span>
+            <span className="text-lg font-bold text-slate-900 dark:text-white">${profile.assets.traditionalIRA.toLocaleString()}</span>
+          </div>
+          <div className="p-3 bg-slate-50 dark:bg-slate-800 rounded-lg border border-slate-100 dark:border-slate-700">
+            <span className="block text-[10px] uppercase font-bold text-slate-500 mb-1">Roth IRA/401k</span>
+            <span className="text-lg font-bold text-slate-900 dark:text-white">${profile.assets.rothIRA.toLocaleString()}</span>
+          </div>
+          <div className="p-3 bg-slate-50 dark:bg-slate-800 rounded-lg border border-slate-100 dark:border-slate-700">
+            <span className="block text-[10px] uppercase font-bold text-slate-500 mb-1">Brokerage</span>
+            <span className="text-lg font-bold text-slate-900 dark:text-white">${profile.assets.brokerage.toLocaleString()}</span>
+          </div>
+          <div className="p-3 bg-slate-50 dark:bg-slate-800 rounded-lg border border-slate-100 dark:border-slate-700">
+            <span className="block text-[10px] uppercase font-bold text-slate-500 mb-1">HSA</span>
+            <span className="text-lg font-bold text-slate-900 dark:text-white">${profile.assets.hsa.toLocaleString()}</span>
+          </div>
+        </div>
+      </div>
+
       {/* High Level Summary Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         <div className="bg-white dark:bg-slate-900 p-4 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm transition-colors">

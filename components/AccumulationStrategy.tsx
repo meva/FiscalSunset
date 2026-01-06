@@ -88,17 +88,10 @@ const AccumulationStrategy: React.FC<AccumulationStrategyProps> = ({ profile, se
     ];
 
     const transitionToRetirement = () => {
-        const p = projectionData[projectionData.length - 1];
-        setProfile({
-            ...profile,
-            age: p.age,
-            assets: {
-                traditionalIRA: isInflationAdjusted ? p.trad : Math.round(p.rawTrad),
-                rothIRA: isInflationAdjusted ? p.roth : Math.round(p.rawRoth),
-                brokerage: isInflationAdjusted ? p.brokerage : Math.round(p.rawBrok),
-                hsa: isInflationAdjusted ? p.hsa : Math.round(p.rawHSA),
-            }
-        });
+        // No longer overwriting the profile. The global "age" (Retirement Age) is already updated 
+        // by the slider via setProfile({ ...profile, age: ... }).
+        // The Withdrawal tab uses the `retirementProfile` computed in App.tsx which projects 
+        // assets to this target age automatically.
         onRetire();
     };
 

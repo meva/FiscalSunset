@@ -30,7 +30,7 @@ export const projectAssets = (
     const contribBrok = annualContribution * (allocation.taxable / 100);
     // Assuming 0% allocated to HSA by default in the simplified Wizard flow, 
     // unless we mapped it. The Wizard currently only has 3 buckets (Def, Taxable, Exempt).
-    // "Exempt" maps to Roth in Wizard usually, but let's check mapping. 
+    // "Exempt" maps to Roth in Wizard 
     // Users can't explicitly allocate to HSA in the Wizard slider currently.
 
     for (let i = 1; i <= yearsToInvest; i++) {

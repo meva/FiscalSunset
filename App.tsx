@@ -9,6 +9,7 @@ import { calculateStrategy, calculateLongevity } from './services/calculationEng
 import { TrendingUp, Calculator, AlertTriangle, BookOpen, Sun, Moon, PiggyBank } from 'lucide-react';
 import Footer from './components/Footer';
 import WizardModal from './components/Wizard/WizardModal';
+import { projectAssets } from './services/projection';
 
 const INITIAL_PROFILE: UserProfile = {
   age: 65, // Retirement Start Age
@@ -30,12 +31,58 @@ const App: React.FC = () => {
   const [isDarkMode, setIsDarkMode] = useState(false);
   const [isWizardOpen, setIsWizardOpen] = useState(false);
 
+  // Computed Retirement Profile
+  // If the user is currently 55 but retiring at 65, we must project their assets
+  // to age 65 before running the withdrawal strategy.
+  const retirementProfile = React.useMemo(() => {
+    // If already retired (or valid check skipped), use current profile
+    if (profile.age <= profile.baseAge) {
+      return profile;
+    }
+
+    // Project assets to retirement age
+    // Project assets to retirement age
+    // Calculate inflated spending need if user provided "Today's Dollars"
+    let projectedSpendingNeed = profile.spendingNeed;
+    if (profile.isSpendingReal && profile.age > profile.baseAge) {
+      projectedSpendingNeed = profile.spendingNeed * Math.pow(1 + profile.assumptions.inflationRate, profile.age - profile.baseAge);
+    }
+
+    const projectedAssets = projectAssets(
+      profile.assets,
+      // Total Annual Contribution
+      (profile.contributions.traditionalIRA + profile.contributions.rothIRA + profile.contributions.brokerage + profile.contributions.hsa),
+      // Virtual Allocation based on contribution proportions
+      {
+        taxDeferred: ((profile.contributions.traditionalIRA) / (profile.contributions.traditionalIRA + profile.contributions.rothIRA + profile.contributions.brokerage + profile.contributions.hsa || 1)) * 100,
+        taxable: ((profile.contributions.brokerage) / (profile.contributions.traditionalIRA + profile.contributions.rothIRA + profile.contributions.brokerage + profile.contributions.hsa || 1)) * 100,
+        taxExempt: ((profile.contributions.rothIRA + profile.contributions.hsa) / (profile.contributions.traditionalIRA + profile.contributions.rothIRA + profile.contributions.brokerage + profile.contributions.hsa || 1)) * 100,
+      },
+      profile.baseAge,
+      profile.age,
+      profile.assumptions
+    );
+
+    return {
+      ...profile,
+      baseAge: profile.age, // The "Current Age" for the withdrawal calculator is the Retirement Age
+      assets: projectedAssets,
+      spendingNeed: projectedSpendingNeed,
+      isSpendingReal: false, // Converted to nominal at retirement start
+      // Zero out contributions for retirement phase
+      contributions: { ...INITIAL_PROFILE.contributions, traditionalIRA: 0, rothIRA: 0, brokerage: 0, hsa: 0 }
+    };
+
+  }, [profile]);
+
+
   useEffect(() => {
-    const sResult = calculateStrategy(profile);
-    const lResult = calculateLongevity(profile, sResult);
+    // Run strategy on the computed RETIREMENT profile
+    const sResult = calculateStrategy(retirementProfile);
+    const lResult = calculateLongevity(retirementProfile, sResult);
     setStrategyResult(sResult);
     setLongevityResult(lResult);
-  }, [profile]);
+  }, [retirementProfile]); // Depend on retirementProfile instead of profile
 
   useEffect(() => {
     // Check if wizard has been completed in this session or previously
@@ -131,7 +178,7 @@ const App: React.FC = () => {
             {strategyResult && longevityResult ? (
               <div className="animate-in fade-in slide-in-from-bottom-2 duration-300">
                 <div className={activeTab === 'withdrawal' ? 'block' : 'hidden'}>
-                  <StrategyResults result={strategyResult} profile={profile} isDarkMode={isDarkMode} />
+                  <StrategyResults result={strategyResult} profile={retirementProfile} isDarkMode={isDarkMode} />
                 </div>
                 <div className={activeTab === 'accumulation' ? 'block' : 'hidden'}>
                   <AccumulationStrategy
@@ -142,7 +189,7 @@ const App: React.FC = () => {
                   />
                 </div>
                 <div className={activeTab === 'longevity' ? 'block' : 'hidden'}>
-                  <LongevityAnalysis longevity={longevityResult} profile={profile} isDarkMode={isDarkMode} />
+                  <LongevityAnalysis longevity={longevityResult} profile={retirementProfile} isDarkMode={isDarkMode} />
                 </div>
                 <div className={activeTab === 'reference' ? 'block' : 'hidden'}>
                   <TaxReference />

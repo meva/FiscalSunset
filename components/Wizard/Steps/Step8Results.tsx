@@ -37,12 +37,9 @@ const Step8Results: React.FC<CheckProps> = ({ data, onComplete, onRestart }) => 
         baseProfile.assumptions
     );
 
-    // 3. Create a profile representing the user AT RETIREMENT
-    // We pass the projected assets. We also MUST fast-forward the baseAge to the retirementAge
-    // so that the main app inputs reflect the "Result" state (Accumulated Assets at Retirement).
-    console.log('DEBUG: baseProfile.age (Retirement Age):', baseProfile.age);
-    console.log('DEBUG: baseProfile.baseAge (Current Age):', baseProfile.baseAge);
-
+    // 4. Run Strategy on Projected Profile for PREVIEW
+    // We create a temporary retirement profile just for the wizard result screen
+    // so the user sees "Success" or "Failure" based on the future projection.
     const retirementProfile = {
         ...baseProfile,
         baseAge: baseProfile.age, // Fast-forward "Current Age" -> "Retirement Age"
@@ -54,11 +51,7 @@ const Step8Results: React.FC<CheckProps> = ({ data, onComplete, onRestart }) => 
             hsa: 0
         }
     };
-    console.log('DEBUG: retirementProfile.baseAge:', retirementProfile.baseAge);
 
-    // 4. Run Strategy on Projected Profile
-    // Note: For the preview calculation here, we use the retirementProfile which is effectively
-    // "Retire Now" at the future age.
     const strategy = calculateStrategy(retirementProfile);
     const longevity = calculateLongevity(retirementProfile, strategy);
     const [confirmRestart, setConfirmRestart] = React.useState(false);
@@ -113,7 +106,7 @@ const Step8Results: React.FC<CheckProps> = ({ data, onComplete, onRestart }) => 
             <div className="flex flex-col gap-3 pt-2 max-w-md mx-auto">
                 {/* Primary Actions */}
                 <button
-                    onClick={() => onComplete(retirementProfile, 'withdrawal')}
+                    onClick={() => onComplete(baseProfile, 'withdrawal')}
                     className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-xl shadow-lg hover:shadow-xl hover:scale-[1.02] transition-all flex items-center justify-center gap-2"
                 >
                     Review Withdrawal Strategy
