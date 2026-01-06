@@ -7,6 +7,7 @@ import AccumulationStrategy from './components/AccumulationStrategy';
 import TaxReference from './components/TaxReference';
 import { calculateStrategy, calculateLongevity } from './services/calculationEngine';
 import { TrendingUp, Calculator, AlertTriangle, BookOpen, Sun, Moon, PiggyBank } from 'lucide-react';
+import Footer from './components/Footer';
 
 const INITIAL_PROFILE: UserProfile = {
   age: 65, // Retirement Start Age
@@ -117,6 +118,7 @@ const App: React.FC = () => {
           </div>
         </div>
       </main>
+      <Footer />
     </div>
   );
 };

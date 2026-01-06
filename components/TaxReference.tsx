@@ -118,7 +118,7 @@ const TaxReference: React.FC = () => {
                             <div>
                                 <h4 className="font-semibold text-slate-800 dark:text-white">Enter Your Details</h4>
                                 <p className="text-sm text-slate-600 dark:text-slate-400">
-                                    Use the left panel to input your age, filing status, current assets, annual contributions, income sources, and market assumptions.
+                                    Use the left panel to input your current age, retirement age, spending needs in retirement, filing status, current assets, annual contributions, income sources while in retirement, and market assumptions.
                                 </p>
                             </div>
                         </div>
