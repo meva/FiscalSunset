@@ -13,6 +13,10 @@ interface StrategyResultsProps {
 const MAX_DAILY_REQUESTS = 5;
 const STORAGE_KEY = 'retiresmart_ai_usage';
 
+// Helper function to format currency values consistently (rounds to whole dollars)
+const formatCurrency = (value: number): string => `$${Math.round(value).toLocaleString()}`;
+
+
 const StrategyResults: React.FC<StrategyResultsProps> = ({ result, profile, isDarkMode }) => {
   const [aiAdvice, setAiAdvice] = useState<string | null>(null);
   const [loadingAi, setLoadingAi] = useState(false);
@@ -102,43 +106,43 @@ const StrategyResults: React.FC<StrategyResultsProps> = ({ result, profile, isDa
             All figures shown are in nominal (future) dollars at retirement. Values reflect expected future amounts and are not adjusted for inflation.
           </p>
         </div>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
           <div className="p-3 bg-slate-50 dark:bg-slate-800 rounded-lg border border-slate-100 dark:border-slate-700">
             <span className="block text-[10px] uppercase font-bold text-slate-500 mb-1">Traditional IRA/401k</span>
-            <span className="text-lg font-bold text-slate-900 dark:text-white">${profile.assets.traditionalIRA.toLocaleString()}</span>
+            <span className="text-lg font-bold text-slate-900 dark:text-white">{formatCurrency(profile.assets.traditionalIRA)}</span>
           </div>
           <div className="p-3 bg-slate-50 dark:bg-slate-800 rounded-lg border border-slate-100 dark:border-slate-700">
             <span className="block text-[10px] uppercase font-bold text-slate-500 mb-1">Roth IRA/401k</span>
-            <span className="text-lg font-bold text-slate-900 dark:text-white">${profile.assets.rothIRA.toLocaleString()}</span>
+            <span className="text-lg font-bold text-slate-900 dark:text-white">{formatCurrency(profile.assets.rothIRA)}</span>
           </div>
           <div className="p-3 bg-slate-50 dark:bg-slate-800 rounded-lg border border-slate-100 dark:border-slate-700">
             <span className="block text-[10px] uppercase font-bold text-slate-500 mb-1">Brokerage</span>
-            <span className="text-lg font-bold text-slate-900 dark:text-white">${profile.assets.brokerage.toLocaleString()}</span>
+            <span className="text-lg font-bold text-slate-900 dark:text-white">{formatCurrency(profile.assets.brokerage)}</span>
           </div>
           <div className="p-3 bg-slate-50 dark:bg-slate-800 rounded-lg border border-slate-100 dark:border-slate-700">
             <span className="block text-[10px] uppercase font-bold text-slate-500 mb-1">HSA</span>
-            <span className="text-lg font-bold text-slate-900 dark:text-white">${profile.assets.hsa.toLocaleString()}</span>
+            <span className="text-lg font-bold text-slate-900 dark:text-white">{formatCurrency(profile.assets.hsa)}</span>
           </div>
         </div>
       </div>
 
       {/* High Level Summary Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <div className="bg-white dark:bg-slate-900 p-4 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm transition-colors">
           <h3 className="text-slate-500 dark:text-slate-400 text-xs font-bold uppercase">Spending (Net)</h3>
-          <p className="text-xl font-bold text-slate-900 dark:text-white">${result.nominalSpendingNeeded.toLocaleString()}</p>
+          <p className="text-xl font-bold text-slate-900 dark:text-white">{formatCurrency(result.nominalSpendingNeeded)}</p>
           <div className="flex items-center mt-1 text-[10px] text-slate-500">Required net cash flow</div>
         </div>
 
         <div className="bg-white dark:bg-slate-900 p-4 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm transition-colors border-l-4 border-l-red-500">
           <h3 className="text-slate-500 dark:text-slate-400 text-xs font-bold uppercase">Est. Fed Tax</h3>
-          <p className="text-xl font-bold text-red-600 dark:text-red-400">${result.estimatedFederalTax.toLocaleString()}</p>
+          <p className="text-xl font-bold text-red-600 dark:text-red-400">{formatCurrency(result.estimatedFederalTax)}</p>
           <div className="flex items-center mt-1 text-[10px] text-slate-500">Effective Rate: {(result.effectiveTaxRate * 100).toFixed(1)}%</div>
         </div>
 
         <div className="bg-white dark:bg-slate-900 p-4 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm transition-colors border-l-4 border-l-blue-500">
           <h3 className="text-slate-500 dark:text-slate-400 text-xs font-bold uppercase">Gross Withdrawal</h3>
-          <p className="text-xl font-bold text-blue-600 dark:text-blue-400">${result.totalWithdrawal.toLocaleString()}</p>
+          <p className="text-xl font-bold text-blue-600 dark:text-blue-400">{formatCurrency(result.totalWithdrawal)}</p>
           <p className="text-[10px] text-slate-500 mt-1">Portfolio + Benefits Needed</p>
         </div>
 
@@ -161,22 +165,22 @@ const StrategyResults: React.FC<StrategyResultsProps> = ({ result, profile, isDa
           <ShieldAlert className="w-4 h-4 text-amber-500" />
           <h4 className="text-sm font-bold">Tax Calculation Breakdown</h4>
         </div>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-xs">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 text-xs">
           <div className="p-2 bg-slate-50 dark:bg-slate-800 rounded">
             <span className="text-slate-500">Standard Deduction</span>
-            <p className="font-bold text-slate-900 dark:text-white">${result.standardDeduction.toLocaleString()}</p>
+            <p className="font-bold text-slate-900 dark:text-white">{formatCurrency(result.standardDeduction)}</p>
           </div>
           <div className="p-2 bg-slate-50 dark:bg-slate-800 rounded">
             <span className="text-slate-500">Taxable Soc. Security</span>
-            <p className="font-bold text-slate-900 dark:text-white">${result.taxableSocialSecurity.toLocaleString()}</p>
+            <p className="font-bold text-slate-900 dark:text-white">{formatCurrency(result.taxableSocialSecurity)}</p>
           </div>
           <div className="p-2 bg-slate-50 dark:bg-slate-800 rounded">
             <span className="text-slate-500">Provisional Income</span>
-            <p className="font-bold text-slate-900 dark:text-white">${result.provisionalIncome.toLocaleString()}</p>
+            <p className="font-bold text-slate-900 dark:text-white">{formatCurrency(result.provisionalIncome)}</p>
           </div>
           <div className="p-2 bg-slate-50 dark:bg-slate-800 rounded">
             <span className="text-slate-500">Mandatory RMD</span>
-            <p className="font-bold text-slate-900 dark:text-white">${result.rmdAmount.toLocaleString()}</p>
+            <p className="font-bold text-slate-900 dark:text-white">{formatCurrency(result.rmdAmount)}</p>
           </div>
         </div>
       </div>
@@ -191,17 +195,17 @@ const StrategyResults: React.FC<StrategyResultsProps> = ({ result, profile, isDa
             <ArrowRightLeft className="w-4 h-4 text-purple-500" />
             <h4 className="text-sm font-bold">Roth Conversion Opportunity</h4>
             {result.rothConversionDetail.inTorpedoZone && (
-              <span className="text-[10px] bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400 px-2 py-0.5 rounded-full font-medium">
+              <span className="text-[10px] bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 px-2 py-0.5 rounded-full font-medium">
                 SS Torpedo Active
               </span>
             )}
           </div>
 
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 mb-4">
             <div className="p-2 bg-purple-50 dark:bg-purple-950/30 rounded">
               <span className="text-slate-500 text-[10px]">Recommended Conversion</span>
               <p className={`font-bold ${result.rothConversionAmount > 0 ? 'text-purple-700 dark:text-purple-400' : 'text-slate-400'}`}>
-                ${result.rothConversionAmount.toLocaleString()}
+                {formatCurrency(result.rothConversionAmount)}
               </p>
             </div>
             <div className="p-2 bg-slate-50 dark:bg-slate-800 rounded">
@@ -222,7 +226,7 @@ const StrategyResults: React.FC<StrategyResultsProps> = ({ result, profile, isDa
             <div className="p-2 bg-slate-50 dark:bg-slate-800 rounded">
               <span className="text-slate-500 text-[10px]">Traditional IRA Balance</span>
               <p className="font-bold text-slate-900 dark:text-white">
-                ${profile.assets.traditionalIRA.toLocaleString()}
+                {formatCurrency(profile.assets.traditionalIRA)}
               </p>
             </div>
           </div>
@@ -265,9 +269,9 @@ const StrategyResults: React.FC<StrategyResultsProps> = ({ result, profile, isDa
                       <p className="text-slate-500 text-[10px]">{c.description}</p>
                     </div>
                     <div className="text-right">
-                      {c.headroom > 0 && <span className="text-slate-600 dark:text-slate-400">Headroom: ${c.headroom.toLocaleString()}</span>}
+                      {c.headroom > 0 && <span className="text-slate-600 dark:text-slate-400">Headroom: {formatCurrency(c.headroom)}</span>}
                       {c.annualCost && c.annualCost > 0 && (
-                        <p className="text-red-500 text-[10px]">IRMAA: ${c.annualCost.toLocaleString()}/yr if crossed</p>
+                        <p className="text-red-500 text-[10px]">IRMAA: {formatCurrency(c.annualCost)}/yr if crossed</p>
                       )}
                     </div>
                   </div>
@@ -284,15 +288,22 @@ const StrategyResults: React.FC<StrategyResultsProps> = ({ result, profile, isDa
             <Wallet className="w-5 h-5 text-blue-500" />
             Gross Income Composition
           </h3>
-          <div className="flex-1">
+          <div className="flex-1 min-h-[250px]">
             <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={chartData} layout="vertical" margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
+              <BarChart data={chartData} layout="vertical" margin={{ top: 5, right: 20, left: 5, bottom: 5 }}>
                 <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke={gridColor} />
-                <XAxis type="number" tickFormatter={(val) => `$${val / 1000}k`} stroke={axisColor} />
-                <YAxis dataKey="name" type="category" width={140} style={{ fontSize: '11px' }} stroke={axisColor} />
+                <XAxis type="number" tickFormatter={(val) => `$${val / 1000}k`} stroke={axisColor} tick={{ fontSize: 10 }} />
+                <YAxis
+                  dataKey="name"
+                  type="category"
+                  width={100}
+                  tick={{ fontSize: 10 }}
+                  stroke={axisColor}
+                  tickFormatter={(value) => value.length > 15 ? value.substring(0, 12) + '...' : value}
+                />
                 <Tooltip
-                  formatter={(value: number) => `$${value.toLocaleString()}`}
-                  contentStyle={{ backgroundColor: tooltipBg, borderColor: gridColor, color: tooltipText }}
+                  formatter={(value: number) => formatCurrency(value)}
+                  contentStyle={{ backgroundColor: tooltipBg, borderColor: gridColor, color: tooltipText, fontSize: '12px' }}
                 />
                 <Bar dataKey="value" fill="#3b82f6" radius={[0, 4, 4, 0]}>
                   {chartData.map((entry, index) => (
@@ -317,7 +328,7 @@ const StrategyResults: React.FC<StrategyResultsProps> = ({ result, profile, isDa
                 <div className="flex-1">
                   <div className="flex justify-between items-center w-full">
                     <span className="text-sm font-semibold text-slate-800 dark:text-slate-200">{step.source}</span>
-                    <span className="text-sm font-bold text-blue-700 dark:text-blue-400">${step.amount.toLocaleString()}</span>
+                    <span className="text-sm font-bold text-blue-700 dark:text-blue-400">{formatCurrency(step.amount)}</span>
                   </div>
                   <p className="text-[11px] text-slate-600 dark:text-slate-400 mt-1">{step.description}</p>
                 </div>

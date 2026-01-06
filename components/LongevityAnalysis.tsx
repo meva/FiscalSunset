@@ -86,8 +86,10 @@ const LongevityAnalysis: React.FC<LongevityAnalysisProps> = ({ longevity, profil
               <CartesianGrid strokeDasharray="3 3" vertical={false} stroke={gridColor} />
               <XAxis
                 dataKey="age"
-                label={{ value: 'Age', position: 'insideBottom', offset: -10, fill: axisColor }}
+                label={{ value: 'Age', position: 'insideBottom', offset: -10, fill: axisColor, fontSize: 12 }}
                 stroke={axisColor}
+                tick={{ fontSize: 11 }}
+                interval="preserveStartEnd"
               />
               <YAxis
                 tickFormatter={(val) => `$${val / 1000}k`}
@@ -98,14 +100,14 @@ const LongevityAnalysis: React.FC<LongevityAnalysisProps> = ({ longevity, profil
                 content={({ active, payload, label }) => {
                   if (active && payload && payload.length) {
                     return (
-                      <div style={{ backgroundColor: tooltipBg, borderColor: gridColor, color: tooltipText }} className="p-3 border rounded-lg shadow-lg text-xs">
-                        <p className="font-bold mb-2">Age {label}</p>
-                        <div className="space-y-1">
+                      <div style={{ backgroundColor: tooltipBg, borderColor: gridColor, color: tooltipText }} className="p-2 sm:p-3 border rounded-lg shadow-lg text-[10px] sm:text-xs max-w-[200px]">
+                        <p className="font-bold mb-1">Age {label}</p>
+                        <div className="space-y-0.5">
                           <p style={{ color: '#3b82f6' }}>
-                            Portfolio Balance: <span className="font-bold">${Math.round(payload[0].value as number).toLocaleString()}</span>
+                            Balance: <span className="font-bold">${Math.round(payload[0].value as number).toLocaleString()}</span>
                           </p>
                           <p style={{ color: isDarkMode ? '#fca5a5' : '#ef4444' }}>
-                            Annual Withdrawal: <span className="font-bold">${Math.round(payload[0].payload.withdrawal).toLocaleString()}</span>
+                            Withdrawal: <span className="font-bold">${Math.round(payload[0].payload.withdrawal).toLocaleString()}</span>
                           </p>
                         </div>
                       </div>

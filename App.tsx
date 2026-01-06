@@ -156,23 +156,29 @@ const App: React.FC = () => {
           </div>
 
           <div className="lg:col-span-8">
-            <div className="flex space-x-1 bg-slate-200 dark:bg-slate-800 p-1 rounded-xl mb-6 w-full overflow-x-auto">
-              {[
-                { id: 'accumulation', icon: PiggyBank, label: 'Accumulation' },
-                { id: 'withdrawal', icon: Calculator, label: 'Withdrawal' },
-                { id: 'longevity', icon: TrendingUp, label: 'Longevity' },
-                { id: 'reference', icon: BookOpen, label: 'Reference' }
-              ].map(tab => (
-                <button
-                  key={tab.id}
-                  onClick={() => setActiveTab(tab.id as any)}
-                  className={`flex-1 flex items-center justify-center gap-2 px-3 py-2 text-sm font-bold rounded-lg transition-all whitespace-nowrap ${activeTab === tab.id ? 'bg-white dark:bg-slate-700 text-blue-700 dark:text-blue-300 shadow-sm' : 'text-slate-600 dark:text-slate-400 hover:bg-white/50'
-                    }`}
-                >
-                  <tab.icon className="w-4 h-4" />
-                  <span>{tab.label}</span>
-                </button>
-              ))}
+            {/* Tab Navigation with mobile scroll indicator */}
+            <div className="relative mb-6">
+              <div className="flex space-x-1 bg-slate-200 dark:bg-slate-800 p-1 rounded-xl w-full overflow-x-auto scrollbar-hide">
+                {[
+                  { id: 'accumulation', icon: PiggyBank, label: 'Accumulation' },
+                  { id: 'withdrawal', icon: Calculator, label: 'Withdrawal' },
+                  { id: 'longevity', icon: TrendingUp, label: 'Longevity' },
+                  { id: 'reference', icon: BookOpen, label: 'Reference' }
+                ].map(tab => (
+                  <button
+                    key={tab.id}
+                    onClick={() => setActiveTab(tab.id as any)}
+                    className={`flex-1 flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-bold rounded-lg transition-all whitespace-nowrap min-w-[100px] ${activeTab === tab.id ? 'bg-white dark:bg-slate-700 text-blue-700 dark:text-blue-300 shadow-sm' : 'text-slate-600 dark:text-slate-400 hover:bg-white/50'
+                      }`}
+                  >
+                    <tab.icon className="w-4 h-4" />
+                    <span className="hidden sm:inline">{tab.label}</span>
+                    <span className="sm:hidden text-xs">{tab.label}</span>
+                  </button>
+                ))}
+              </div>
+              {/* Scroll fade indicator for mobile */}
+              <div className="absolute right-0 top-0 bottom-0 w-8 bg-gradient-to-l from-slate-200 dark:from-slate-800 to-transparent pointer-events-none rounded-r-xl md:hidden" />
             </div>
 
             {strategyResult && longevityResult ? (
