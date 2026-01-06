@@ -179,10 +179,10 @@ const AccumulationStrategy: React.FC<AccumulationStrategyProps> = ({ profile, se
                             </defs>
                             <CartesianGrid strokeDasharray="3 3" vertical={false} stroke={gridColor} />
                             <XAxis
-                                dataKey="year"
+                                dataKey="age"
                                 stroke={axisColor}
                                 tick={{ fontSize: 12 }}
-                                label={{ value: 'Years from Now', position: 'insideBottom', offset: -10, fill: axisColor, fontSize: 12 }}
+                                label={{ value: 'Age', position: 'insideBottom', offset: -10, fill: axisColor, fontSize: 12 }}
                             />
                             <YAxis
                                 tickFormatter={(v) => `$${v >= 1000000 ? (v / 1000000).toFixed(1) + 'M' : (v / 1000).toFixed(0) + 'k'}`}
