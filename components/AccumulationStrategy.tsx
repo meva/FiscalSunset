@@ -190,8 +190,10 @@ const AccumulationStrategy: React.FC<AccumulationStrategyProps> = ({ profile, se
                                 tick={{ fontSize: 12 }}
                             />
                             <Tooltip
-                                contentStyle={{ backgroundColor: tooltipBg, borderColor: gridColor, color: tooltipText, borderRadius: '8px', fontSize: '12px' }}
+                                contentStyle={{ backgroundColor: tooltipBg, borderColor: gridColor, color: tooltipText, borderRadius: '10px', fontSize: '12px' }}
                                 formatter={(value: number) => `$${value.toLocaleString()}`}
+                                labelFormatter={(label) => `Age ${label}`}
+                                labelStyle={{ fontWeight: 'bold', color: tooltipText }}
                             />
                             <Area type="monotone" dataKey="trad" stackId="1" stroke={ACCOUNT_COLORS.trad} fill={ACCOUNT_COLORS.trad} fillOpacity={0.6} name="Trad IRA/401k" />
                             <Area type="monotone" dataKey="roth" stackId="1" stroke={ACCOUNT_COLORS.roth} fill={ACCOUNT_COLORS.roth} fillOpacity={0.6} name="Roth IRA/401k" />

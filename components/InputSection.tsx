@@ -95,7 +95,7 @@ const InputSection: React.FC<InputSectionProps> = ({ profile, setProfile }) => {
         <div className="flex justify-between items-center mb-4">
           <h2 className="text-xl font-bold text-slate-800 dark:text-white flex items-center gap-2">
             <Briefcase className="w-5 h-5 text-blue-600" />
-            Personal Details
+            About You
           </h2>
           {profile.age < profile.baseAge && (
             <div className="flex items-center gap-1 text-xs font-bold text-red-600 bg-red-50 dark:bg-red-900/30 px-2 py-1 rounded-md border border-red-200 dark:border-red-800">
@@ -176,7 +176,7 @@ const InputSection: React.FC<InputSectionProps> = ({ profile, setProfile }) => {
       <div>
         <h2 className={headerClass}>
           <DollarSign className="w-5 h-5 text-green-600" />
-          Current Assets (Portfolio)
+          Assets (Portfolio)
         </h2>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {[
@@ -233,7 +233,7 @@ const InputSection: React.FC<InputSectionProps> = ({ profile, setProfile }) => {
       <div>
         <h2 className={headerClass}>
           <Activity className="w-5 h-5 text-purple-600" />
-          Income Sources (Annual)
+          Income (Annual) While in Retirement
         </h2>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
