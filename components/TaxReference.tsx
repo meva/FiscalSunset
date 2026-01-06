@@ -96,7 +96,7 @@ const TaxReference: React.FC = () => {
                     <h1 className="text-2xl font-bold">Reference Guide</h1>
                 </div>
                 <p className="text-blue-100 text-sm">
-                    Learn how RetireSmart works, understand the tax optimization strategies, and reference the 2025 tax rules used in all calculations.
+                    Learn how RetireSmart works, understand the tax optimization strategies, and reference the 2026 tax rules used in all calculations.
                 </p>
             </div>
 
@@ -443,9 +443,9 @@ const TaxReference: React.FC = () => {
                 </div>
             </AccordionSection>
 
-            {/* 2025 Tax Rules */}
+            {/* 2026 Tax Rules */}
             <AccordionSection
-                title="2025 Tax Brackets & Rules"
+                title="2026 Tax Brackets & Rules"
                 icon={<Table className="w-5 h-5" />}
                 accentColor="amber"
             >
@@ -680,7 +680,7 @@ const TaxReference: React.FC = () => {
                     </div>
 
                     <p className="text-center text-sm text-slate-500 dark:text-slate-400 pt-2">
-                        Made with <Heart className="w-4 h-4 inline text-rose-500" /> and AI in 2025
+                        Made with <Heart className="w-4 h-4 inline text-rose-500" /> and AI in 2026
                     </p>
                 </div>
             </AccordionSection>
