@@ -103,7 +103,7 @@ const InputSection: React.FC<InputSectionProps> = ({ profile, setProfile, onRest
               onClick={onRestartWizard}
               className="text-xs font-semibold text-blue-600 dark:text-blue-400 hover:text-blue-800 bg-blue-50 dark:bg-blue-900/30 px-2 py-1 rounded-md transition-colors"
             >
-              Restart Wizard
+              Restart Guided Wizard
             </button>
           </div>
           {profile.age < profile.baseAge && (

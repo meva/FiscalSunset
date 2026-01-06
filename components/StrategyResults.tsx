@@ -95,6 +95,13 @@ const StrategyResults: React.FC<StrategyResultsProps> = ({ result, profile, isDa
           <Wallet className="w-4 h-4 text-blue-600" />
           Starting Retirement Balances <span className="text-xs font-normal text-slate-500">(Projected at Age {profile.baseAge})</span>
         </h3>
+        {/* Nominal Values Disclaimer */}
+        <div className="flex items-start gap-2 p-3 mb-4 bg-blue-50 dark:bg-blue-950/30 border border-blue-100 dark:border-blue-900 rounded-lg">
+          <Info className="w-4 h-4 text-blue-500 mt-0.5 shrink-0" />
+          <p className="text-xs text-slate-600 dark:text-slate-400">
+            All figures shown are in nominal (future) dollars at retirement. Values reflect expected future amounts and are not adjusted for inflation.
+          </p>
+        </div>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           <div className="p-3 bg-slate-50 dark:bg-slate-800 rounded-lg border border-slate-100 dark:border-slate-700">
             <span className="block text-[10px] uppercase font-bold text-slate-500 mb-1">Traditional IRA/401k</span>

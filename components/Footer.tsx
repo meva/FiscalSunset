@@ -8,13 +8,13 @@ const Footer: React.FC = () => {
                 <div className="flex flex-col md:flex-row items-center justify-between gap-4">
                     <div className="flex items-center gap-2 text-slate-500 dark:text-slate-400">
                         <ShieldCheck className="w-5 h-5 text-green-600 dark:text-green-500" />
-                        <span className="text-sm font-medium">No Data is Stored on Our Servers</span>
+                        <span className="text-sm font-medium">No Data is Stored on Our Servers. All calculations are performed locally in your browser.</span>
                     </div>
 
 
                 </div>
                 <div className="mt-4 text-center text-[10px] text-slate-400 dark:text-slate-600">
-                    © {new Date().getFullYear()} RetireSmart. All calculations are performed locally in your browser.
+                    © {new Date().getFullYear()} RetireSmart.
                 </div>
             </div>
         </footer>
