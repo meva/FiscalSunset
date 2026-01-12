@@ -27,3 +27,8 @@ gcpdeploy.md
 .env*
 gcpdeploy.md
 deploy.sh
+
+# Ignore build and release folders
+release/
+dist-electron/
+dist/
