@@ -69,13 +69,13 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose, apiKey, 
                             <Key className="w-4 h-4 text-slate-400 absolute left-3 top-3" />
                         </div>
                         <p className="text-xs text-slate-500 dark:text-slate-400">
-                            Your key is stored locally on your device and never sent to our servers. Be sure to enable the key for Gemini API usage.
+                            Your key is stored locally on your device and never sent to our servers. Be sure to enable the key for Gemini API usage. <a href="https://ai.google.dev/gemini-api/docs/api-key" target="_blank" rel="noopener noreferrer" className="text-blue-600 dark:text-blue-400 hover:underline">Get an API key here</a>.
                         </p>
                         <button
                             onClick={handleSave}
                             className={`w-full flex items-center justify-center gap-2 py-2 rounded-lg font-medium text-sm transition-all ${saved
-                                    ? 'bg-green-100 text-green-700 border border-green-200 dark:bg-green-900/30 dark:text-green-400 dark:border-green-800'
-                                    : 'bg-slate-900 text-white hover:bg-slate-800 dark:bg-white dark:text-slate-900 dark:hover:bg-slate-200'
+                                ? 'bg-green-100 text-green-700 border border-green-200 dark:bg-green-900/30 dark:text-green-400 dark:border-green-800'
+                                : 'bg-slate-900 text-white hover:bg-slate-800 dark:bg-white dark:text-slate-900 dark:hover:bg-slate-200'
                                 }`}
                         >
                             {saved ? <><Check className="w-4 h-4" /> Saved</> : <><Save className="w-4 h-4" /> Save API Key</>}
