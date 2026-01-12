@@ -1,13 +1,19 @@
 {
-  "name": "retiresmart:-tax-efficient-withdrawal-strategist",
+  "name": "retiresmart-tax-efficient-withdrawal-strategist",
+  "productName": "RetireSmart",
+  "description": "Tax-efficient withdrawal strategist for retirement planning",
+  "author": "RetireSmart Team",
   "private": true,
   "version": "0.0.0",
   "type": "module",
+  "main": "dist-electron/main.js",
   "scripts": {
     "dev": "vite",
-    "build": "vite build",
+    "build": "tsc && vite build",
     "preview": "vite preview",
-    "start": "serve -s dist -l $PORT"
+    "start": "serve -s dist -l $PORT",
+    "electron": "vite",
+    "electron:build": "vite build && electron-builder"
   },
   "dependencies": {
     "@google/genai": "^1.34.0",
@@ -20,7 +26,30 @@
   "devDependencies": {
     "@types/node": "^22.14.0",
     "@vitejs/plugin-react": "^5.0.0",
+    "concurrently": "^9.2.1",
+    "electron": "^39.2.7",
+    "electron-builder": "^26.4.0",
     "typescript": "~5.8.2",
-    "vite": "^6.2.0"
+    "vite": "^6.2.0",
+    "vite-plugin-electron": "^0.29.0",
+    "vite-plugin-electron-renderer": "^0.14.6",
+    "wait-on": "^9.0.3"
+  },
+  "build": {
+    "appId": "com.retiresmart.app",
+    "productName": "RetireSmart",
+    "directories": {
+      "output": "release"
+    },
+    "mac": {
+      "target": "dmg"
+    },
+    "win": {
+      "target": "nsis"
+    },
+    "files": [
+      "dist/**/*",
+      "dist-electron/**/*"
+    ]
   }
 }
