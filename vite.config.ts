@@ -12,7 +12,7 @@ export default defineConfig(({ mode }) => {
     },
     plugins: [
       react(),
-      electron({
+      mode !== 'web' && electron({
         main: {
           entry: 'electron/main.ts',
         },
@@ -20,7 +20,7 @@ export default defineConfig(({ mode }) => {
           input: 'electron/preload.ts',
         },
       }),
-    ],
+    ].filter(Boolean),
     define: {
       // API Key is now handled via settings/Dexie, not environment variables
     },

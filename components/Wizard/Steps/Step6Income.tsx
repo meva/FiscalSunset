@@ -12,7 +12,10 @@ const Step6Income: React.FC<CheckProps> = ({ data, update }) => {
     const income = data.futureIncome || { socialSecurity: 0, pension: 0 };
 
     // Local state for formatted inputs
-    const [ssDisplay, setSsDisplay] = React.useState((income.socialSecurity || 0).toLocaleString());
+    // Initialize monthly SS display by dividing annual amount by 12
+    const [ssDisplay, setSsDisplay] = React.useState(
+        income.socialSecurity ? Math.round(income.socialSecurity / 12).toLocaleString() : '0'
+    );
     const [pensionDisplay, setPensionDisplay] = React.useState((income.pension || 0).toLocaleString());
 
     const handleDisplayChange = (
@@ -36,10 +39,14 @@ const Step6Income: React.FC<CheckProps> = ({ data, update }) => {
         if (!/^\d*$/.test(raw)) return;
 
         setter(Number(raw).toLocaleString());
+
+        // If updating Social Security, convert monthly input to annual for the state
+        const valueToSave = field === 'socialSecurity' ? Number(raw) * 12 : Number(raw);
+
         update({
             futureIncome: {
                 ...income,
-                [field]: Number(raw)
+                [field]: valueToSave
             }
         });
     };
@@ -59,9 +66,9 @@ const Step6Income: React.FC<CheckProps> = ({ data, update }) => {
             <div className="max-w-md mx-auto space-y-6 pt-4">
                 <div>
                     <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
-                        Estimated Annual Social Security
+                        Estimated Monthly Social Security
                     </label>
-                    <div className="relative">
+                    <div className="relative mb-2">
                         <span className="absolute left-4 top-1/2 transform -translate-y-1/2 text-slate-400 font-bold">$</span>
                         <input
                             type="text"
@@ -71,6 +78,9 @@ const Step6Income: React.FC<CheckProps> = ({ data, update }) => {
                             placeholder="0"
                         />
                     </div>
+                    <p className="text-sm text-slate-500 dark:text-slate-400">
+                        Need an estimate? Visit <a href="https://www.ssa.gov/prepare/get-benefits-estimate" target="_blank" rel="noopener noreferrer" className="text-purple-600 hover:text-purple-700 underline">ssa.gov/prepare/get-benefits-estimate</a>
+                    </p>
                 </div>
 
                 <div>
