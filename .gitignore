@@ -27,9 +27,3 @@ gcpdeploy.md
 .env*
 gcpdeploy.md
 deploy.sh
-
-
-
-# local install
-dist-electron
-release

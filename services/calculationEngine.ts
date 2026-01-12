@@ -259,8 +259,8 @@ export const calculateLongevity = (profile: UserProfile, strategy: StrategyResul
     const age = profile.age + i;
     projection.push({ age, year: i, totalAssets: Math.max(0, runningAssets), withdrawal: currentDraw, isDepleted: runningAssets <= 0 });
     if (runningAssets <= 0 && !depletionAge) depletionAge = age;
-    runningAssets = runningAssets * (1 + profile.assumptions.rateOfReturn) - currentDraw;
-    currentDraw *= (1 + profile.assumptions.inflationRate);
+    runningAssets = runningAssets * (1 + profile.assumptions.rateOfReturnInRetirement) - currentDraw;
+    currentDraw *= (1 + profile.assumptions.inflationRateInRetirement);
   }
 
   return { projection, depletionAge, initialWithdrawalRate, sustainable: initialWithdrawalRate <= 0.05 };

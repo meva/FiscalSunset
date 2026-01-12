@@ -128,7 +128,7 @@ const LongevityAnalysis: React.FC<LongevityAnalysisProps> = ({ longevity, profil
           </ResponsiveContainer>
         </div>
         <div className="mt-4 text-xs text-slate-500 dark:text-slate-400 bg-slate-50 dark:bg-slate-800 p-3 rounded-lg border border-slate-100 dark:border-slate-700 transition-colors">
-          <strong>Assumptions:</strong> {(profile.assumptions.rateOfReturn * 100).toFixed(1)}% Annual Investment Return, {(profile.assumptions.inflationRate * 100).toFixed(1)}% Inflation on expenses.
+          <strong>Assumptions:</strong> {(profile.assumptions.rateOfReturnInRetirement * 100).toFixed(1)}% Annual Investment Return, {(profile.assumptions.inflationRateInRetirement * 100).toFixed(1)}% Inflation on expenses.
           <br />
           This projection assumes spending needs increase with inflation while fixed income (Social Security) stays flat or grows slower (simplified model).
         </div>

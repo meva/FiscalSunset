@@ -33,6 +33,8 @@ export interface IncomeProfile {
 export interface MarketAssumptions {
   inflationRate: number;
   rateOfReturn: number;
+  inflationRateInRetirement: number;
+  rateOfReturnInRetirement: number;
 }
 
 export interface UserProfile {

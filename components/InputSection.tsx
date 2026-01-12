@@ -291,11 +291,11 @@ const InputSection: React.FC<InputSectionProps> = ({ profile, setProfile, onRest
         </div>
       </div>
 
-      {/* Market Assumptions */}
+      {/* Market Assumptions (Accumulation) */}
       <div>
         <h2 className={headerClass}>
           <TrendingUp className="w-5 h-5 text-orange-600" />
-          Market Assumptions
+          Market Assumptions (Accumulation)
         </h2>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
@@ -311,6 +311,32 @@ const InputSection: React.FC<InputSectionProps> = ({ profile, setProfile, onRest
             <PercentageInput
               value={profile.assumptions.inflationRate}
               onChange={(val) => handleAssumptionChange('inflationRate', val)}
+              className={inputClass}
+            />
+          </div>
+        </div>
+      </div>
+
+      {/* Market Assumptions (Retirement) */}
+      <div>
+        <h2 className={headerClass}>
+          <TrendingUp className="w-5 h-5 text-teal-600" />
+          Market Assumptions (Retirement)
+        </h2>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label className={labelClass}>Annual Return (%)</label>
+            <PercentageInput
+              value={profile.assumptions.rateOfReturnInRetirement}
+              onChange={(val) => handleAssumptionChange('rateOfReturnInRetirement', val)}
+              className={inputClass}
+            />
+          </div>
+          <div>
+            <label className={labelClass}>Inflation (%)</label>
+            <PercentageInput
+              value={profile.assumptions.inflationRateInRetirement}
+              onChange={(val) => handleAssumptionChange('inflationRateInRetirement', val)}
               className={inputClass}
             />
           </div>
