@@ -62,6 +62,8 @@ The tool prioritizes tax-efficient withdrawals by:
 - Dark/Light mode toggle
 - Interactive charts powered by Recharts
 - Real-time calculation updates
+- **Local Persistence** - Auto-saves your data to your device (IndexedDB)
+- **Privacy First** - Zero-data collection; everything runs client-side
 
 ## 🚀 Demo
 
@@ -90,22 +92,12 @@ cd retiresmart-tax-efficient-withdrawal-strategist
 npm install
 ```
 
-### Configure Environment Variables
+### API Key Configuration
 
-1. Copy the example environment file or create a new one:
-
-```bash
-# Create environment file
-touch .env.local
-```
-
-2. Add your Gemini API key (optional - only needed for AI insights):
-
-```env
-GEMINI_API_KEY=your_gemini_api_key_here
-```
-
-> **Note:** The application works fully without the API key - the AI advisor feature will simply be disabled.
+The application uses Google Gemini for optional AI insights. 
+- You do **not** need an environment variable.
+- Simply click the **Settings (Gear Icon)** in the top right of the application to enter your key locally.
+- Your key is stored securely on your own device.
 
 To obtain a Gemini API key:
 1. Visit [Google AI Studio](https://aistudio.google.com/)
@@ -117,10 +109,21 @@ To obtain a Gemini API key:
 
 ### Run Locally
 
+You can run the application in two modes:
+
+**1. Web Mode (Browser)**
+Runs as a standard web application in your default browser.
 ```bash
-# Start the development server
+npm run dev -- --mode web
+```
+
+**2. Desktop Mode (Electron)**
+Runs as a native desktop application window.
+```bash
 npm run dev
 ```
+
+The application will be available at `http://localhost:5173` if running in web mode.
 
 The application will be available at `http://localhost:5173` (or the next available port).
 
