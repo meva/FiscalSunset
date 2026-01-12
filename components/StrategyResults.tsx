@@ -8,6 +8,8 @@ interface StrategyResultsProps {
   result: StrategyResult;
   profile: UserProfile;
   isDarkMode: boolean;
+  apiKey: string;
+  onOpenSettings: () => void;
 }
 
 const MAX_DAILY_REQUESTS = 5;
@@ -17,7 +19,7 @@ const STORAGE_KEY = 'retiresmart_ai_usage';
 const formatCurrency = (value: number): string => `$${Math.round(value).toLocaleString()}`;
 
 
-const StrategyResults: React.FC<StrategyResultsProps> = ({ result, profile, isDarkMode }) => {
+const StrategyResults: React.FC<StrategyResultsProps> = ({ result, profile, isDarkMode, apiKey, onOpenSettings }) => {
   const [aiAdvice, setAiAdvice] = useState<string | null>(null);
   const [loadingAi, setLoadingAi] = useState(false);
   const [requestsUsed, setRequestsUsed] = useState(0);
@@ -60,9 +62,13 @@ const StrategyResults: React.FC<StrategyResultsProps> = ({ result, profile, isDa
   if (profile.income.brokerageDividends > 0) chartData.push({ name: 'Dividends', value: profile.income.brokerageDividends });
 
   const handleAskAI = async () => {
+    if (!apiKey) {
+      onOpenSettings();
+      return;
+    }
     if (requestsUsed >= MAX_DAILY_REQUESTS) return;
     setLoadingAi(true);
-    const advice = await getGeminiAdvice(profile, result);
+    const advice = await getGeminiAdvice(profile, result, apiKey);
     setAiAdvice(advice);
     incrementUsage();
     setLoadingAi(false);
@@ -349,8 +355,8 @@ const StrategyResults: React.FC<StrategyResultsProps> = ({ result, profile, isDa
           {!aiAdvice && (
             <div className="flex items-center gap-3">
               <span className="text-xs text-slate-400 hidden sm:inline">{isLimitReached ? "Daily limit reached" : `${requestsLeft} left`}</span>
-              <button onClick={handleAskAI} disabled={loadingAi || isLimitReached} className={`px-4 py-2 rounded-lg text-sm font-semibold transition-colors flex items-center gap-2 ${isLimitReached ? 'bg-slate-700 text-slate-400 cursor-not-allowed' : 'bg-white text-slate-900 hover:bg-slate-100 dark:bg-slate-700 dark:text-white dark:hover:bg-slate-600'}`}>
-                {loadingAi ? "Analyzing..." : "Review My Plan"}
+              <button onClick={handleAskAI} disabled={loadingAi || (isLimitReached && !!apiKey)} className={`px-4 py-2 rounded-lg text-sm font-semibold transition-colors flex items-center gap-2 ${loadingAi || (isLimitReached && !!apiKey) ? 'bg-slate-700 text-slate-400 cursor-not-allowed' : 'bg-white text-slate-900 hover:bg-slate-100 dark:bg-slate-700 dark:text-white dark:hover:bg-slate-600'}`}>
+                {loadingAi ? "Analyzing..." : !apiKey ? "Configure API Key" : "Review My Plan"}
               </button>
             </div>
           )}

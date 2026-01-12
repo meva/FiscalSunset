@@ -6,9 +6,11 @@ import LongevityAnalysis from './components/LongevityAnalysis';
 import AccumulationStrategy from './components/AccumulationStrategy';
 import TaxReference from './components/TaxReference';
 import { calculateStrategy, calculateLongevity } from './services/calculationEngine';
-import { TrendingUp, Calculator, AlertTriangle, BookOpen, Sun, Moon, PiggyBank } from 'lucide-react';
+import { TrendingUp, Calculator, AlertTriangle, BookOpen, Sun, Moon, PiggyBank, Settings } from 'lucide-react';
 import Footer from './components/Footer';
 import WizardModal from './components/Wizard/WizardModal';
+import SettingsModal from './components/SettingsModal';
+import { db } from './services/db';
 import { projectAssets } from './services/projection';
 
 const INITIAL_PROFILE: UserProfile = {
@@ -35,6 +37,9 @@ const App: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'withdrawal' | 'accumulation' | 'longevity' | 'reference'>('accumulation');
   const [isDarkMode, setIsDarkMode] = useState(false);
   const [isWizardOpen, setIsWizardOpen] = useState(false);
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  const [apiKey, setApiKey] = useState('');
+  const [isLoaded, setIsLoaded] = useState(false);
 
   // Computed Retirement Profile
   // If the user is currently 55 but retiring at 65, we must project their assets
@@ -96,12 +101,46 @@ const App: React.FC = () => {
   }, [retirementProfile]); // Depend on retirementProfile instead of profile
 
   useEffect(() => {
-    // Check if wizard has been completed in this session or previously
-    const wizardCompleted = localStorage.getItem('wizard_completed_v1');
-    if (!wizardCompleted) {
-      setIsWizardOpen(true);
-    }
+    const loadData = async () => {
+      try {
+        // Load Settings
+        const settings = await db.settings.get(1);
+        if (settings) {
+          if (settings.apiKey) setApiKey(settings.apiKey);
+          // Only override theme if specifically saved, otherwise default logic applies
+        }
+
+        // Load Profile
+        const savedProfile = await db.profiles.get(1);
+        if (savedProfile) {
+          // Merge with initial profile to ensure structure, but saved values take precedence
+          // We strip the ID before setting state
+          const { id, ...profileData } = savedProfile;
+          setProfile({ ...INITIAL_PROFILE, ...profileData });
+        } else {
+          // Check if wizard has been completed in this session or previously (legacy check)
+          const wizardCompleted = localStorage.getItem('wizard_completed_v1');
+          if (!wizardCompleted) {
+            setIsWizardOpen(true);
+          }
+        }
+      } catch (error) {
+        console.error("Failed to load data:", error);
+      } finally {
+        setIsLoaded(true);
+      }
+    };
+    loadData();
   }, []);
+
+  // Auto-save profile changes (debounced)
+  useEffect(() => {
+    if (!isLoaded) return;
+    const timer = setTimeout(() => {
+      db.profiles.put({ ...profile, id: 1 }).catch(e => console.error("Save failed:", e));
+    }, 1000);
+    return () => clearTimeout(timer);
+  }, [profile, isLoaded]);
 
   useEffect(() => {
     if (isDarkMode) document.documentElement.classList.add('dark');
@@ -115,13 +154,23 @@ const App: React.FC = () => {
     setIsWizardOpen(false);
     localStorage.setItem('wizard_completed_v1', 'true');
     setActiveTab(destination);
+    // Force immediate save
+    db.profiles.put({ ...newProfile, id: 1 });
   };
 
   const handleWizardClose = () => {
     setIsWizardOpen(false);
     // Optionally mark as viewed even if skipped, or let it reappear next time. 
     // Let's mark it as viewed to avoid annoyance.
+    // Let's mark it as viewed to avoid annoyance.
     localStorage.setItem('wizard_completed_v1', 'true');
+  };
+
+  const handleReset = async () => {
+    await db.profiles.delete(1);
+    setProfile(INITIAL_PROFILE);
+    setIsSettingsOpen(false);
+    setIsWizardOpen(true);
   };
 
   return (
@@ -131,6 +180,13 @@ const App: React.FC = () => {
         onClose={handleWizardClose}
         onComplete={handleWizardComplete}
         currentProfile={profile}
+      />
+      <SettingsModal
+        isOpen={isSettingsOpen}
+        onClose={() => setIsSettingsOpen(false)}
+        apiKey={apiKey}
+        setApiKey={setApiKey}
+        onReset={handleReset}
       />
       <div className="bg-amber-50 dark:bg-amber-950/30 border-b border-amber-200 dark:border-amber-900/50 px-4 py-2 transition-colors">
         <div className="max-w-7xl mx-auto flex items-center justify-center gap-2 text-[10px] md:text-xs font-medium text-amber-900 dark:text-amber-200 text-center uppercase tracking-wider">
@@ -152,6 +208,9 @@ const App: React.FC = () => {
           </div>
           <button onClick={toggleTheme} className="p-2 rounded-lg text-slate-500 hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-slate-800 transition-colors">
             {isDarkMode ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
+          </button>
+          <button onClick={() => setIsSettingsOpen(true)} className="p-2 rounded-lg text-slate-500 hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-slate-800 transition-colors ml-1">
+            <Settings className="w-5 h-5" />
           </button>
         </div>
       </header>
@@ -195,7 +254,13 @@ const App: React.FC = () => {
             {strategyResult && longevityResult ? (
               <div className="animate-in fade-in slide-in-from-bottom-2 duration-300">
                 <div className={activeTab === 'withdrawal' ? 'block' : 'hidden'}>
-                  <StrategyResults result={strategyResult} profile={retirementProfile} isDarkMode={isDarkMode} />
+                  <StrategyResults
+                    result={strategyResult}
+                    profile={retirementProfile}
+                    isDarkMode={isDarkMode}
+                    apiKey={apiKey}
+                    onOpenSettings={() => setIsSettingsOpen(true)}
+                  />
                 </div>
                 <div className={activeTab === 'accumulation' ? 'block' : 'hidden'}>
                   <AccumulationStrategy

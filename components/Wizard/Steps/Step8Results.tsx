@@ -18,7 +18,12 @@ const DUMMY_PROFILE: UserProfile = {
     assets: { traditionalIRA: 0, rothIRA: 0, brokerage: 0, hsa: 0 },
     contributions: { traditionalIRA: 0, rothIRA: 0, brokerage: 0, hsa: 0 },
     income: { socialSecurity: 0, pension: 0, brokerageDividends: 0, qualifiedDividendRatio: 0 },
-    assumptions: { inflationRate: 0.03, rateOfReturn: 0.07 }
+    assumptions: {
+        inflationRate: 0.03,
+        rateOfReturn: 0.07,
+        inflationRateInRetirement: 0.03,
+        rateOfReturnInRetirement: 0.05
+    }
 };
 
 const Step8Results: React.FC<CheckProps> = ({ data, onComplete, onRestart }) => {

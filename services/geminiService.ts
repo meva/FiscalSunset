@@ -1,11 +1,10 @@
 import { GoogleGenAI } from "@google/genai";
 import { UserProfile, StrategyResult } from '../types';
 
-export const getGeminiAdvice = async (profile: UserProfile, result: StrategyResult): Promise<string> => {
+export const getGeminiAdvice = async (profile: UserProfile, result: StrategyResult, apiKey: string): Promise<string> => {
   try {
-    const apiKey = process.env.API_KEY;
     if (!apiKey) {
-      return "Please configure the Gemini API Key to receive personalized AI insights.";
+      return "Please configure the Gemini API Key in Settings to receive personalized AI insights.";
     }
 
     const ai = new GoogleGenAI({ apiKey });
