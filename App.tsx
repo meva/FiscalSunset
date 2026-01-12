@@ -20,7 +20,12 @@ const INITIAL_PROFILE: UserProfile = {
   assets: { traditionalIRA: 250000, rothIRA: 100000, brokerage: 150000, hsa: 25000 },
   contributions: { traditionalIRA: 7000, rothIRA: 0, brokerage: 12000, hsa: 3500 },
   income: { socialSecurity: 30000, pension: 0, brokerageDividends: 5000, qualifiedDividendRatio: 0.9 },
-  assumptions: { inflationRate: 0.03, rateOfReturn: 0.07 }
+  assumptions: {
+    inflationRate: 0.03,
+    rateOfReturn: 0.07,
+    inflationRateInRetirement: 0.03, // Default to same as base
+    rateOfReturnInRetirement: 0.05   // Default to slightly more conservative
+  }
 };
 
 const App: React.FC = () => {
@@ -70,7 +75,13 @@ const App: React.FC = () => {
       spendingNeed: projectedSpendingNeed,
       isSpendingReal: false, // Converted to nominal at retirement start
       // Zero out contributions for retirement phase
-      contributions: { ...INITIAL_PROFILE.contributions, traditionalIRA: 0, rothIRA: 0, brokerage: 0, hsa: 0 }
+      contributions: { ...INITIAL_PROFILE.contributions, traditionalIRA: 0, rothIRA: 0, brokerage: 0, hsa: 0 },
+      // Use retirement-specific assumptions for the withdrawal/longevity phase
+      assumptions: {
+        ...profile.assumptions,
+        inflationRate: profile.assumptions.inflationRateInRetirement,
+        rateOfReturn: profile.assumptions.rateOfReturnInRetirement
+      }
     };
 
   }, [profile]);
