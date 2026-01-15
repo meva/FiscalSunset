@@ -135,6 +135,22 @@ npm run build
 
 # Preview the production build locally
 npm run preview
+
+### Deployment
+
+#### Option 1: Static Web Hosting (AWS S3, GCS, Netlify, etc.)
+You can generate a static distribution folder to host the web version anywhere.
+
+```bash
+# Generate the 'dist' folder
+./prepare-dist.sh
+```
+
+This will create a `dist` folder containing:
+- `index.html` (Entry point)
+- `assets/` (Compiled JavaScript and CSS)
+
+Upload the contents of this folder to your static file host.
 ```
 
 ### Project Structure

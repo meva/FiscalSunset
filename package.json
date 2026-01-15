@@ -12,6 +12,7 @@
     "build": "tsc && vite build",
     "preview": "vite preview",
     "start": "serve -s dist -l $PORT",
+    "build:web": "vite build --mode web",
     "electron": "vite",
     "electron:build": "vite build && electron-builder"
   },
