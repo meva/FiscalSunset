@@ -33,3 +33,5 @@ deploy.sh
 dist-electron
 release
 electron
+
+
