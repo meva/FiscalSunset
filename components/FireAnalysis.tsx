@@ -19,6 +19,7 @@ const FireAnalysis: React.FC<FireAnalysisProps> = ({ profile, isDarkMode }) => {
     const [spendingNeed, setSpendingNeed] = useState(profile.spendingNeed);
     const [rateOfReturn, setRateOfReturn] = useState(profile.assumptions.rateOfReturn);
     const [targetRetirementAge, setTargetRetirementAge] = useState(profile.age);
+    const [consultingIncome, setConsultingIncome] = useState(25000);
 
     // Derived Values from Profile (Base Reality)
     const totalAssets = useMemo(() => {
@@ -45,9 +46,10 @@ const FireAnalysis: React.FC<FireAnalysisProps> = ({ profile, isDarkMode }) => {
             rateOfReturn: rateOfReturn,
             inflationRate: profile.assumptions.inflationRate,
             retirementAge: targetRetirementAge,
+            consultingIncome: consultingIncome,
         };
         return calculateFireMilestones(inputs);
-    }, [profile.baseAge, spendingNeed, totalAssets, annualSavings, rateOfReturn, profile.assumptions.inflationRate, targetRetirementAge]);
+    }, [profile.baseAge, spendingNeed, totalAssets, annualSavings, rateOfReturn, profile.assumptions.inflationRate, targetRetirementAge, consultingIncome]);
 
     const standardFireMilestone = milestones.find(m => m.type === 'Standard');
     const fiAge = standardFireMilestone?.ageReached;
@@ -57,6 +59,7 @@ const FireAnalysis: React.FC<FireAnalysisProps> = ({ profile, isDarkMode }) => {
         setSpendingNeed(profile.spendingNeed);
         setRateOfReturn(profile.assumptions.rateOfReturn);
         setTargetRetirementAge(profile.age);
+        setConsultingIncome(25000);
     };
 
     const formatCurrency = (val: number) => {
@@ -113,7 +116,7 @@ const FireAnalysis: React.FC<FireAnalysisProps> = ({ profile, isDarkMode }) => {
                             <div className="bg-indigo-50 dark:bg-indigo-900/20 p-3 rounded-lg text-indigo-800 dark:text-indigo-300 flex gap-2">
                                 <DollarSign className="w-5 h-5 shrink-0" />
                                 <p className="text-xs">
-                                    <strong>Barista FIRE:</strong> Assumes you work part-time to earn $25,000/year to supplement withdrawals. The target is the remaining gap ÷ 4%.
+                                    <strong>Barista FIRE:</strong> Assumes you work part-time to earn ${formatCurrency(consultingIncome)}/year to supplement withdrawals. The target is the remaining gap ÷ 4%.
                                 </p>
                             </div>
                             <div className="bg-indigo-50 dark:bg-indigo-900/20 p-3 rounded-lg text-indigo-800 dark:text-indigo-300 flex gap-2">
@@ -209,6 +212,26 @@ const FireAnalysis: React.FC<FireAnalysisProps> = ({ profile, isDarkMode }) => {
                                     className="w-full h-2 bg-slate-200 dark:bg-slate-700 rounded-lg appearance-none cursor-pointer accent-blue-600"
                                 />
                                 <p className="text-xs text-slate-400">Affects Coast FIRE target.</p>
+                            </div>
+
+                            {/* Consulting Income Slider (For Barista Calculation) */}
+                            <div className="space-y-3">
+                                <div className="flex justify-between items-center">
+                                    <label className="text-sm font-medium text-slate-600 dark:text-slate-400">Part-time Income</label>
+                                    <div className="text-sm font-bold text-slate-900 dark:text-white bg-slate-100 dark:bg-slate-800 px-2 py-1 rounded">
+                                        {formatCurrency(consultingIncome)}/yr
+                                    </div>
+                                </div>
+                                <input
+                                    type="range"
+                                    min={0}
+                                    max={100000}
+                                    step={1000}
+                                    value={consultingIncome}
+                                    onChange={(e) => setConsultingIncome(Number(e.target.value))}
+                                    className="w-full h-2 bg-slate-200 dark:bg-slate-700 rounded-lg appearance-none cursor-pointer accent-purple-600"
+                                />
+                                <p className="text-xs text-slate-400">Side income for Barista FIRE.</p>
                             </div>
                         </div>
 

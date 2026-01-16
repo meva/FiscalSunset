@@ -7,7 +7,8 @@ export const calculateFireMilestones = (inputs: FireInputs): FireMilestone[] => 
         annualSavings,
         rateOfReturn,
         inflationRate,
-        currentAge
+        currentAge,
+        consultingIncome = 25000 // Default to 25k if not provided
     } = inputs;
 
     // Real rate of return for projection
@@ -21,9 +22,9 @@ export const calculateFireMilestones = (inputs: FireInputs): FireMilestone[] => 
     const standardTarget = annualSpending * 25;
     const fatTarget = (annualSpending * 1.5) * 33;
 
-    // Barista FIRE: (Expenses - 25k supplemental) / 0.04
-    // If expenses < 25k, this number is 0 or negative, implying instant barista FIRE.
-    const baristaTarget = Math.max(0, (annualSpending - 25000) / 0.04);
+    // Barista FIRE: (Expenses - consultingIncome supplemental) / 0.04
+    // If expenses < consultingIncome, this number is 0 or negative, implying instant barista FIRE.
+    const baristaTarget = Math.max(0, (annualSpending - consultingIncome) / 0.04);
 
     // Coast FIRE target is dynamic based on age, but usually it means "Have enough now so that without contributing more, you hit Standard FIRE at retirement age".
     // The user prompt formula: StandardFIRE/(1+realRate)^yearsToRetirement
@@ -45,7 +46,7 @@ export const calculateFireMilestones = (inputs: FireInputs): FireMilestone[] => 
         {
             type: 'Barista',
             targetAmount: baristaTarget,
-            description: 'Expenses covered by 4% withdrawal + $25k part-time income',
+            description: `Expenses covered by 4% withdrawal + $${(consultingIncome / 1000).toLocaleString()}k part-time income`,
             ageReached: null,
             yearReached: null,
             percentageProgress: 0,

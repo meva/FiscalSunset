@@ -6,6 +6,7 @@ export interface FireInputs {
     rateOfReturn: number;
     inflationRate: number;
     retirementAge?: number; // Optional target age for comparison
+    consultingIncome?: number; // Optional consulting/side income for Barista FIRE
 }
 
 export type FireMilestoneType = 'Lean' | 'Standard' | 'Fat' | 'Coast' | 'Barista';
