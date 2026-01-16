@@ -5,8 +5,9 @@ import StrategyResults from './components/StrategyResults';
 import LongevityAnalysis from './components/LongevityAnalysis';
 import AccumulationStrategy from './components/AccumulationStrategy';
 import TaxReference from './components/TaxReference';
+import FireAnalysis from './components/FireAnalysis';
 import { calculateStrategy, calculateLongevity } from './services/calculationEngine';
-import { TrendingUp, Calculator, AlertTriangle, BookOpen, Sun, Moon, PiggyBank, Settings } from 'lucide-react';
+import { TrendingUp, Calculator, AlertTriangle, BookOpen, Sun, Moon, PiggyBank, Settings, Flame } from 'lucide-react';
 import Footer from './components/Footer';
 import WizardModal from './components/Wizard/WizardModal';
 import SettingsModal from './components/SettingsModal';
@@ -34,7 +35,7 @@ const App: React.FC = () => {
   const [profile, setProfile] = useState<UserProfile>(INITIAL_PROFILE);
   const [strategyResult, setStrategyResult] = useState<StrategyResult | null>(null);
   const [longevityResult, setLongevityResult] = useState<LongevityResult | null>(null);
-  const [activeTab, setActiveTab] = useState<'withdrawal' | 'accumulation' | 'longevity' | 'reference'>('accumulation');
+  const [activeTab, setActiveTab] = useState<'withdrawal' | 'accumulation' | 'longevity' | 'reference' | 'fire'>('accumulation');
   const [isDarkMode, setIsDarkMode] = useState(false);
   const [isWizardOpen, setIsWizardOpen] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
@@ -229,6 +230,7 @@ const App: React.FC = () => {
               <div className="flex space-x-1 bg-slate-200 dark:bg-slate-800 p-1 rounded-xl w-full overflow-x-auto scrollbar-hide">
                 {[
                   { id: 'accumulation', icon: PiggyBank, label: 'Accumulation' },
+                  { id: 'fire', icon: Flame, label: 'FIRE Analysis' },
                   { id: 'withdrawal', icon: Calculator, label: 'Withdrawal' },
                   { id: 'longevity', icon: TrendingUp, label: 'Longevity' },
                   { id: 'reference', icon: BookOpen, label: 'Reference' }
@@ -270,6 +272,9 @@ const App: React.FC = () => {
                 </div>
                 <div className={activeTab === 'longevity' ? 'block' : 'hidden'}>
                   <LongevityAnalysis longevity={longevityResult} profile={retirementProfile} isDarkMode={isDarkMode} />
+                </div>
+                <div className={activeTab === 'fire' ? 'block' : 'hidden'}>
+                  <FireAnalysis profile={profile} isDarkMode={isDarkMode} />
                 </div>
                 <div className={activeTab === 'reference' ? 'block' : 'hidden'}>
                   <TaxReference />
