@@ -20,6 +20,7 @@ export interface WizardState {
     };
     futureIncome: {
         socialSecurity: number;
+        socialSecurityStartAge: number;
         pension: number;
     };
 }

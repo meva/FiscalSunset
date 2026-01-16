@@ -9,13 +9,15 @@ interface CheckProps {
 
 const Step6Income: React.FC<CheckProps> = ({ data, update }) => {
     // Ensure futureIncome object exists
-    const income = data.futureIncome || { socialSecurity: 0, pension: 0 };
+    const income = data.futureIncome || { socialSecurity: 0, socialSecurityStartAge: 62, pension: 0 };
 
     // Local state for formatted inputs
     // Initialize monthly SS display by dividing annual amount by 12
     const [ssDisplay, setSsDisplay] = React.useState(
         income.socialSecurity ? Math.round(income.socialSecurity / 12).toLocaleString() : '0'
     );
+    // Defaults to 62 if not set
+    const [ssStartAgeDisplay, setSsStartAgeDisplay] = React.useState((income.socialSecurityStartAge || 62).toString());
     const [pensionDisplay, setPensionDisplay] = React.useState((income.pension || 0).toLocaleString());
 
     const handleDisplayChange = (
@@ -81,6 +83,21 @@ const Step6Income: React.FC<CheckProps> = ({ data, update }) => {
                     <p className="text-sm text-slate-500 dark:text-slate-400">
                         Need an estimate? Visit <a href="https://www.ssa.gov/prepare/get-benefits-estimate" target="_blank" rel="noopener noreferrer" className="text-purple-600 hover:text-purple-700 underline">ssa.gov/prepare/get-benefits-estimate</a>
                     </p>
+                </div>
+
+                <div>
+                    <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                        Start Age (e.g. 62, 67, 70)
+                    </label>
+                    <div className="relative mb-2">
+                        <input
+                            type="text"
+                            value={ssStartAgeDisplay}
+                            onChange={(e) => handleDisplayChange('socialSecurityStartAge', e.target.value, setSsStartAgeDisplay)}
+                            className="w-full text-lg font-bold p-4 pl-4 rounded-xl border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 focus:ring-2 focus:ring-purple-500 outline-none transition-all"
+                            placeholder="62"
+                        />
+                    </div>
                 </div>
 
                 <div>

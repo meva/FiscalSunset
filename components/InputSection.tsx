@@ -259,6 +259,17 @@ const InputSection: React.FC<InputSectionProps> = ({ profile, setProfile, onRest
             </div>
           </div>
           <div>
+            <label className={labelClass}>SS Start Age</label>
+            <div className="relative">
+              <input
+                type="number"
+                value={profile.income.socialSecurityStartAge || 62}
+                onChange={(e) => handleIncomeChange('socialSecurityStartAge', parseInt(e.target.value) || 62)}
+                className={inputClass}
+              />
+            </div>
+          </div>
+          <div>
             <label className={labelClass}>Pension / Annuity</label>
             <div className="relative">
               <span className={iconClass}>$</span>

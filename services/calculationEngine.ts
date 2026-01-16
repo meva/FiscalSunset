@@ -60,6 +60,10 @@ const calculateFederalTax = (ordinaryIncome: number, capGainsIncome: number, fil
 export const calculateStrategy = (profile: UserProfile): StrategyResult => {
   const { age, baseAge, filingStatus, spendingNeed, isSpendingReal, assets, income, assumptions } = profile;
 
+  // Determine if Social Security is active for this specific year calculation
+  const isSSActive = age >= (income.socialSecurityStartAge || 62);
+  const annualSS = isSSActive ? income.socialSecurity : 0;
+
   let nominalSpendingNeeded = spendingNeed;
   if (isSpendingReal && age > baseAge) {
     nominalSpendingNeeded = spendingNeed * Math.pow(1 + assumptions.inflationRate, age - baseAge);
@@ -80,7 +84,7 @@ export const calculateStrategy = (profile: UserProfile): StrategyResult => {
     const targetNet = nominalSpendingNeeded + estimatedTax;
     const currentAssets: Assets = { ...assets };
     const withdrawalPlan: WithdrawalSource[] = [];
-    let grossCash = income.socialSecurity + income.pension + income.brokerageDividends;
+    let grossCash = annualSS + income.pension + income.brokerageDividends;
     let ordIncomeForTax = income.pension + ordinaryDividends;
     let capGainsForTax = qualifiedDividends;
 
@@ -104,7 +108,7 @@ export const calculateStrategy = (profile: UserProfile): StrategyResult => {
     // STEP B: Standard Deduction (0% Ordinary Bucket)
     let gap = targetNet - grossCash;
     if (gap > 0 && currentAssets.traditionalIRA > 0) {
-      const taxableSS = calculateTaxableSocialSecurity(income.socialSecurity, ordIncomeForTax, filingStatus);
+      const taxableSS = calculateTaxableSocialSecurity(annualSS, ordIncomeForTax, filingStatus);
       const roomInStdDeduction = Math.max(0, standardDeduction - (ordIncomeForTax + taxableSS));
       if (roomInStdDeduction > 0) {
         const pull = Math.min(gap, roomInStdDeduction, currentAssets.traditionalIRA);
@@ -124,7 +128,7 @@ export const calculateStrategy = (profile: UserProfile): StrategyResult => {
 
     // STEP C: Brokerage (0% Capital Gains Bracket)
     if (gap > 0 && currentAssets.brokerage > 0) {
-      const taxableSS = calculateTaxableSocialSecurity(income.socialSecurity, ordIncomeForTax, filingStatus);
+      const taxableSS = calculateTaxableSocialSecurity(annualSS, ordIncomeForTax, filingStatus);
       const cgThreshold = CAP_GAINS_BRACKETS[filingStatus][0].limit;
       const currentOrdinaryTaxable = Math.max(0, ordIncomeForTax + taxableSS - standardDeduction);
       const roomInZeroCG = Math.max(0, cgThreshold - currentOrdinaryTaxable - capGainsForTax);
@@ -149,7 +153,7 @@ export const calculateStrategy = (profile: UserProfile): StrategyResult => {
     // STEP D: Traditional IRA (Low Brackets - 10-12%)
     if (gap > 0 && currentAssets.traditionalIRA > 0) {
       const lowBracketLimit = TAX_BRACKETS[filingStatus][1].limit;
-      const taxableSS = calculateTaxableSocialSecurity(income.socialSecurity, ordIncomeForTax, filingStatus);
+      const taxableSS = calculateTaxableSocialSecurity(annualSS, ordIncomeForTax, filingStatus);
       const currentOrdinaryTaxable = Math.max(0, ordIncomeForTax + taxableSS - standardDeduction);
       const roomInLowBrackets = Math.max(0, lowBracketLimit - currentOrdinaryTaxable);
       if (roomInLowBrackets > 0) {
@@ -210,11 +214,12 @@ export const calculateStrategy = (profile: UserProfile): StrategyResult => {
       }
     }
 
-    const finalTaxableSS = calculateTaxableSocialSecurity(income.socialSecurity, ordIncomeForTax, filingStatus);
+    const finalTaxableSS = calculateTaxableSocialSecurity(annualSS, ordIncomeForTax, filingStatus);
     const iterationTax = calculateFederalTax(ordIncomeForTax + finalTaxableSS, capGainsForTax, filingStatus, standardDeduction);
 
     // Calculate Roth conversion optimization
-    const rothConversionDetail = calculateRothConversionOptimization(profile, ordIncomeForTax, finalTaxableSS);
+    // Pass the actual active SS amount (which might be 0)
+    const rothConversionDetail = calculateRothConversionOptimization(profile, ordIncomeForTax, finalTaxableSS, annualSS);
 
     lastResult = {
       totalWithdrawal: grossCash,
@@ -226,7 +231,8 @@ export const calculateStrategy = (profile: UserProfile): StrategyResult => {
       effectiveTaxRate: iterationTax / grossCash || 0,
       rmdAmount,
       taxableSocialSecurity: finalTaxableSS,
-      provisionalIncome: ordIncomeForTax + (0.5 * income.socialSecurity),
+      currentYearSocialSecurity: annualSS,
+      provisionalIncome: ordIncomeForTax + (0.5 * annualSS),
       standardDeduction,
       notes: [],
       nominalSpendingNeeded
@@ -239,30 +245,64 @@ export const calculateStrategy = (profile: UserProfile): StrategyResult => {
 
   return lastResult || {
     totalWithdrawal: 0, gapFilled: false, withdrawalPlan: [], rothConversionAmount: 0,
-    estimatedFederalTax: 0, effectiveTaxRate: 0, rmdAmount: 0, taxableSocialSecurity: 0,
+    estimatedFederalTax: 0, effectiveTaxRate: 0, rmdAmount: 0, taxableSocialSecurity: 0, currentYearSocialSecurity: 0,
     provisionalIncome: 0, standardDeduction: 0, notes: ["Calc failed"], nominalSpendingNeeded: 0
   };
 };
 
 export const calculateLongevity = (profile: UserProfile, strategy: StrategyResult): LongevityResult => {
   let currentAssets = profile.assets.brokerage + profile.assets.rothIRA + profile.assets.traditionalIRA + profile.assets.hsa;
-  const fixedIncome = profile.income.socialSecurity + profile.income.pension + profile.income.brokerageDividends;
-  const portfolioDraw = Math.max(0, strategy.totalWithdrawal - fixedIncome);
-  const initialWithdrawalRate = currentAssets > 0 ? portfolioDraw / currentAssets : 0;
+
 
   const projection: YearProjection[] = [];
   let runningAssets = currentAssets;
-  let currentDraw = portfolioDraw;
   let depletionAge: number | null = null;
+
+  // Base fixed income excluding SS (pension + divs)
+  // We assume these start immediately or are already active
+  const baseFixedIncome = profile.income.pension + profile.income.brokerageDividends;
+
+  // We need to determine the "Gross Spending Need" that the strategy calculation determined was required.
+  // Strategy.totalWithdrawal is the gross amount needed to cover Expenses + Taxes.
+  // We use this as our inflation-adjusted target for future years.
+  // NOTE: This assumes tax efficiency remains roughly constant, which is a simplification.
+  // When SS kicks in, tax efficiency might improve (reducing gross need), but we'll stick to
+  // the conservative assumption that Gross Need inflates directly.
+  let currentProjectedGrossNeed = strategy.totalWithdrawal;
 
   for (let i = 0; i <= 40; i++) {
     const age = profile.age + i;
-    projection.push({ age, year: i, totalAssets: Math.max(0, runningAssets), withdrawal: currentDraw, isDepleted: runningAssets <= 0 });
+
+    // Calculate SS for this year
+    const ssStartAge = profile.income.socialSecurityStartAge || 62;
+    let currentSS = 0;
+    if (age >= ssStartAge) {
+      // Calculate how many years since SS started to apply COLA
+      // If we are simulating "gap", SS amount input is usually the amount *at* start age.
+      // Or is it the amount at 62? The input says "Estimated at 62". 
+      // Let's assume the input amount is the benefit amount at the Start Age.
+      // So starts at base amount, then inflates.
+      const yearsSinceStart = age - ssStartAge;
+      currentSS = profile.income.socialSecurity * Math.pow(1 + profile.assumptions.inflationRateInRetirement, yearsSinceStart);
+    }
+
+    const currentFixedIncome = currentSS + baseFixedIncome; // Pension/Divs usually flat or separate assumed? Keeping flat for now as per prev logic
+
+    // Portfolio must cover the difference
+    const requiredPortfolioDraw = Math.max(0, currentProjectedGrossNeed - currentFixedIncome);
+
+    projection.push({ age, year: i, totalAssets: Math.max(0, runningAssets), withdrawal: requiredPortfolioDraw, isDepleted: runningAssets <= 0 });
+
     if (runningAssets <= 0 && !depletionAge) depletionAge = age;
-    runningAssets = runningAssets * (1 + profile.assumptions.rateOfReturnInRetirement) - currentDraw;
-    currentDraw *= (1 + profile.assumptions.inflationRateInRetirement);
+
+    runningAssets = runningAssets * (1 + profile.assumptions.rateOfReturnInRetirement) - requiredPortfolioDraw;
+
+    // Inflate the Gross Need for next year
+    currentProjectedGrossNeed *= (1 + profile.assumptions.inflationRateInRetirement);
   }
 
+  const initialPortfolioDraw = Math.max(0, strategy.totalWithdrawal - (profile.income.pension + profile.income.brokerageDividends + (profile.age >= (profile.income.socialSecurityStartAge || 62) ? profile.income.socialSecurity : 0)));
+  const initialWithdrawalRate = currentAssets > 0 ? initialPortfolioDraw / currentAssets : 0;
   return { projection, depletionAge, initialWithdrawalRate, sustainable: initialWithdrawalRate <= 0.05 };
 };
 
@@ -395,9 +435,14 @@ const calculateSeniorDeduction = (
 export const calculateRothConversionOptimization = (
   profile: UserProfile,
   currentOrdinaryIncome: number,
-  taxableSS: number
+  taxableSS: number,
+  activeSocialSecurityAmount?: number // Optional override for the effective SS amount 
 ): RothConversionRecommendation => {
   const { age, filingStatus, assets, income } = profile;
+
+  // Use the passed active SS amount or default to profile (logic should prefer the passed active amount)
+  // If activeSocialSecurityAmount is defined, use it. Otherwise rely on profile check.
+  const ssAmount = activeSocialSecurityAmount !== undefined ? activeSocialSecurityAmount : income.socialSecurity;
 
   // No Traditional IRA = nothing to convert
   if (assets.traditionalIRA <= 0) {
@@ -428,7 +473,7 @@ export const calculateRothConversionOptimization = (
   const currentTaxableIncome = Math.max(0, currentOrdinaryIncome + taxableSS - standardDeduction);
 
   // Combined income for SS torpedo calculation
-  const combinedIncome = currentOrdinaryIncome + (0.5 * income.socialSecurity);
+  const combinedIncome = currentOrdinaryIncome + (0.5 * ssAmount);
 
   // ========================================
   // CONSTRAINT 1: Tax Bracket Headroom
@@ -479,8 +524,8 @@ export const calculateRothConversionOptimization = (
   // ========================================
   // CONSTRAINT 4: Social Security "Tax Torpedo"
   // ========================================
-  const torpedoInfo = getSSTorpedoMultiplier(combinedIncome, income.socialSecurity, filingStatus);
-  if (income.socialSecurity > 0) {
+  const torpedoInfo = getSSTorpedoMultiplier(combinedIncome, ssAmount, filingStatus);
+  if (ssAmount > 0) {
     const effectiveTorpedoRate = bracketInfo.currentRate * torpedoInfo.multiplier;
 
     if (torpedoInfo.inZone) {

@@ -25,6 +25,7 @@ export interface ContributionAllocation {
 
 export interface IncomeProfile {
   socialSecurity: number;
+  socialSecurityStartAge: number;
   pension: number;
   brokerageDividends: number;
   qualifiedDividendRatio: number;
@@ -67,6 +68,7 @@ export interface StrategyResult {
   effectiveTaxRate: number;
   rmdAmount: number;
   taxableSocialSecurity: number;
+  currentYearSocialSecurity: number;
   provisionalIncome: number;
   standardDeduction: number;
   notes: string[];

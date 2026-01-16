@@ -57,7 +57,7 @@ const StrategyResults: React.FC<StrategyResultsProps> = ({ result, profile, isDa
     value: w.amount,
   }));
 
-  if (profile.income.socialSecurity > 0) chartData.push({ name: 'Social Security', value: profile.income.socialSecurity });
+  if (result.currentYearSocialSecurity > 0) chartData.push({ name: 'Social Security', value: result.currentYearSocialSecurity });
   if (profile.income.pension > 0) chartData.push({ name: 'Pension', value: profile.income.pension });
   if (profile.income.brokerageDividends > 0) chartData.push({ name: 'Dividends', value: profile.income.brokerageDividends });
 
