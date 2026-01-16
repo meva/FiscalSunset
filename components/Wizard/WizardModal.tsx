@@ -28,7 +28,7 @@ const INITIAL_WIZARD_STATE: WizardState = {
     annualSpending: 60000,
     totalAnnualContribution: 25000,
     contributionAllocation: { taxDeferred: 50, taxable: 30, taxExempt: 20 },
-    futureIncome: { socialSecurity: 35000, pension: 0 }
+    futureIncome: { socialSecurity: 35000, socialSecurityStartAge: 67, pension: 0 }
 };
 
 const WizardModal: React.FC<WizardModalProps> = ({ isOpen, onClose, onComplete, currentProfile }) => {

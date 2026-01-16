@@ -41,6 +41,7 @@ export const mapWizardStateToProfile = (wizardState: WizardState, currentProfile
         // Map income
         income: {
             socialSecurity: futureIncome.socialSecurity,
+            socialSecurityStartAge: futureIncome.socialSecurityStartAge,
             pension: futureIncome.pension,
             brokerageDividends: 0, // Keeping this 0 as it's harder to estimate simple %
             qualifiedDividendRatio: 0.9,

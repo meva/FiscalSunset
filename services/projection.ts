@@ -23,6 +23,7 @@ export const projectAssets = (
     let balRoth = currentAssets.rothIRA;
     let balBrok = currentAssets.brokerage;
     let balHSA = currentAssets.hsa;
+    let balRothBasis = currentAssets.rothBasis;
 
     // Calculate annual contribution amounts based on allocation percentages
     const contribTrad = annualContribution * (allocation.taxDeferred / 100);
@@ -39,11 +40,13 @@ export const projectAssets = (
         balRoth = balRoth * (1 + assumptions.rateOfReturn) + contribRoth;
         balBrok = balBrok * (1 + assumptions.rateOfReturn) + contribBrok;
         balHSA = balHSA * (1 + assumptions.rateOfReturn); // No new HSA contribs in simplified wizard
+        balRothBasis = balRothBasis + contribRoth;
     }
 
     return {
         traditionalIRA: balTrad,
         rothIRA: balRoth,
+        rothBasis: balRothBasis,
         brokerage: balBrok,
         hsa: balHSA
     };
