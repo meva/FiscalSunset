@@ -1,6 +1,6 @@
 # Local Desktop App Installation & Build Guide
 
-This branch (`local-install`) contains the necessary configuration to build the RetireSmart application as a native desktop app for macOS (`.dmg`) and Windows (`.exe`) using **Electron**.
+This branch (`local-install`) contains the necessary configuration to build the FiscalSunset application as a native desktop app for macOS (`.dmg`) and Windows (`.exe`) using **Electron**.
 
 ## Prerequisites
 - Node.js (v18 or later recommended)
@@ -34,7 +34,7 @@ To build the `.dmg` installer for macOS (Arm64/Intel depending on your machine):
 ```bash
 npm run electron:build
 ```
-The output file will be in the `release/` directory (e.g., `release/mac-arm64/RetireSmart-0.0.0.dmg`).
+The output file will be in the `release/` directory (e.g., `release/mac-arm64/FiscalSunset-0.0.0.dmg`).
 
 ### Windows (.exe)
 To build the `.exe` installer for Windows:

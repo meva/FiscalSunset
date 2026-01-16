@@ -1,8 +1,8 @@
 {
-  "name": "retiresmart-tax-efficient-withdrawal-strategist",
-  "productName": "RetireSmart",
+  "name": "fiscal-sunset",
+  "productName": "FiscalSunset",
   "description": "Tax-efficient withdrawal strategist for retirement planning",
-  "author": "RetireSmart Team",
+  "author": "FiscalSunset Team",
   "private": true,
   "version": "0.0.0",
   "type": "module",
@@ -38,8 +38,8 @@
     "wait-on": "^9.0.3"
   },
   "build": {
-    "appId": "com.retiresmart.app",
-    "productName": "RetireSmart",
+    "appId": "com.fiscalsunset.app",
+    "productName": "FiscalSunset",
     "directories": {
       "output": "release"
     },

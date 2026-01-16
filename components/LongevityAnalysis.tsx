@@ -142,7 +142,7 @@ const LongevityAnalysis: React.FC<LongevityAnalysisProps> = ({ longevity, profil
             <ul className="mt-2 space-y-2 text-sm text-slate-600 dark:text-slate-400 list-disc pl-4">
               <li><strong>Reduce Spending:</strong> Lowering your initial withdrawal rate below 4% significantly increases success rates.</li>
               <li><strong>Asset Allocation:</strong> Ensure your portfolio mix (Stocks/Bonds) can support a {(profile.assumptions.rateOfReturn * 100).toFixed(1)}% return.</li>
-              <li><strong>Tax Efficiency:</strong> Using the "RetireSmart" strategy (previous tab) reduces the tax drag on your withdrawals, keeping more money invested.</li>
+              <li><strong>Tax Efficiency:</strong> Using the "FiscalSunset" strategy (previous tab) reduces the tax drag on your withdrawals, keeping more money invested.</li>
             </ul>
           </div>
         </div>

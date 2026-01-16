@@ -1,7 +1,7 @@
 <div align="center">
-<img width="1200" height="475" alt="RetireSmart Banner" src="https://raw.githubusercontent.com/meva/retiresmart_-tax-efficient-withdrawal-strategist-3/refs/heads/main/Images/Accumulation.png?token=GHSAT0AAAAAADSEVQE27F4FU7JSV5EPU7W62KTJKFA" />
+<img width="1200" height="475" alt="FiscalSunset Banner" src="https://raw.githubusercontent.com/meva/retiresmart_-tax-efficient-withdrawal-strategist-3/refs/heads/main/Images/Accumulation.png?token=GHSAT0AAAAAADSEVQE27F4FU7JSV5EPU7W62KTJKFA" />
 
-# RetireSmart: Tax-Efficient Withdrawal Strategist
+# FiscalSunset: Tax-Efficient Withdrawal Strategist
 
 [![MIT License](https://img.shields.io/badge/License-MIT-green.svg)](https://choosealicense.com/licenses/mit/)
 [![React](https://img.shields.io/badge/React-19.2-blue.svg)](https://react.dev/)
@@ -18,7 +18,7 @@
 
 ## 📖 Overview
 
-RetireSmart is a comprehensive retirement planning calculator that helps you optimize your withdrawal strategy across multiple account types. It implements the "RetireSmart Approach" to minimize taxes by analyzing your assets, income, and spending needs to generate an optimal withdrawal strategy.
+FiscalSunset is a comprehensive retirement planning calculator that helps you optimize your withdrawal strategy across multiple account types. It implements the "FiscalSunset Approach" to minimize taxes by analyzing your assets, income, and spending needs to generate an optimal withdrawal strategy.
 
 The tool prioritizes tax-efficient withdrawals by:
 - Leveraging 0% capital gains tax brackets
@@ -156,7 +156,7 @@ Upload the contents of this folder to your static file host.
 ### Project Structure
 
 ```
-retiresmart-tax-efficient-withdrawal-strategist/
+fiscal-sunset/
 ├── components/              # React components
 │   ├── AccumulationStrategy.tsx   # Pre-retirement planning module
 │   ├── InputSection.tsx           # User profile input form
@@ -237,7 +237,7 @@ Found a bug or have a feature request? Please [open an issue](https://github.com
 
 > **This tool is for educational purposes only.**
 > 
-> RetireSmart does not provide professional financial, tax, legal, or investment advice. The calculations and strategies presented are based on general tax rules and may not account for your complete financial situation.
+> FiscalSunset does not provide professional financial, tax, legal, or investment advice. The calculations and strategies presented are based on general tax rules and may not account for your complete financial situation.
 > 
 > Always consult with a qualified financial advisor, tax professional, or fiduciary before making any financial decisions. Tax laws change frequently, and individual circumstances vary significantly. USE AT YOUR OWN RISK! By using this code, you agree that the author is not liable for any financial loss, IRS penalties, or "tax torpedoes" you may encounter.
 
@@ -250,7 +250,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 ```
 MIT License
 
-Copyright (c) 2025 RetireSmart
+Copyright (c) 2025 FiscalSunset
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal

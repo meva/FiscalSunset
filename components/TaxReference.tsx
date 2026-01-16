@@ -96,7 +96,7 @@ const TaxReference: React.FC = () => {
                     <h1 className="text-2xl font-bold">Reference Guide</h1>
                 </div>
                 <p className="text-blue-100 text-sm">
-                    Learn how RetireSmart works, understand the tax optimization strategies, and reference the 2026 tax rules used in all calculations.
+                    Learn how FiscalSunset works, understand the tax optimization strategies, and reference the 2026 tax rules used in all calculations.
                 </p>
             </div>
 
@@ -109,7 +109,7 @@ const TaxReference: React.FC = () => {
             >
                 <div className="space-y-6">
                     <p className="text-slate-600 dark:text-slate-400">
-                        RetireSmart helps you plan for a tax-efficient retirement. Follow this workflow to get the most out of the application:
+                        FiscalSunset helps you plan for a tax-efficient retirement. Follow this workflow to get the most out of the application:
                     </p>
 
                     <div className="space-y-3">
@@ -182,7 +182,7 @@ const TaxReference: React.FC = () => {
             >
                 <div className="space-y-6">
                     <p className="text-slate-600 dark:text-slate-400">
-                        RetireSmart uses sophisticated algorithms to optimize your tax situation. Here's how each strategy works:
+                        FiscalSunset uses sophisticated algorithms to optimize your tax situation. Here's how each strategy works:
                     </p>
 
                     {/* Two-Layer Cake */}
@@ -568,7 +568,7 @@ const TaxReference: React.FC = () => {
                         <XCircle className="w-5 h-5 shrink-0 mt-0.5" />
                         <div className="text-sm space-y-2">
                             <p><strong>This is an educational tool only.</strong></p>
-                            <p>RetireSmart is designed to help you understand tax-efficient withdrawal strategies and is not intended to provide professional financial, tax, or legal advice.</p>
+                            <p>FiscalSunset is designed to help you understand tax-efficient withdrawal strategies and is not intended to provide professional financial, tax, or legal advice.</p>
                         </div>
                     </div>
 
@@ -623,10 +623,10 @@ const TaxReference: React.FC = () => {
                     <div className={cardClass}>
                         <div className="flex items-center gap-2 mb-3">
                             <Sparkles className="w-5 h-5 text-amber-500" />
-                            <h4 className="font-bold text-slate-800 dark:text-white">The Story Behind RetireSmart</h4>
+                            <h4 className="font-bold text-slate-800 dark:text-white">The Story Behind FiscalSunset</h4>
                         </div>
                         <p className="text-sm text-slate-600 dark:text-slate-400 leading-relaxed">
-                            RetireSmart was born from a conversation I had with a coworker about the need for a tool to help plan retirement withdrawals efficiently.
+                            FiscalSunset was born from a conversation I had with a coworker about the need for a tool to help plan retirement withdrawals efficiently.
                             Having previously worked in the Financial Services industry, I saw firsthand how complex and confusing tax-efficient retirement planning can be for everyday people.
                         </p>
                         <p className="text-sm text-slate-600 dark:text-slate-400 leading-relaxed mt-3">
@@ -641,7 +641,7 @@ const TaxReference: React.FC = () => {
                         <div className="text-sm">
                             <p className="font-semibold">Free to Use</p>
                             <p className="mt-1">
-                                RetireSmart is currently free to use. I'm personally covering the infrastructure and AI costs because I believe in making financial planning tools accessible to everyone.
+                                FiscalSunset is currently free to use. I'm personally covering the infrastructure and AI costs because I believe in making financial planning tools accessible to everyone.
                             </p>
                         </div>
                     </div>

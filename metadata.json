@@ -1,5 +1,5 @@
 {
-  "name": "RetireSmart: Tax-Efficient Withdrawal Strategist",
-  "description": "A retirement planning tool that implements the 'RetireSmart Approach' to minimize taxes. It analyzes your assets, income, and spending needs to generate an optimal withdrawal strategy, prioritizing 0% capital gains brackets and strategic Roth conversions.",
+  "name": "FiscalSunset: Tax-Efficient Withdrawal Strategist",
+  "description": "A retirement planning tool that implements the 'FiscalSunset Approach' to minimize taxes. It analyzes your assets, income, and spending needs to generate an optimal withdrawal strategy, prioritizing 0% capital gains brackets and strategic Roth conversions.",
   "requestFramePermissions": []
 }

@@ -15,6 +15,12 @@ fi
 echo "🏗️  Running web build..."
 npm run build:web
 
+# Copy Images folder
+if [ -d "Images" ]; then
+    echo "🖼️  Copying Images folder..."
+    cp -r Images dist/
+fi
+
 echo "✅ Distribution folder is ready at ./dist"
 echo "📂 You can now upload the contents of the 'dist' folder to AWS S3, Google Cloud Storage, or any static hosting service."
 echo "   Files to upload:"

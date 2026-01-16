@@ -7,12 +7,12 @@ export interface Settings {
     themePreference?: 'light' | 'dark' | 'system';
 }
 
-export class RetireSmartDB extends Dexie {
+export class FiscalSunsetDB extends Dexie {
     profiles!: Table<UserProfile & { id?: number }, number>;
     settings!: Table<Settings, number>;
 
     constructor() {
-        super('RetireSmartDB');
+        super('FiscalSunsetDB');
         this.version(1).stores({
             profiles: '++id',
             settings: '++id'
@@ -20,4 +20,4 @@ export class RetireSmartDB extends Dexie {
     }
 }
 
-export const db = new RetireSmartDB();
+export const db = new FiscalSunsetDB();

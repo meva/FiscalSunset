@@ -13,7 +13,7 @@ interface StrategyResultsProps {
 }
 
 const MAX_DAILY_REQUESTS = 5;
-const STORAGE_KEY = 'retiresmart_ai_usage';
+const STORAGE_KEY = 'fiscalsunset_ai_usage';
 
 // Helper function to format currency values consistently (rounds to whole dollars)
 const formatCurrency = (value: number): string => `$${Math.round(value).toLocaleString()}`;
