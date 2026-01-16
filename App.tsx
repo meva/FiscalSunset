@@ -20,7 +20,7 @@ const INITIAL_PROFILE: UserProfile = {
   filingStatus: FilingStatus.Single,
   spendingNeed: 60000,
   isSpendingReal: true,
-  assets: { traditionalIRA: 250000, rothIRA: 100000, brokerage: 150000, hsa: 25000 },
+  assets: { traditionalIRA: 250000, rothIRA: 100000, rothBasis: 50000, brokerage: 150000, hsa: 25000 },
   contributions: { traditionalIRA: 7000, rothIRA: 0, brokerage: 12000, hsa: 3500 },
   income: { socialSecurity: 30000, socialSecurityStartAge: 62, pension: 0, brokerageDividends: 5000, qualifiedDividendRatio: 0.9 },
   assumptions: {
@@ -59,6 +59,12 @@ const App: React.FC = () => {
       projectedSpendingNeed = profile.spendingNeed * Math.pow(1 + profile.assumptions.inflationRate, profile.age - profile.baseAge);
     }
 
+    // For Roth Basis, we assume contributions (rothIRA part) add to basis (simplified).
+    // In reality, growth is earnings, contributions are basis.
+    // For this projection, we'll just carry existing basis forward without growth (conservative) or add contributions.
+    // Let's assume new Roth contributions are added to Basis.
+    const projectedRothBasis = profile.assets.rothBasis + (profile.contributions.rothIRA * (profile.age - profile.baseAge));
+
     const projectedAssets = projectAssets(
       profile.assets,
       // Total Annual Contribution
@@ -77,7 +83,7 @@ const App: React.FC = () => {
     return {
       ...profile,
       baseAge: profile.age, // The "Current Age" for the withdrawal calculator is the Retirement Age
-      assets: projectedAssets,
+      assets: { ...projectedAssets, rothBasis: projectedRothBasis },
       spendingNeed: projectedSpendingNeed,
       isSpendingReal: false, // Converted to nominal at retirement start
       // Zero out contributions for retirement phase
@@ -117,7 +123,16 @@ const App: React.FC = () => {
           // Merge with initial profile to ensure structure, but saved values take precedence
           // We strip the ID before setting state
           const { id, ...profileData } = savedProfile;
-          setProfile({ ...INITIAL_PROFILE, ...profileData });
+          // Deep merge to ensure new fields (like assets.rothBasis) are populated if missing in legacy data
+          const mergedProfile = {
+            ...INITIAL_PROFILE,
+            ...profileData,
+            assets: { ...INITIAL_PROFILE.assets, ...profileData.assets },
+            contributions: { ...INITIAL_PROFILE.contributions, ...profileData.contributions },
+            income: { ...INITIAL_PROFILE.income, ...profileData.income },
+            assumptions: { ...INITIAL_PROFILE.assumptions, ...profileData.assumptions }
+          };
+          setProfile(mergedProfile);
         } else {
           // Check if wizard has been completed in this session or previously (legacy check)
           const wizardCompleted = localStorage.getItem('wizard_completed_v1');

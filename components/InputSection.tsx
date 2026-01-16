@@ -193,6 +193,7 @@ const InputSection: React.FC<InputSectionProps> = ({ profile, setProfile, onRest
           {[
             { label: 'Traditional IRA / 401k', key: 'traditionalIRA' as const },
             { label: 'Roth IRA / 401k', key: 'rothIRA' as const },
+            { label: 'Roth Carry/Basis', key: 'rothBasis' as const }, // Added Basis
             { label: 'Taxable Brokerage', key: 'brokerage' as const },
             { label: 'HSA', key: 'hsa' as const },
           ].map((item) => (
@@ -201,7 +202,7 @@ const InputSection: React.FC<InputSectionProps> = ({ profile, setProfile, onRest
               <div className="relative">
                 <span className={iconClass}>$</span>
                 <FormattedNumberInput
-                  value={profile.assets[item.key]}
+                  value={profile.assets[item.key] || 0}
                   onChange={(val) => handleAssetChange(item.key, val)}
                   className={`${inputClass} pl-8`}
                 />

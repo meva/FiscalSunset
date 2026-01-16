@@ -1,7 +1,8 @@
 import { UserProfile, StrategyResult, WithdrawalSource, FilingStatus, LongevityResult, YearProjection, Assets, RothConversionRecommendation, ConversionConstraint, ConversionConstraintType } from '../types';
 import {
   STANDARD_DEDUCTION, AGE_DEDUCTION, TAX_BRACKETS, CAP_GAINS_BRACKETS, UNIFORM_LIFETIME_TABLE, RMD_START_AGE,
-  SENIOR_DEDUCTION, SENIOR_DEDUCTION_PHASEOUT, SS_TAX_THRESHOLDS, IRMAA_THRESHOLDS, IRMAA_SAFETY_BUFFER
+  SENIOR_DEDUCTION, SENIOR_DEDUCTION_PHASEOUT, SS_TAX_THRESHOLDS, IRMAA_THRESHOLDS, IRMAA_SAFETY_BUFFER,
+  FED_MIDTERM_RATE_120, SINGLE_LIFE_EXPECTANCY_TABLE // Imported
 } from '../constants';
 
 /**
@@ -57,10 +58,109 @@ const calculateFederalTax = (ordinaryIncome: number, capGainsIncome: number, fil
   return tax;
 };
 
+export const calculateSEPPPayment = (balance: number, age: number): number => {
+  if (balance <= 0) return 0;
+  const lifeExpectancy = SINGLE_LIFE_EXPECTANCY_TABLE[age] || 20.0; // Fallback
+  const rate = FED_MIDTERM_RATE_120;
+  // Amortization Formula: A = P * [r(1+r)^n] / [(1+r)^n - 1]
+  const n = lifeExpectancy;
+  const numerator = rate * Math.pow(1 + rate, n);
+  const denominator = Math.pow(1 + rate, n) - 1;
+  return balance * (numerator / denominator);
+};
+
+export const getWithdrawalOrder = (
+  age: number,
+  assets: Assets,
+  stdDeductionNeed: number,
+  filingStatus: FilingStatus
+): { source: string; limit: number; taxType: 'Ordinary' | 'CapitalGains' | 'None'; penalty: boolean; isSEPP?: boolean }[] => {
+  const order: { source: string; limit: number; taxType: 'Ordinary' | 'CapitalGains' | 'None'; penalty: boolean; isSEPP?: boolean }[] = [];
+
+  // LEVEL 1: Taxable Brokerage (Capital Gains) - Always accessible, efficient caps
+  order.push({ source: 'Taxable Brokerage', limit: assets.brokerage, taxType: 'CapitalGains', penalty: false });
+
+  // LEVEL 2: Roth Contributions (Basis) - Always tax/penalty free
+  // Note: We use assets.rothBasis. If undefined, we assume 0 or handle externally.
+  // We treat Basis as a sub-segment of Roth IRA.
+  const rothBasisAvailable = Math.min(assets.rothBasis || 0, assets.rothIRA);
+  order.push({ source: 'Roth IRA (Basis)', limit: rothBasisAvailable, taxType: 'None', penalty: false });
+
+  // LEVEL 3: Early Access (Conditional)
+  // Rule of 55 (Simulation): If Age >= 55, Trad IRA is accessible penalty-free (assuming separation)
+  // Real world: Only from current 401k. We simplify for the tool.
+  if (age >= 55 && age < 59.5) {
+    order.push({
+      source: 'Traditional IRA (Rule of 55)',
+      limit: assets.traditionalIRA,
+      taxType: 'Ordinary',
+      penalty: false
+    });
+  } else if (age < 59.5) {
+    // 72(t) SEPP - If not 55+, use SEPP
+    // Calculate Max SEPP payment based on current Trad Balance
+    const maxSEPP = calculateSEPPPayment(assets.traditionalIRA, age);
+    if (maxSEPP > 0) {
+      order.push({
+        source: 'Traditional IRA (72t/SEPP)',
+        limit: maxSEPP,
+        taxType: 'Ordinary',
+        penalty: false,
+        isSEPP: true
+      });
+    }
+
+    // Roth Conversion Ladder (Ladder logic complex, skipping for simplifed priority)
+    // Could add "Roth Earnings (Accessible)" if 5-year rules met, but usually covered by Basis logic order
+  }
+
+  // LEVEL 4: Standard / Penalty Access
+  // If > 59.5, Standard Access
+  if (age >= 59.5) {
+    order.push({
+      source: 'Traditional IRA',
+      limit: assets.traditionalIRA, // Remaining after Rule of 55 check if that was separate, but here we just add bucket
+      taxType: 'Ordinary',
+      penalty: false
+    });
+    // Remaining Roth (Earnings)
+    const rothEarnings = Math.max(0, assets.rothIRA - rothBasisAvailable);
+    order.push({
+      source: 'Roth IRA (Earnings)',
+      limit: rothEarnings,
+      taxType: 'None', // Tax free if > 59.5 and 5 year rule (assumed met)
+      penalty: false
+    });
+  } else {
+    // Age < 59.5 and Levels 1-3 exhausted
+    // Traditional IRA (Penalty)
+    // Note: If SEPP was added, this is the "Excess" above SEPP
+    // We can't double count the SEPP limit. Logic in calculation loop handles actual deduction.
+    // But distinct bucket helps. We set limit to Infinity (bounded by asset balance in loop)
+    order.push({
+      source: 'Traditional IRA (Penalty)',
+      limit: assets.traditionalIRA, // Loop will subtract what was used in SEPP
+      taxType: 'Ordinary',
+      penalty: true
+    });
+
+    // Roth Earnings (Penalty + Tax)
+    const rothEarnings = Math.max(0, assets.rothIRA - rothBasisAvailable);
+    order.push({
+      source: 'Roth IRA Earnings (Penalty)',
+      limit: rothEarnings,
+      taxType: 'Ordinary', // Earnings taxable if non-qualified
+      penalty: true
+    });
+  }
+
+  return order;
+};
+
 export const calculateStrategy = (profile: UserProfile): StrategyResult => {
+  // Refactored calculateStrategy to use Withdrawal Priority Engine
   const { age, baseAge, filingStatus, spendingNeed, isSpendingReal, assets, income, assumptions } = profile;
 
-  // Determine if Social Security is active for this specific year calculation
   const isSSActive = age >= (income.socialSecurityStartAge || 62);
   const annualSS = isSSActive ? income.socialSecurity : 0;
 
@@ -76,19 +176,26 @@ export const calculateStrategy = (profile: UserProfile): StrategyResult => {
   const ordinaryDividends = income.brokerageDividends * (1 - income.qualifiedDividendRatio);
 
   let estimatedTax = 0;
+  let penaltyTax = 0;
   let currentIteration = 0;
   const maxIterations = 15;
   let lastResult: StrategyResult | null = null;
+  let liquidityGapWarning = false;
 
   while (currentIteration < maxIterations) {
-    const targetNet = nominalSpendingNeeded + estimatedTax;
+    const targetNet = nominalSpendingNeeded + estimatedTax + penaltyTax; // Add penalty to need
     const currentAssets: Assets = { ...assets };
+
+    // We track rothBasis separately to ensure we don't double dip or lose track vs total Roth
+    let currentRothBasis = assets.rothBasis || 0;
+
     const withdrawalPlan: WithdrawalSource[] = [];
     let grossCash = annualSS + income.pension + income.brokerageDividends;
     let ordIncomeForTax = income.pension + ordinaryDividends;
     let capGainsForTax = qualifiedDividends;
+    let currentPenalty = 0;
 
-    // STEP A: Mandatory RMDs
+    // 0. RMDs (Always First)
     let rmdAmount = 0;
     if (age >= RMD_START_AGE && currentAssets.traditionalIRA > 0) {
       rmdAmount = currentAssets.traditionalIRA / (UNIFORM_LIFETIME_TABLE[age] || 15.0);
@@ -98,155 +205,113 @@ export const calculateStrategy = (profile: UserProfile): StrategyResult => {
         amount: actualRMD,
         taxableAmount: actualRMD,
         taxType: 'Ordinary',
-        description: `Mandatory IRS distribution for age ${age}.`,
+        description: `Mandatory IRS distribution.`,
       });
       grossCash += actualRMD;
       ordIncomeForTax += actualRMD;
       currentAssets.traditionalIRA -= actualRMD;
     }
 
-    // STEP B: Standard Deduction (0% Ordinary Bucket)
+    // 1. Get Priority Order
+    // We pass initial assets, but we must respect the dynamic 'currentAssets' in the loop
+    // so strictly speaking the order definition uses static rules, boundaries use currentAssets.
+    const priorityOrder = getWithdrawalOrder(age, assets, standardDeduction, filingStatus);
+
     let gap = targetNet - grossCash;
-    if (gap > 0 && currentAssets.traditionalIRA > 0) {
-      const taxableSS = calculateTaxableSocialSecurity(annualSS, ordIncomeForTax, filingStatus);
-      const roomInStdDeduction = Math.max(0, standardDeduction - (ordIncomeForTax + taxableSS));
-      if (roomInStdDeduction > 0) {
-        const pull = Math.min(gap, roomInStdDeduction, currentAssets.traditionalIRA);
+
+    for (const step of priorityOrder) {
+      if (gap <= 0.5) break; // Gap filled
+
+      // Determine available amount in this bucket based on currentAssets state
+      let availableInBucket = 0;
+      if (step.source.includes('Brokerage')) availableInBucket = currentAssets.brokerage;
+      else if (step.source.includes('Roth IRA (Basis)')) availableInBucket = Math.min(currentRothBasis, currentAssets.rothIRA);
+      else if (step.source.includes('Traditional IRA')) availableInBucket = currentAssets.traditionalIRA;
+      else if (step.source.includes('Roth IRA')) availableInBucket = currentAssets.rothIRA; // Earnings/Flexibility
+
+      // Apply step limit (e.g. SEPP limit)
+      let limit = step.limit;
+      // Special Handling: If we already used some TradIRA for RMD, reduce available? 
+      // RMD comes out of TradIRA, so currentAssets.traditionalIRA is already reduced.
+      // However, SEPP limit is calculated on distinct balance. 
+      // For simplicity, we just take min(available, limit).
+
+      const pull = Math.min(gap, availableInBucket, limit);
+
+      if (pull > 0) {
+        // Adjust Assets
+        if (step.source.includes('Brokerage')) currentAssets.brokerage -= pull;
+        else if (step.source.includes('Traditional')) currentAssets.traditionalIRA -= pull;
+        else if (step.source.includes('Roth')) {
+          currentAssets.rothIRA -= pull;
+          if (step.source.includes('Basis')) currentRothBasis -= pull;
+        }
+
+        // Add to Plan
+        const taxableAmt = (step.taxType === 'None') ? 0 :
+          (step.taxType === 'CapitalGains' ? pull * 0.5 : pull); // Simplifed 50% gain ratio
+
         withdrawalPlan.push({
-          source: 'Traditional IRA (to Std. Ded.)',
+          source: step.source,
           amount: pull,
-          taxableAmount: pull,
-          taxType: 'Ordinary',
-          description: `Filling standard deduction ($${standardDeduction.toLocaleString()}) to pull funds tax-free.`,
+          taxableAmount: taxableAmt,
+          taxType: step.taxType,
+          description: step.penalty ? 'WARN: Early withdrawal penalty applies.' :
+            step.isSEPP ? '72(t) SEPP withdrawal.' : 'Standard withdrawal.',
         });
+
+        // Add to Cash / Tax / Penalty
         grossCash += pull;
-        ordIncomeForTax += pull;
-        currentAssets.traditionalIRA -= pull;
+        if (step.taxType === 'Ordinary') ordIncomeForTax += taxableAmt;
+        if (step.taxType === 'CapitalGains') capGainsForTax += taxableAmt;
+
+        if (step.penalty) {
+          currentPenalty += pull * 0.10;
+        }
+
         gap -= pull;
       }
     }
 
-    // STEP C: Brokerage (0% Capital Gains Bracket)
-    if (gap > 0 && currentAssets.brokerage > 0) {
-      const taxableSS = calculateTaxableSocialSecurity(annualSS, ordIncomeForTax, filingStatus);
-      const cgThreshold = CAP_GAINS_BRACKETS[filingStatus][0].limit;
-      const currentOrdinaryTaxable = Math.max(0, ordIncomeForTax + taxableSS - standardDeduction);
-      const roomInZeroCG = Math.max(0, cgThreshold - currentOrdinaryTaxable - capGainsForTax);
-      if (roomInZeroCG > 0) {
-        const gainFactor = 0.5;
-        const pull = Math.min(gap, roomInZeroCG / gainFactor, currentAssets.brokerage);
-        const taxablePart = pull * gainFactor;
-        withdrawalPlan.push({
-          source: 'Brokerage (0% CG)',
-          amount: pull,
-          taxableAmount: taxablePart,
-          taxType: 'CapitalGains',
-          description: `Selling brokerage assets. Gains are 0% because ordinary income is low.`,
-        });
-        grossCash += pull;
-        capGainsForTax += taxablePart;
-        currentAssets.brokerage -= pull;
-        gap -= pull;
-      }
-    }
-
-    // STEP D: Traditional IRA (Low Brackets - 10-12%)
-    if (gap > 0 && currentAssets.traditionalIRA > 0) {
-      const lowBracketLimit = TAX_BRACKETS[filingStatus][1].limit;
-      const taxableSS = calculateTaxableSocialSecurity(annualSS, ordIncomeForTax, filingStatus);
-      const currentOrdinaryTaxable = Math.max(0, ordIncomeForTax + taxableSS - standardDeduction);
-      const roomInLowBrackets = Math.max(0, lowBracketLimit - currentOrdinaryTaxable);
-      if (roomInLowBrackets > 0) {
-        const pull = Math.min(gap, roomInLowBrackets, currentAssets.traditionalIRA);
-        withdrawalPlan.push({
-          source: 'Traditional IRA (12% Bracket)',
-          amount: pull,
-          taxableAmount: pull,
-          taxType: 'Ordinary',
-          description: `Withdrawing from IRA to fill the low (10-12%) tax brackets.`,
-        });
-        grossCash += pull;
-        ordIncomeForTax += pull;
-        currentAssets.traditionalIRA -= pull;
-        gap -= pull;
-      }
-    }
-
-    // STEP E: Roth IRA (Tax-Free Flexibility Lever - Preserved until needed)
-    if (gap > 0 && currentAssets.rothIRA > 0) {
-      const pull = Math.min(gap, currentAssets.rothIRA);
-      withdrawalPlan.push({
-        source: 'Roth IRA (Flexibility)',
-        amount: pull,
-        taxableAmount: 0,
-        taxType: 'None',
-        description: 'Using tax-free Roth funds to cover remaining needs and preserve low tax rates.',
-      });
-      grossCash += pull;
-      currentAssets.rothIRA -= pull;
-      gap -= pull;
-    }
-
-    // STEP F: Excess Needs (High Bracket IRA or Brokerage 15%)
-    if (gap > 0 && (currentAssets.traditionalIRA > 0 || currentAssets.brokerage > 0)) {
-      if (currentAssets.brokerage > 0) {
-        const pull = Math.min(gap, currentAssets.brokerage);
-        withdrawalPlan.push({
-          source: 'Brokerage (Excess)',
-          amount: pull,
-          taxableAmount: pull * 0.5,
-          taxType: 'CapitalGains',
-          description: 'Remaining needs from brokerage assets.',
-        });
-        grossCash += pull;
-        gap -= pull;
-      } else {
-        const pull = Math.min(gap, currentAssets.traditionalIRA);
-        withdrawalPlan.push({
-          source: 'Traditional IRA (High Bracket)',
-          amount: pull,
-          taxableAmount: pull,
-          taxType: 'Ordinary',
-          description: 'Remaining needs from Traditional IRA (High Bracket).',
-        });
-        grossCash += pull;
-        gap -= pull;
-      }
-    }
+    // Check if we failed to fill gap even with penalties, OR if we triggered penalties
+    liquidityGapWarning = gap > 1 || currentPenalty > 0;
 
     const finalTaxableSS = calculateTaxableSocialSecurity(annualSS, ordIncomeForTax, filingStatus);
     const iterationTax = calculateFederalTax(ordIncomeForTax + finalTaxableSS, capGainsForTax, filingStatus, standardDeduction);
 
-    // Calculate Roth conversion optimization
-    // Pass the actual active SS amount (which might be 0)
-    const rothConversionDetail = calculateRothConversionOptimization(profile, ordIncomeForTax, finalTaxableSS, annualSS);
-
     lastResult = {
       totalWithdrawal: grossCash,
-      gapFilled: gap <= 0,
+      gapFilled: gap <= 1,
+      liquidityGapWarning,
       withdrawalPlan,
-      rothConversionAmount: rothConversionDetail.recommendedAmount,
-      rothConversionDetail,
+      rothConversionAmount: 0, // Recalculated below
       estimatedFederalTax: iterationTax,
-      effectiveTaxRate: iterationTax / grossCash || 0,
+      effectiveTaxRate: iterationTax / (grossCash || 1),
       rmdAmount,
       taxableSocialSecurity: finalTaxableSS,
       currentYearSocialSecurity: annualSS,
       provisionalIncome: ordIncomeForTax + (0.5 * annualSS),
       standardDeduction,
-      notes: [],
+      notes: currentPenalty > 0 ? [`Includes $${currentPenalty.toFixed(0)} early withdrawal penalty.`] : [],
       nominalSpendingNeeded
     };
 
-    if (Math.abs(iterationTax - estimatedTax) < 1) break;
+    if (Math.abs(iterationTax - estimatedTax) < 5 && Math.abs(currentPenalty - penaltyTax) < 5) break;
     estimatedTax = iterationTax;
+    penaltyTax = currentPenalty;
     currentIteration++;
   }
 
-  return lastResult || {
-    totalWithdrawal: 0, gapFilled: false, withdrawalPlan: [], rothConversionAmount: 0,
-    estimatedFederalTax: 0, effectiveTaxRate: 0, rmdAmount: 0, taxableSocialSecurity: 0, currentYearSocialSecurity: 0,
-    provisionalIncome: 0, standardDeduction: 0, notes: ["Calc failed"], nominalSpendingNeeded: 0
+  // Optimization Step (re-run outside loop to avoid circular logic or simpler: run once on result)
+  const rothDetail = calculateRothConversionOptimization(profile,
+    lastResult?.provisionalIncome || 0, // Approx
+    lastResult?.taxableSocialSecurity || 0
+  );
+
+  return {
+    ...lastResult!,
+    rothConversionAmount: rothDetail.recommendedAmount,
+    rothConversionDetail: rothDetail
   };
 };
 
@@ -299,6 +364,11 @@ export const calculateLongevity = (profile: UserProfile, strategy: StrategyResul
 
     // Inflate the Gross Need for next year
     currentProjectedGrossNeed *= (1 + profile.assumptions.inflationRateInRetirement);
+
+    // If age passes 59.5, assume any early penalty component drops off
+    // Refinement: If strategy had penalty, it mimics higher gross need.
+    // We should ideally recalc strategy, but for now we won't reduce gross need arbitrarily
+    // as lifestyle inflation is sticky. But we can assume better efficiency.
   }
 
   const initialPortfolioDraw = Math.max(0, strategy.totalWithdrawal - (profile.income.pension + profile.income.brokerageDividends + (profile.age >= (profile.income.socialSecurityStartAge || 62) ? profile.income.socialSecurity : 0)));

@@ -99,6 +99,21 @@ const StrategyResults: React.FC<StrategyResultsProps> = ({ result, profile, isDa
   return (
     <div className="space-y-6">
 
+      {/* Liquidity Gap Warning */}
+      {result.liquidityGapWarning && (
+        <div className="bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-900 p-4 rounded-xl flex items-start gap-3 animate-in fade-in slide-in-from-top-2">
+          <ShieldAlert className="w-5 h-5 text-red-600 dark:text-red-400 mt-0.5 shrink-0" />
+          <div>
+            <h3 className="text-sm font-bold text-red-800 dark:text-red-300">Liquidity Gap Warning: Early Withdrawal Penalty Triggered</h3>
+            <p className="text-xs text-red-700 dark:text-red-400 mt-1">
+              Your strategy requires accessing Traditional IRA/401(k) funds before age 59½ beyond safe harbor limits (like 72(t) SEPP).
+              A 10% early withdrawal penalty consumes part of your portfolio turnover.
+              <strong>Recommendation: Increase Taxable Brokerage or Roth Contribution savings to bridge this gap.</strong>
+            </p>
+          </div>
+        </div>
+      )}
+
       {/* Starting Retirement Balances Summary */}
       <div className="bg-white dark:bg-slate-900 p-5 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm transition-colors">
         <h3 className="text-sm font-bold text-slate-800 dark:text-white mb-4 flex items-center gap-2">
@@ -398,27 +413,23 @@ const StrategyResults: React.FC<StrategyResultsProps> = ({ result, profile, isDa
               </ul>
               <ul className="text-xs space-y-2 text-slate-600 dark:text-slate-400">
                 <li className="flex items-start gap-2">
-                  <span className="text-purple-500 font-bold">•</span>
-                  <span><strong className="text-slate-700 dark:text-slate-300">Roth Conversion Optimizer:</strong> "Fill Strategy" algorithm calculates optimal conversions based on tax bracket headroom.</span>
+                  <span className="text-orange-500 font-bold">•</span>
+                  <span><strong className="text-slate-700 dark:text-slate-300">FIRE Priority Engine:</strong> Prioritizes Penalty-Free access (Brokerage, Roth Basis, Rule of 55) before Standard withdrawals.</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="text-orange-500 font-bold">•</span>
+                  <span><strong className="text-slate-700 dark:text-slate-300">72(t) SEPP Integration:</strong> Automatically calculates penalty-free IRS amortization payments for early retirees.</span>
                 </li>
                 <li className="flex items-start gap-2">
                   <span className="text-purple-500 font-bold">•</span>
-                  <span><strong className="text-slate-700 dark:text-slate-300">RMD Calculations:</strong> Automatic Required Minimum Distribution tracking for ages 73+.</span>
-                </li>
-                <li className="flex items-start gap-2">
-                  <span className="text-purple-500 font-bold">•</span>
-                  <span><strong className="text-slate-700 dark:text-slate-300">40-Year Projections:</strong> Long-term modeling with inflation adjustments for retirement planning.</span>
-                </li>
-                <li className="flex items-start gap-2">
-                  <span className="text-purple-500 font-bold">•</span>
-                  <span><strong className="text-slate-700 dark:text-slate-300">Safe Withdrawal Rate:</strong> Benchmarks against the 4-5% rule of thumb for sustainable withdrawals.</span>
+                  <span><strong className="text-slate-700 dark:text-slate-300">Roth Conversion Optimizer:</strong> "Fill Strategy" algorithm calculates optimal conversions.</span>
                 </li>
               </ul>
             </div>
           </div>
         </div>
       </div>
-    </div>
+    </div >
   );
 };
 

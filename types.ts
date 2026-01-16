@@ -6,6 +6,7 @@ export enum FilingStatus {
 export interface Assets {
   traditionalIRA: number;
   rothIRA: number;
+  rothBasis: number; // New: Track basis separately for tax-free withdrawal priority
   brokerage: number;
   hsa: number;
 }
@@ -61,6 +62,7 @@ export interface WithdrawalSource {
 export interface StrategyResult {
   totalWithdrawal: number;
   gapFilled: boolean;
+  liquidityGapWarning?: boolean; // New: Warn if 10% penalty triggered due to liquidity shortage
   withdrawalPlan: WithdrawalSource[];
   rothConversionAmount: number;
   rothConversionDetail?: RothConversionRecommendation; // Detailed optimization info

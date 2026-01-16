@@ -156,3 +156,26 @@ export const IRMAA_THRESHOLDS: Record<FilingStatus, IRMAATier[]> = {
 
 // IRMAA Safety Buffer (avoid getting within $1k of a cliff)
 export const IRMAA_SAFETY_BUFFER = 1000;
+
+// ============================================================================
+// FIRE / Early Withdrawal Constants
+// ============================================================================
+
+// 120% of Federal Mid-Term Rate (approx for 2025/2026 demo purposes)
+// Used for 72(t) Amortization Method
+export const FED_MIDTERM_RATE_120 = 0.052; // 5.2%
+
+// Single Life Expectancy Table (IRS Pub 590-B Table I)
+// Used for 72(t) calculations
+export const SINGLE_LIFE_EXPECTANCY_TABLE: Record<number, number> = {
+  30: 55.3, 31: 54.4, 32: 53.4, 33: 52.5, 34: 51.5,
+  35: 50.5, 36: 49.6, 37: 48.6, 38: 47.7, 39: 46.7,
+  40: 45.7, 41: 44.8, 42: 43.8, 43: 42.9, 44: 41.9,
+  45: 41.0, 46: 40.0, 47: 39.0, 48: 38.1, 49: 37.1,
+  50: 36.2, 51: 35.3, 52: 34.3, 53: 33.4, 54: 32.5,
+  55: 31.6, 56: 30.6, 57: 29.8, 58: 28.9, 59: 28.0,
+  60: 27.1, 61: 26.2, 62: 25.4, 63: 24.5, 64: 23.7,
+  65: 22.9, 66: 22.0, 67: 21.2, 68: 20.4, 69: 19.6,
+  70: 18.8, 71: 18.0, 72: 17.2, 73: 16.4, 74: 15.6,
+  75: 14.8,
+};

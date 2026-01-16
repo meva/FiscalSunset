@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { TAX_BRACKETS, CAP_GAINS_BRACKETS, STANDARD_DEDUCTION, AGE_DEDUCTION, SENIOR_DEDUCTION, SENIOR_DEDUCTION_PHASEOUT, SS_TAX_THRESHOLDS, IRMAA_THRESHOLDS, RMD_START_AGE, UNIFORM_LIFETIME_TABLE } from '../constants';
+import { TAX_BRACKETS, CAP_GAINS_BRACKETS, STANDARD_DEDUCTION, AGE_DEDUCTION, SENIOR_DEDUCTION, SENIOR_DEDUCTION_PHASEOUT, SS_TAX_THRESHOLDS, IRMAA_THRESHOLDS, RMD_START_AGE, UNIFORM_LIFETIME_TABLE, FED_MIDTERM_RATE_120, SINGLE_LIFE_EXPECTANCY_TABLE } from '../constants';
 import { FilingStatus } from '../types';
 import {
     BookOpen,
@@ -357,32 +357,32 @@ const TaxReference: React.FC = () => {
                         <p className="text-sm text-slate-600 dark:text-slate-400 mb-3">
                             The app follows a tax-efficient withdrawal sequence:
                         </p>
-                        <ol className="space-y-2 text-sm text-slate-700 dark:text-slate-300">
-                            <li className="flex items-start gap-2">
-                                <span className="font-bold text-blue-600 dark:text-blue-400">1.</span>
-                                <span><strong>Social Security & Pensions</strong> — Guaranteed income used first</span>
-                            </li>
-                            <li className="flex items-start gap-2">
-                                <span className="font-bold text-blue-600 dark:text-blue-400">2.</span>
-                                <span><strong>HSA (if 65+)</strong> — Tax-free for qualified medical expenses</span>
-                            </li>
-                            <li className="flex items-start gap-2">
-                                <span className="font-bold text-blue-600 dark:text-blue-400">3.</span>
-                                <span><strong>Required Minimum Distributions (RMDs)</strong> — Mandatory if 73+</span>
-                            </li>
-                            <li className="flex items-start gap-2">
-                                <span className="font-bold text-blue-600 dark:text-blue-400">4.</span>
-                                <span><strong>Traditional IRA/401k</strong> — Fills lower tax brackets</span>
-                            </li>
-                            <li className="flex items-start gap-2">
-                                <span className="font-bold text-blue-600 dark:text-blue-400">5.</span>
-                                <span><strong>Taxable Brokerage</strong> — Capital gains at preferential rates</span>
-                            </li>
-                            <li className="flex items-start gap-2">
-                                <span className="font-bold text-blue-600 dark:text-blue-400">6.</span>
-                                <span><strong>Roth IRA</strong> — Last resort, tax-free growth preserved</span>
-                            </li>
-                        </ol>
+                        <div className="space-y-4">
+                            {/* Early Phase */}
+                            <div className="bg-orange-50 dark:bg-orange-900/20 p-3 rounded-lg border border-orange-100 dark:border-slate-700">
+                                <h5 className="font-bold text-orange-900 dark:text-orange-300 text-xs uppercase mb-2">Phase 1: Early Retirement (Age &lt; 59½)</h5>
+                                <p className="text-xs text-slate-600 dark:text-slate-400 mb-2">Prioritizes penalty-free access:</p>
+                                <ol className="space-y-1 text-xs text-slate-700 dark:text-slate-300">
+                                    <li className="flex items-start gap-2"><span className="font-bold text-orange-600">1.</span> Taxable Brokerage (Capital Gains)</li>
+                                    <li className="flex items-start gap-2"><span className="font-bold text-orange-600">2.</span> Roth Contributions (Basis)</li>
+                                    <li className="flex items-start gap-2"><span className="font-bold text-orange-600">3.</span> Rule of 55 / 72(t) SEPP / Roth Ladder</li>
+                                    <li className="flex items-start gap-2"><span className="font-bold text-orange-600">4.</span> Penalized Traditional IRA (Last Resort)</li>
+                                </ol>
+                            </div>
+
+                            {/* Standard Phase */}
+                            <div className="bg-blue-50 dark:bg-blue-900/20 p-3 rounded-lg border border-blue-100 dark:border-slate-700">
+                                <h5 className="font-bold text-blue-900 dark:text-blue-300 text-xs uppercase mb-2">Phase 2: Standard Retirement (Age 59½+)</h5>
+                                <p className="text-xs text-slate-600 dark:text-slate-400 mb-2">Prioritizes tax bracket optimization:</p>
+                                <ol className="space-y-1 text-xs text-slate-700 dark:text-slate-300">
+                                    <li className="flex items-start gap-2"><span className="font-bold text-blue-600">1.</span> Social Security & Pensions</li>
+                                    <li className="flex items-start gap-2"><span className="font-bold text-blue-600">2.</span> RMDs (Required Minimum Distributions)</li>
+                                    <li className="flex items-start gap-2"><span className="font-bold text-blue-600">3.</span> Traditional IRA (Fills Standard Deduction & Low Brackets)</li>
+                                    <li className="flex items-start gap-2"><span className="font-bold text-blue-600">4.</span> Taxable Brokerage (Capital Gains)</li>
+                                    <li className="flex items-start gap-2"><span className="font-bold text-blue-600">5.</span> Roth IRA (Tax-Free Growth & Flexibility)</li>
+                                </ol>
+                            </div>
+                        </div>
                     </div>
 
                     {/* RMD Calculation */}
@@ -438,6 +438,93 @@ const TaxReference: React.FC = () => {
                             <p className="text-sm text-slate-700 dark:text-slate-300">
                                 <strong>Today's Dollars (Real):</strong> Adjusted for purchasing power using: <code className="bg-slate-100 dark:bg-slate-800 px-1 rounded">value ÷ (1 + inflation)^years</code>
                             </p>
+                        </div>
+                    </div>
+                </div>
+            </AccordionSection>
+
+            {/* Early Retirement (FIRE) Rules */}
+            <AccordionSection
+                title="Early Retirement (FIRE) Rules"
+                icon={<Clock className="w-5 h-5" />}
+                accentColor="orange"
+            >
+                <div className="space-y-6">
+                    <p className="text-sm text-slate-600 dark:text-slate-400">
+                        Special IRS rules allow penalty-free access to retirement funds before age 59½.
+                    </p>
+
+                    {/* Rule of 55 */}
+                    <div className={cardClass}>
+                        <div className="flex items-center gap-2 mb-3">
+                            <Zap className="w-5 h-5 text-orange-600 dark:text-orange-400" />
+                            <h4 className="font-bold text-slate-800 dark:text-white">Rule of 55</h4>
+                        </div>
+                        <p className="text-sm text-slate-600 dark:text-slate-400 mb-3">
+                            If you leave your job in or after the year you turn 55, you can withdraw funds from <strong>that specific employer's 401(k)</strong> penalty-free.
+                        </p>
+                        <div className="bg-orange-50 dark:bg-orange-900/20 p-3 rounded text-xs text-orange-800 dark:text-orange-300">
+                            <strong>Note:</strong> This does not apply to IRAs or old 401(k)s from previous employers.
+                        </div>
+                    </div>
+
+                    {/* 72(t) SEPP */}
+                    <div className={cardClass}>
+                        <div className="flex items-center gap-2 mb-3">
+                            <Calculator className="w-5 h-5 text-orange-600 dark:text-orange-400" />
+                            <h4 className="font-bold text-slate-800 dark:text-white">72(t) SEPP Payments</h4>
+                        </div>
+                        <p className="text-sm text-slate-600 dark:text-slate-400 mb-2">
+                            Substantially Equal Periodic Payments (SEPP) allow penalty-free IRA withdrawals at any age using an IRS-approved schedule.
+                        </p>
+                        <p className="text-xs text-slate-500 dark:text-slate-400 mb-4">
+                            You must continue these payments for <strong>5 years</strong> or until age <strong>59½</strong>, whichever is longer.
+                        </p>
+
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                            <div className="bg-white dark:bg-slate-900 p-3 rounded border border-slate-200 dark:border-slate-700">
+                                <span className="block text-xs uppercase font-bold text-slate-500 mb-1">Calculation Method</span>
+                                <span className="font-medium text-slate-900 dark:text-white">Fixed Amortization</span>
+                                <p className="text-[10px] text-slate-500 mt-1">Generally yields the highest payment.</p>
+                            </div>
+                            <div className="bg-white dark:bg-slate-900 p-3 rounded border border-slate-200 dark:border-slate-700">
+                                <span className="block text-xs uppercase font-bold text-slate-500 mb-1">Interest Rate</span>
+                                <span className="font-medium text-slate-900 dark:text-white">{(FED_MIDTERM_RATE_120 * 100).toFixed(1)}%</span>
+                                <p className="text-[10px] text-slate-500 mt-1">120% of Federal Mid-Term Rate</p>
+                            </div>
+                        </div>
+
+                        <h5 className="font-semibold text-sm text-slate-800 dark:text-white mb-2">Single Life Expectancy Table (IRS Pub 590-B)</h5>
+                        <div className="overflow-x-auto max-h-64 overflow-y-auto border border-slate-200 dark:border-slate-700 rounded-lg">
+                            <table className="w-full text-sm">
+                                <thead className={tableHeadClass + " sticky top-0"}>
+                                    <tr>
+                                        <th className="px-4 py-2 rounded-tl-lg">Age</th>
+                                        <th className="px-4 py-2 rounded-tr-lg">Expectancy (Years)</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {Object.entries(SINGLE_LIFE_EXPECTANCY_TABLE).map(([age, factor]) => (
+                                        <tr key={age} className={tableRowClass}>
+                                            <td className={tableCellClass}>{age}</td>
+                                            <td className={tableCellClass}>{factor}</td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <div className="mt-4 p-3 bg-red-50 dark:bg-red-900/20 border border-red-100 dark:border-red-900 rounded-lg flex items-start gap-3">
+                            <AlertTriangle className="w-5 h-5 text-red-600 dark:text-red-400 shrink-0 mt-0.5" />
+                            <div className="text-xs text-red-800 dark:text-red-300 space-y-1">
+                                <p><strong>Important Disclaimer:</strong> These are estimated calculations for educational purposes only.</p>
+                                <ul className="list-disc pl-4 space-y-1">
+                                    <li>Interest rates used for 72(t) calculations (Federal Mid-Term Rate) change monthly.</li>
+                                    <li>There are other IRS-approved calculation methods (RMD, Annuitization) that may be more beneficial for your specific situation.</li>
+                                    <li>"Busting" a SEPP schedule (modifying payments early) results in retroactive penalties and interest.</li>
+                                </ul>
+                                <p className="pt-1">Always consult a qualified tax professional before starting a 72(t) plan.</p>
+                            </div>
                         </div>
                     </div>
                 </div>
