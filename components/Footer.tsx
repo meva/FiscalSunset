@@ -50,7 +50,7 @@ const Footer: React.FC = () => {
                         <h4 className="font-semibold text-slate-900 dark:text-white mb-4 text-sm uppercase tracking-wider">Connect</h4>
                         <ul className="space-y-2 text-sm text-slate-600 dark:text-slate-400">
                             <li>
-                                <a href="https://github.com/meva/retiresmart-tax-efficient-withdrawal-strategist" target="_blank" rel="noopener noreferrer" className="hover:text-slate-900 dark:hover:text-white flex items-center gap-2 transition-colors">
+                                <a href="https://github.com/meva/fiscal-sunset" target="_blank" rel="noopener noreferrer" className="hover:text-slate-900 dark:hover:text-white flex items-center gap-2 transition-colors">
                                     <Github className="w-4 h-4" /> GitHub Repository
                                 </a>
                             </li>
