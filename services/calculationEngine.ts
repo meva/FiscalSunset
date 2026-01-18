@@ -391,7 +391,26 @@ export const calculateLongevity = (profile: UserProfile, strategy: StrategyResul
 
     const totalAssets = currentBrokerage + currentTrad + currentRoth + currentHSA;
 
-    projection.push({ age, year: i, totalAssets: Math.max(0, totalAssets), withdrawal: requiredDraw, isDepleted: totalAssets <= 0 });
+    projection.push({
+      age,
+      year: i,
+      totalAssets: Math.max(0, totalAssets),
+      brokerage: currentBrokerage,
+      traditionalIRA: currentTrad,
+      rothIRA: currentRoth,
+      hsa: currentHSA,
+      withdrawal: requiredDraw,
+      // Breakdown of withdrawals
+      withdrawalBrokerage: fromBrokerage,
+      withdrawalTrad: fromTrad,
+      withdrawalRoth: fromRoth,
+      withdrawalHSA: fromHSA,
+      // Income Sources
+      socialSecurityIncome: currentSS,
+      pensionIncome: basePension,
+      dividendIncome: currentDividends,
+      isDepleted: totalAssets <= 0
+    });
 
     if (totalAssets <= 0 && !depletionAge) depletionAge = age;
 

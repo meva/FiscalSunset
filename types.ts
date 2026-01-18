@@ -81,7 +81,20 @@ export interface YearProjection {
   age: number;
   year: number;
   totalAssets: number;
+  brokerage: number;
+  traditionalIRA: number;
+  rothIRA: number;
+  hsa: number;
   withdrawal: number;
+  // Specific withdrawals by source
+  withdrawalBrokerage: number;
+  withdrawalTrad: number;
+  withdrawalRoth: number;
+  withdrawalHSA: number;
+  // Fixed Income Sources (for composition chart)
+  socialSecurityIncome: number;
+  pensionIncome: number;
+  dividendIncome: number;
   isDepleted: boolean;
 }
 

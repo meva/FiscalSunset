@@ -1,6 +1,6 @@
 import React from 'react';
 import { LongevityResult, UserProfile } from '../types';
-import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, ReferenceLine } from 'recharts';
+import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar, Legend } from 'recharts';
 import { AlertTriangle, CheckCircle, HelpCircle } from 'lucide-react';
 
 interface LongevityAnalysisProps {
@@ -78,10 +78,6 @@ const LongevityAnalysis: React.FC<LongevityAnalysisProps> = ({ longevity, profil
               margin={{ top: 10, right: 30, left: 0, bottom: 20 }}
             >
               <defs>
-                <linearGradient id="colorAssets" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.8} />
-                  <stop offset="95%" stopColor="#3b82f6" stopOpacity={0} />
-                </linearGradient>
               </defs>
               <CartesianGrid strokeDasharray="3 3" vertical={false} stroke={gridColor} />
               <XAxis
@@ -92,23 +88,42 @@ const LongevityAnalysis: React.FC<LongevityAnalysisProps> = ({ longevity, profil
                 interval="preserveStartEnd"
               />
               <YAxis
-                tickFormatter={(val) => `$${val / 1000}k`}
+                tickFormatter={(val) => {
+                  if (val >= 1000000) return `$${(val / 1000000).toFixed(1)}M`;
+                  if (val >= 1000) return `$${(val / 1000).toFixed(0)}k`;
+                  return `$${val}`;
+                }}
                 width={80}
                 stroke={axisColor}
               />
               <Tooltip
                 content={({ active, payload, label }) => {
                   if (active && payload && payload.length) {
+                    const data = payload[0].payload;
                     return (
-                      <div style={{ backgroundColor: tooltipBg, borderColor: gridColor, color: tooltipText }} className="p-2 sm:p-3 border rounded-lg shadow-lg text-[10px] sm:text-xs max-w-[200px]">
-                        <p className="font-bold mb-1">Age {label}</p>
-                        <div className="space-y-0.5">
-                          <p style={{ color: '#3b82f6' }}>
-                            Balance: <span className="font-bold">${Math.round(payload[0].value as number).toLocaleString()}</span>
-                          </p>
-                          <p style={{ color: isDarkMode ? '#fca5a5' : '#ef4444' }}>
-                            Withdrawal: <span className="font-bold">${Math.round(payload[0].payload.withdrawal).toLocaleString()}</span>
-                          </p>
+                      <div style={{ backgroundColor: tooltipBg, borderColor: gridColor, color: tooltipText }} className="p-3 border rounded-lg shadow-lg text-xs min-w-[180px]">
+                        <p className="font-bold mb-2 text-sm border-b pb-1 border-slate-200 dark:border-slate-700">Age {label}</p>
+                        <div className="space-y-1">
+                          <div className="flex justify-between items-center text-blue-600 dark:text-blue-400">
+                            <span>Brokerage:</span>
+                            <span className="font-mono font-bold">${Math.round(data.brokerage).toLocaleString()}</span>
+                          </div>
+                          <div className="flex justify-between items-center text-amber-500 dark:text-amber-400">
+                            <span>Traditional:</span>
+                            <span className="font-mono font-bold">${Math.round(data.traditionalIRA).toLocaleString()}</span>
+                          </div>
+                          <div className="flex justify-between items-center text-emerald-600 dark:text-emerald-400">
+                            <span>Roth:</span>
+                            <span className="font-mono font-bold">${Math.round(data.rothIRA).toLocaleString()}</span>
+                          </div>
+                          <div className="flex justify-between items-center text-violet-600 dark:text-violet-400 mt-1 pt-1 border-t border-slate-100 dark:border-slate-800">
+                            <span>HSA:</span>
+                            <span className="font-mono font-bold">${Math.round(data.hsa).toLocaleString()}</span>
+                          </div>
+                          <div className="flex justify-between items-center font-bold mt-2 pt-2 border-t border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white">
+                            <span>Total:</span>
+                            <span className="font-mono">${Math.round(data.totalAssets).toLocaleString()}</span>
+                          </div>
                         </div>
                       </div>
                     );
@@ -118,11 +133,39 @@ const LongevityAnalysis: React.FC<LongevityAnalysisProps> = ({ longevity, profil
               />
               <Area
                 type="monotone"
-                dataKey="totalAssets"
-                stroke="#2563eb"
-                fillOpacity={1}
-                fill="url(#colorAssets)"
-                name="Portfolio Balance"
+                dataKey="rothIRA"
+                stackId="1"
+                stroke="#10b981"
+                fill="#10b981"
+                fillOpacity={0.6}
+                name="Roth IRA"
+              />
+              <Area
+                type="monotone"
+                dataKey="traditionalIRA"
+                stackId="1"
+                stroke="#f59e0b"
+                fill="#f59e0b"
+                fillOpacity={0.6}
+                name="Traditional IRA"
+              />
+              <Area
+                type="monotone"
+                dataKey="brokerage"
+                stackId="1"
+                stroke="#3b82f6"
+                fill="#3b82f6"
+                fillOpacity={0.6}
+                name="Taxable Brokerage"
+              />
+              <Area
+                type="monotone"
+                dataKey="hsa"
+                stackId="1"
+                stroke="#8b5cf6"
+                fill="#8b5cf6"
+                fillOpacity={0.6}
+                name="HSA"
               />
             </AreaChart>
           </ResponsiveContainer>
@@ -145,6 +188,114 @@ const LongevityAnalysis: React.FC<LongevityAnalysisProps> = ({ longevity, profil
               <li><strong>Tax Efficiency:</strong> Using the "FiscalSunset" strategy (previous tab) reduces the tax drag on your withdrawals, keeping more money invested.</li>
             </ul>
           </div>
+        </div>
+      </div>
+
+      {/* Annual Income Composition Chart */}
+      <div className="bg-white dark:bg-slate-900 p-6 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm min-h-[400px] transition-colors">
+        <h3 className="text-lg font-bold text-slate-800 dark:text-white mb-4">Annual Income Composition (Real Purchasing Power)</h3>
+        <p className="text-sm text-slate-500 dark:text-slate-400 mb-6">
+          This detailed view shows <strong>"Where your paycheck comes from"</strong> each year. Notice how the portfolio withdrawals (colored bars) decrease once Social Security (Gray) kicks in.
+        </p>
+        <div className="h-[350px] w-full">
+          <ResponsiveContainer width="100%" height="100%">
+            <BarChart
+              data={projection}
+              margin={{ top: 20, right: 30, left: 0, bottom: 20 }}
+              barCategoryGap="20%"
+            >
+              <CartesianGrid strokeDasharray="3 3" vertical={false} stroke={gridColor} />
+              <XAxis
+                dataKey="age"
+                label={{ value: 'Age', position: 'insideBottom', offset: -10, fill: axisColor, fontSize: 12 }}
+                stroke={axisColor}
+                tick={{ fontSize: 11 }}
+              />
+              <YAxis
+                tickFormatter={(val) => {
+                  if (val >= 1000) return `$${(val / 1000).toFixed(0)}k`;
+                  return `$${val}`;
+                }}
+                width={80}
+                stroke={axisColor}
+              />
+              <Tooltip
+                cursor={{ fill: isDarkMode ? '#1e293b' : '#f1f5f9', opacity: 0.5 }}
+                content={({ active, payload, label }) => {
+                  if (active && payload && payload.length) {
+                    const data = payload[0].payload;
+                    const totalIncome = (data.socialSecurityIncome || 0) + (data.pensionIncome || 0) + (data.dividendIncome || 0) + (data.withdrawal || 0);
+
+                    return (
+                      <div style={{ backgroundColor: tooltipBg, borderColor: gridColor, color: tooltipText }} className="p-3 border rounded-lg shadow-lg text-xs min-w-[200px]">
+                        <p className="font-bold mb-2 text-sm border-b pb-1 border-slate-200 dark:border-slate-700">Age {label}</p>
+
+                        <div className="space-y-3">
+                          {/* Fixed Income Section */}
+                          <div>
+                            <p className="text-[10px] font-bold uppercase text-slate-500 mb-1">Guaranteed Income</p>
+                            <div className="space-y-1 pl-2 border-l-2 border-slate-300 dark:border-slate-600">
+                              <div className="flex justify-between items-center text-slate-600 dark:text-slate-400">
+                                <span>Social Security:</span>
+                                <span className="font-mono font-bold">${Math.round(data.socialSecurityIncome).toLocaleString()}</span>
+                              </div>
+                              <div className="flex justify-between items-center text-slate-600 dark:text-slate-400">
+                                <span>Pension:</span>
+                                <span className="font-mono font-bold">${Math.round(data.pensionIncome).toLocaleString()}</span>
+                              </div>
+                              <div className="flex justify-between items-center text-blue-400 dark:text-blue-300">
+                                <span>Dividends:</span>
+                                <span className="font-mono font-bold">${Math.round(data.dividendIncome).toLocaleString()}</span>
+                              </div>
+                            </div>
+                          </div>
+
+                          {/* Portfolio Draw Section */}
+                          <div>
+                            <p className="text-[10px] font-bold uppercase text-slate-500 mb-1">Portfolio Withdrawals</p>
+                            <div className="space-y-1 pl-2 border-l-2 border-blue-500">
+                              <div className="flex justify-between items-center text-blue-600 dark:text-blue-400">
+                                <span>Brokerage:</span>
+                                <span className="font-mono font-bold">${Math.round(data.withdrawalBrokerage).toLocaleString()}</span>
+                              </div>
+                              <div className="flex justify-between items-center text-amber-500 dark:text-amber-400">
+                                <span>Trad IRA:</span>
+                                <span className="font-mono font-bold">${Math.round(data.withdrawalTrad).toLocaleString()}</span>
+                              </div>
+                              <div className="flex justify-between items-center text-emerald-600 dark:text-emerald-400">
+                                <span>Roth IRA:</span>
+                                <span className="font-mono font-bold">${Math.round(data.withdrawalRoth).toLocaleString()}</span>
+                              </div>
+                              <div className="flex justify-between items-center text-violet-600 dark:text-violet-400">
+                                <span>HSA:</span>
+                                <span className="font-mono font-bold">${Math.round(data.withdrawalHSA).toLocaleString()}</span>
+                              </div>
+                            </div>
+                          </div>
+
+                          <div className="flex justify-between items-center font-bold mt-2 pt-2 border-t border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white">
+                            <span>Total Annual Income:</span>
+                            <span className="font-mono">${Math.round(totalIncome).toLocaleString()}</span>
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  }
+                  return null;
+                }}
+              />
+              <Legend iconType="circle" wrapperStyle={{ fontSize: '12px', paddingTop: '20px' }} />
+
+              <Bar dataKey="socialSecurityIncome" name="Social Security" stackId="a" fill="#64748b" />
+              <Bar dataKey="pensionIncome" name="Pension" stackId="a" fill="#94a3b8" />
+              <Bar dataKey="dividendIncome" name="Dividends" stackId="a" fill="#60a5fa" />
+
+              <Bar dataKey="withdrawalTrad" name="Traditional IRA" stackId="a" fill="#f59e0b" />
+              <Bar dataKey="withdrawalRoth" name="Roth IRA" stackId="a" fill="#10b981" />
+              <Bar dataKey="withdrawalBrokerage" name="Brokerage" stackId="a" fill="#3b82f6" />
+              <Bar dataKey="withdrawalHSA" name="HSA" stackId="a" fill="#8b5cf6" />
+            </BarChart>
+          </ResponsiveContainer>
         </div>
       </div>
     </div>
