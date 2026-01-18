@@ -60,7 +60,7 @@ const LongevityAnalysis: React.FC<LongevityAnalysisProps> = ({ longevity, profil
                 <CheckCircle className="w-8 h-8 text-blue-600 dark:text-blue-500" />
                 <div>
                   <span className="text-xl font-bold text-blue-900 dark:text-blue-200">Sustainable</span>
-                  <p className="text-xs text-blue-700 dark:text-blue-300">Portfolio lasts beyond 40 years.</p>
+                  <p className="text-xs text-blue-700 dark:text-blue-300">Portfolio lasts to age 100+.</p>
                 </div>
               </>
             )}

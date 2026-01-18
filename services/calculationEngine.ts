@@ -341,7 +341,11 @@ export const calculateLongevity = (profile: UserProfile, strategy: StrategyResul
   // and inflate it. This simulates maintaining lifestyle + paying relative taxes.
   let currentProjectedGrossNeed = strategy.totalWithdrawal;
 
-  for (let i = 0; i <= 40; i++) {
+  // Calculate up to age 100
+  const maxSimulationAge = 100;
+  const yearsToSimulate = Math.max(40, maxSimulationAge - profile.age);
+
+  for (let i = 0; i <= yearsToSimulate; i++) {
     const age = profile.age + i;
 
     // 1. Calculate Inflows (SS + Pension + Dynamic Dividends)
