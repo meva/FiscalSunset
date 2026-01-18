@@ -282,18 +282,15 @@ const InputSection: React.FC<InputSectionProps> = ({ profile, setProfile, onRest
             </div>
           </div>
           <div>
-            <label className={labelClass}>Brokerage Dividends</label>
-            <div className="relative">
-              <span className={iconClass}>$</span>
-              <FormattedNumberInput
-                value={profile.income.brokerageDividends}
-                onChange={(val) => handleIncomeChange('brokerageDividends', val)}
-                className={`${inputClass} pl-8`}
-              />
-            </div>
+            <label className={labelClass}>Brokerage Yield (%)</label>
+            <PercentageInput
+              value={profile.income.brokerageDividendYield}
+              onChange={(val) => handleIncomeChange('brokerageDividendYield', val)}
+              className={inputClass}
+            />
           </div>
           <div>
-            <label className={labelClass}>Qualified Div. Ratio (%)</label>
+            <label className={labelClass}>Qualified Ratio (%)</label>
             <PercentageInput
               value={profile.income.qualifiedDividendRatio}
               onChange={(val) => handleIncomeChange('qualifiedDividendRatio', val)}

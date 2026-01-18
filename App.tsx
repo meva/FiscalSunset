@@ -22,7 +22,7 @@ const INITIAL_PROFILE: UserProfile = {
   isSpendingReal: true,
   assets: { traditionalIRA: 250000, rothIRA: 100000, rothBasis: 50000, brokerage: 150000, hsa: 25000 },
   contributions: { traditionalIRA: 7000, rothIRA: 0, brokerage: 12000, hsa: 3500 },
-  income: { socialSecurity: 30000, socialSecurityStartAge: 62, pension: 0, brokerageDividends: 5000, qualifiedDividendRatio: 0.9 },
+  income: { socialSecurity: 30000, socialSecurityStartAge: 62, pension: 0, brokerageDividendYield: 0.02, qualifiedDividendRatio: 0.9 },
   assumptions: {
     inflationRate: 0.03,
     rateOfReturn: 0.07,
@@ -132,6 +132,19 @@ const App: React.FC = () => {
             income: { ...INITIAL_PROFILE.income, ...profileData.income },
             assumptions: { ...INITIAL_PROFILE.assumptions, ...profileData.assumptions }
           };
+
+          // MIGRATION: Convert legacy brokerageDividends (fixed $) to brokerageDividendYield (%)
+          // Check if "brokerageDividends" exists in the raw saved data (it won't exist in the type anymore, so we check "any")
+          const legacyIncome = profileData.income as any;
+          if (legacyIncome && typeof legacyIncome.brokerageDividends === 'number' && typeof legacyIncome.brokerageDividendYield === 'undefined') {
+            const legacyAmount = legacyIncome.brokerageDividends;
+            const currentBrokerage = mergedProfile.assets.brokerage;
+            // Calculate yield, default to 0 if brokerage is 0
+            const calculatedYield = currentBrokerage > 0 ? legacyAmount / currentBrokerage : 0;
+            mergedProfile.income.brokerageDividendYield = calculatedYield;
+            console.log(`Migrated legacy dividend $${legacyAmount} to yield ${(calculatedYield * 100).toFixed(2)}%`);
+          }
+
           setProfile(mergedProfile);
         } else {
           // Check if wizard has been completed in this session or previously (legacy check)

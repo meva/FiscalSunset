@@ -59,7 +59,8 @@ const StrategyResults: React.FC<StrategyResultsProps> = ({ result, profile, isDa
 
   if (result.currentYearSocialSecurity > 0) chartData.push({ name: 'Social Security', value: result.currentYearSocialSecurity });
   if (profile.income.pension > 0) chartData.push({ name: 'Pension', value: profile.income.pension });
-  if (profile.income.brokerageDividends > 0) chartData.push({ name: 'Dividends', value: profile.income.brokerageDividends });
+  const annualDividends = profile.assets.brokerage * profile.income.brokerageDividendYield;
+  if (annualDividends > 0) chartData.push({ name: 'Dividends', value: annualDividends });
 
   const handleAskAI = async () => {
     if (!apiKey) {

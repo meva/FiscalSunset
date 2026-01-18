@@ -28,7 +28,7 @@ export interface IncomeProfile {
   socialSecurity: number;
   socialSecurityStartAge: number;
   pension: number;
-  brokerageDividends: number;
+  brokerageDividendYield: number;
   qualifiedDividendRatio: number;
 }
 

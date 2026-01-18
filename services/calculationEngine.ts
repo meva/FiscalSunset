@@ -164,6 +164,10 @@ export const calculateStrategy = (profile: UserProfile): StrategyResult => {
   const isSSActive = age >= (income.socialSecurityStartAge || 62);
   const annualSS = isSSActive ? income.socialSecurity : 0;
 
+  // Calculate annual dividends based on yield (Static for Strategy, Logic handles depletion in Longevity)
+  // For the 'Year 1' strategy snapshot, we use the full balance.
+  const brokerageDividends = assets.brokerage * income.brokerageDividendYield;
+
   let nominalSpendingNeeded = spendingNeed;
   if (isSpendingReal && age > baseAge) {
     nominalSpendingNeeded = spendingNeed * Math.pow(1 + assumptions.inflationRate, age - baseAge);
@@ -172,8 +176,8 @@ export const calculateStrategy = (profile: UserProfile): StrategyResult => {
   const standardDeduction = STANDARD_DEDUCTION[filingStatus] +
     (age >= 65 ? AGE_DEDUCTION[filingStatus] * (filingStatus === FilingStatus.MarriedJoint ? 2 : 1) : 0);
 
-  const qualifiedDividends = income.brokerageDividends * income.qualifiedDividendRatio;
-  const ordinaryDividends = income.brokerageDividends * (1 - income.qualifiedDividendRatio);
+  const qualifiedDividends = brokerageDividends * income.qualifiedDividendRatio;
+  const ordinaryDividends = brokerageDividends * (1 - income.qualifiedDividendRatio);
 
   let estimatedTax = 0;
   let penaltyTax = 0;
@@ -190,7 +194,7 @@ export const calculateStrategy = (profile: UserProfile): StrategyResult => {
     let currentRothBasis = assets.rothBasis || 0;
 
     const withdrawalPlan: WithdrawalSource[] = [];
-    let grossCash = annualSS + income.pension + income.brokerageDividends;
+    let grossCash = annualSS + income.pension + brokerageDividends;
     let ordIncomeForTax = income.pension + ordinaryDividends;
     let capGainsForTax = qualifiedDividends;
     let currentPenalty = 0;
@@ -316,63 +320,94 @@ export const calculateStrategy = (profile: UserProfile): StrategyResult => {
 };
 
 export const calculateLongevity = (profile: UserProfile, strategy: StrategyResult): LongevityResult => {
-  let currentAssets = profile.assets.brokerage + profile.assets.rothIRA + profile.assets.traditionalIRA + profile.assets.hsa;
-
+  // Track separate buckets to correctly calculate declining dividends and order of depletion
+  let currentBrokerage = profile.assets.brokerage;
+  let currentTrad = profile.assets.traditionalIRA;
+  let currentRoth = profile.assets.rothIRA;
+  let currentHSA = profile.assets.hsa;
 
   const projection: YearProjection[] = [];
-  let runningAssets = currentAssets;
   let depletionAge: number | null = null;
+  const rateInRetirement = profile.assumptions.rateOfReturnInRetirement;
 
-  // Base fixed income excluding SS (pension + divs)
-  // We assume these start immediately or are already active
-  const baseFixedIncome = profile.income.pension + profile.income.brokerageDividends;
+  // Base fixed income excluding SS and Dividends (Pension only)
+  const basePension = profile.income.pension;
+  const divYield = profile.income.brokerageDividendYield;
 
-  // We need to determine the "Gross Spending Need" that the strategy calculation determined was required.
-  // Strategy.totalWithdrawal is the gross amount needed to cover Expenses + Taxes.
-  // We use this as our inflation-adjusted target for future years.
-  // NOTE: This assumes tax efficiency remains roughly constant, which is a simplification.
-  // When SS kicks in, tax efficiency might improve (reducing gross need), but we'll stick to
-  // the conservative assumption that Gross Need inflates directly.
+  // Initial Total Assets for Rate Calculation
+  const initialTotalAssets = currentBrokerage + currentTrad + currentRoth + currentHSA;
+
+  // We determine the "Gross Spending Need" (Expenses + Taxes) from the strategy result
+  // and inflate it. This simulates maintaining lifestyle + paying relative taxes.
   let currentProjectedGrossNeed = strategy.totalWithdrawal;
 
   for (let i = 0; i <= 40; i++) {
     const age = profile.age + i;
 
-    // Calculate SS for this year
+    // 1. Calculate Inflows (SS + Pension + Dynamic Dividends)
     const ssStartAge = profile.income.socialSecurityStartAge || 62;
     let currentSS = 0;
     if (age >= ssStartAge) {
-      // Calculate how many years since SS started to apply COLA
-      // If we are simulating "gap", SS amount input is usually the amount *at* start age.
-      // Or is it the amount at 62? The input says "Estimated at 62". 
-      // Let's assume the input amount is the benefit amount at the Start Age.
-      // So starts at base amount, then inflates.
       const yearsSinceStart = age - ssStartAge;
       currentSS = profile.income.socialSecurity * Math.pow(1 + profile.assumptions.inflationRateInRetirement, yearsSinceStart);
     }
 
-    const currentFixedIncome = currentSS + baseFixedIncome; // Pension/Divs usually flat or separate assumed? Keeping flat for now as per prev logic
+    // Dynamic Dividend calculation based on START of year brokerage balance
+    const currentDividends = currentBrokerage * divYield;
 
-    // Portfolio must cover the difference
-    const requiredPortfolioDraw = Math.max(0, currentProjectedGrossNeed - currentFixedIncome);
+    const totalFixedIncome = currentSS + basePension + currentDividends;
 
-    projection.push({ age, year: i, totalAssets: Math.max(0, runningAssets), withdrawal: requiredPortfolioDraw, isDepleted: runningAssets <= 0 });
+    // 2. Determine Portfolio Draw Requirement
+    const requiredDraw = Math.max(0, currentProjectedGrossNeed - totalFixedIncome);
 
-    if (runningAssets <= 0 && !depletionAge) depletionAge = age;
+    // 3. Subtract Draw from Assets (Simplified Order: Brokerage -> Trad -> Roth -> HSA)
+    // In reality, strategy mixes them for tax efficiency, but for longevity "burn down", 
+    // sequential buckets is a decent approximation if precise tax-filling isn't re-simulated every year.
+    // Given we want to see Dividends drop, we prioritize Brokerage usage?
+    // Actually, strategy usually prioritizes Brokerage first (to avoid RMD/high tax later) or fills low brackets.
+    // Let's stick to the Strategy's implicit order: Brokerage is usually first liquid source.
 
-    runningAssets = runningAssets * (1 + profile.assumptions.rateOfReturnInRetirement) - requiredPortfolioDraw;
+    let remainingDraw = requiredDraw;
 
-    // Inflate the Gross Need for next year
+    // Withdraw from Brokerage first
+    const fromBrokerage = Math.min(currentBrokerage, remainingDraw);
+    currentBrokerage -= fromBrokerage;
+    remainingDraw -= fromBrokerage;
+
+    // Withdraw from Trad (Subject to RMDs nominally, but here just bulk checking longevity)
+    const fromTrad = Math.min(currentTrad, remainingDraw);
+    currentTrad -= fromTrad;
+    remainingDraw -= fromTrad;
+
+    // Withdraw from Roth
+    const fromRoth = Math.min(currentRoth, remainingDraw);
+    currentRoth -= fromRoth;
+    remainingDraw -= fromRoth;
+
+    // Withdraw from HSA
+    const fromHSA = Math.min(currentHSA, remainingDraw);
+    currentHSA -= fromHSA;
+    remainingDraw -= fromHSA;
+
+    const totalAssets = currentBrokerage + currentTrad + currentRoth + currentHSA;
+
+    projection.push({ age, year: i, totalAssets: Math.max(0, totalAssets), withdrawal: requiredDraw, isDepleted: totalAssets <= 0 });
+
+    if (totalAssets <= 0 && !depletionAge) depletionAge = age;
+
+    // 4. Apply Growth to Remaining Balances
+    currentBrokerage *= (1 + rateInRetirement);
+    currentTrad *= (1 + rateInRetirement);
+    currentRoth *= (1 + rateInRetirement);
+    currentHSA *= (1 + rateInRetirement);
+
+    // 5. Inflate Need for Next Year
     currentProjectedGrossNeed *= (1 + profile.assumptions.inflationRateInRetirement);
-
-    // If age passes 59.5, assume any early penalty component drops off
-    // Refinement: If strategy had penalty, it mimics higher gross need.
-    // We should ideally recalc strategy, but for now we won't reduce gross need arbitrarily
-    // as lifestyle inflation is sticky. But we can assume better efficiency.
   }
 
-  const initialPortfolioDraw = Math.max(0, strategy.totalWithdrawal - (profile.income.pension + profile.income.brokerageDividends + (profile.age >= (profile.income.socialSecurityStartAge || 62) ? profile.income.socialSecurity : 0)));
-  const initialWithdrawalRate = currentAssets > 0 ? initialPortfolioDraw / currentAssets : 0;
+  const initialPortfolioDraw = Math.max(0, strategy.totalWithdrawal - (profile.income.pension + (profile.assets.brokerage * divYield) + (profile.age >= (profile.income.socialSecurityStartAge || 62) ? profile.income.socialSecurity : 0)));
+  const initialWithdrawalRate = initialTotalAssets > 0 ? initialPortfolioDraw / initialTotalAssets : 0;
+
   return { projection, depletionAge, initialWithdrawalRate, sustainable: initialWithdrawalRate <= 0.05 };
 };
 

@@ -17,7 +17,7 @@ const DUMMY_PROFILE: UserProfile = {
     spendingNeed: 0, isSpendingReal: true,
     assets: { traditionalIRA: 0, rothIRA: 0, rothBasis: 0, brokerage: 0, hsa: 0 },
     contributions: { traditionalIRA: 0, rothIRA: 0, brokerage: 0, hsa: 0 },
-    income: { socialSecurity: 0, socialSecurityStartAge: 67, pension: 0, brokerageDividends: 0, qualifiedDividendRatio: 0 },
+    income: { socialSecurity: 0, socialSecurityStartAge: 67, pension: 0, brokerageDividendYield: 0, qualifiedDividendRatio: 0 },
     assumptions: {
         inflationRate: 0.03,
         rateOfReturn: 0.07,

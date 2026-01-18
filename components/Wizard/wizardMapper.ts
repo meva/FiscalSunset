@@ -43,7 +43,7 @@ export const mapWizardStateToProfile = (wizardState: WizardState, currentProfile
             socialSecurity: futureIncome.socialSecurity,
             socialSecurityStartAge: futureIncome.socialSecurityStartAge,
             pension: futureIncome.pension,
-            brokerageDividends: 0, // Keeping this 0 as it's harder to estimate simple %
+            brokerageDividendYield: 0.02, // Defaulting as step 6 might not capture this yet
             qualifiedDividendRatio: 0.9,
         },
         // Build default assumptions if needed, or keep existing ones. 

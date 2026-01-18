@@ -138,7 +138,7 @@ const TaxReference: React.FC = () => {
                             <div>
                                 <h4 className="font-semibold text-slate-800 dark:text-white">Withdrawal Strategy</h4>
                                 <p className="text-sm text-slate-600 dark:text-slate-400">
-                                    Once you transition to retirement, see the optimal withdrawal order from your accounts to minimize taxes. View Roth conversion recommendations and tax warnings.
+                                    Plan your path to a tax-free retirement. Discover the optimal order for account withdrawals based on 2026 tax rules and get personalized Roth conversion recommendations.
                                 </p>
                             </div>
                         </div>
