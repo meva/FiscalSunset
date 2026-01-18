@@ -10,27 +10,27 @@ interface InputSectionProps {
 
 const FormattedNumberInput = ({ value, onChange, className }: { value: number; onChange: (val: number) => void; className?: string; }) => {
   const [displayValue, setDisplayValue] = useState(value.toLocaleString());
+
+  // Sync with external updates
   useEffect(() => {
-    const rawClean = displayValue.replace(/,/g, '');
-    const currentParsed = rawClean === '' ? 0 : parseFloat(rawClean);
-    if (Math.abs(currentParsed - value) > 0.001) {
+    // Check if the current display value (parsed) matches the new prop value to avoid cursor jumps/unnecessary updates
+    const currentRaw = displayValue.replace(/,/g, '');
+    const currentVal = currentRaw === '' ? 0 : Number(currentRaw);
+    if (currentVal !== value) {
       setDisplayValue(value.toLocaleString());
     }
   }, [value]);
+
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const raw = e.target.value;
-    if (!/^[\d,.]*$/.test(raw)) return;
-    setDisplayValue(raw);
-    const clean = raw.replace(/,/g, '');
-    const parsed = parseFloat(clean);
-    if (!isNaN(parsed)) onChange(parsed); else if (clean === '') onChange(0);
+    const raw = e.target.value.replace(/,/g, '');
+    if (!/^\d*$/.test(raw)) return;
+
+    const newVal = Number(raw);
+    setDisplayValue(newVal.toLocaleString());
+    onChange(newVal);
   };
-  const handleBlur = () => {
-    const clean = displayValue.replace(/,/g, '');
-    const parsed = parseFloat(clean);
-    setDisplayValue(!isNaN(parsed) ? parsed.toLocaleString() : value.toLocaleString());
-  };
-  return <input type="text" value={displayValue} onChange={handleChange} onBlur={handleBlur} className={className} />;
+
+  return <input type="text" value={displayValue} onChange={handleChange} className={className} />;
 };
 
 // Handles percentage inputs (stored as decimal, displayed as percentage)
