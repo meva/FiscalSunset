@@ -1,5 +1,5 @@
 <div align="center">
-<img width="1200" height="475" alt="FiscalSunset Banner" src="https://raw.githubusercontent.com/meva/retiresmart_-tax-efficient-withdrawal-strategist-3/refs/heads/main/Images/Accumulation.png?token=GHSAT0AAAAAADSEVQE27F4FU7JSV5EPU7W62KTJKFA" />
+<img width="1200" height="475" alt="FiscalSunset Banner" src="Images/Accumulation.png" />
 
 # FiscalSunset: Tax-Efficient Withdrawal Strategist
 
@@ -67,7 +67,9 @@ The tool prioritizes tax-efficient withdrawals by:
 
 ## 🚀 Demo
 
-The application runs entirely in the browser with client-side calculations. Your financial data never leaves your device (unless you opt to use the optional AI advisor feature).
+The application is live and free to use at **[fiscalsunset.com](https://fiscalsunset.com)**.
+
+It runs entirely in the browser as a static site hosted on S3. Your financial data never leaves your device (unless you use the optional AI advisor feature), thanks to local `IndexedDB` persistence.
 
 ## 📋 Prerequisites
 
@@ -186,6 +188,7 @@ fiscal-sunset/
 | **Vite 6** | Next-generation frontend tooling |
 | **Recharts** | Interactive charting library |
 | **Lucide React** | Beautiful icon library |
+| **Dexie.js** | Wrapper for IndexedDB (Local Database) |
 | **Google Gemini AI** | Optional AI-powered insights |
 
 ## 📚 Tax Calculations
