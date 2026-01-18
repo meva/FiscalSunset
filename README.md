@@ -41,7 +41,7 @@ The tool prioritizes tax-efficient withdrawals by:
 |--------|-------------|
 | **Accumulation** | Pre-retirement savings strategy and growth projections |
 | **Withdrawal** | Tax-optimized withdrawal sequence recommendations |
-| **Longevity** | Asset depletion analysis with Monte Carlo-style projections |
+| **Longevity** | Asset depletion analysis with projections |
 | **Reference** | Comprehensive guide: how-to, tax strategies, 2025 tax brackets, and disclaimers |
 
 
