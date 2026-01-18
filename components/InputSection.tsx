@@ -8,7 +8,7 @@ interface InputSectionProps {
   onRestartWizard: () => void;
 }
 
-const FormattedNumberInput = ({ value, onChange, className }: { value: number; onChange: (val: number) => void; className?: string; }) => {
+const FormattedNumberInput = ({ value, onChange, className, id }: { value: number; onChange: (val: number) => void; className?: string; id?: string }) => {
   const [displayValue, setDisplayValue] = useState(value.toLocaleString());
 
   // Sync with external updates
@@ -30,11 +30,11 @@ const FormattedNumberInput = ({ value, onChange, className }: { value: number; o
     onChange(newVal);
   };
 
-  return <input type="text" value={displayValue} onChange={handleChange} className={className} />;
+  return <input id={id} type="text" value={displayValue} onChange={handleChange} className={className} />;
 };
 
 // Handles percentage inputs (stored as decimal, displayed as percentage)
-const PercentageInput = ({ value, onChange, className, step = 0.1 }: { value: number; onChange: (val: number) => void; className?: string; step?: number; }) => {
+const PercentageInput = ({ value, onChange, className, step = 0.1, id }: { value: number; onChange: (val: number) => void; className?: string; step?: number; id?: string }) => {
   const [displayValue, setDisplayValue] = useState((value * 100).toFixed(1));
 
   useEffect(() => {
@@ -68,7 +68,7 @@ const PercentageInput = ({ value, onChange, className, step = 0.1 }: { value: nu
     }
   };
 
-  return <input type="number" step={step} value={displayValue} onChange={handleChange} onBlur={handleBlur} className={className} />;
+  return <input id={id} type="number" step={step} value={displayValue} onChange={handleChange} onBlur={handleBlur} className={className} />;
 };
 
 const InputSection: React.FC<InputSectionProps> = ({ profile, setProfile, onRestartWizard }) => {
@@ -117,8 +117,9 @@ const InputSection: React.FC<InputSectionProps> = ({ profile, setProfile, onRest
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
-            <label className={labelClass}>Current Age</label>
+            <label htmlFor="currentAge" className={labelClass}>Current Age</label>
             <input
+              id="currentAge"
               type="number"
               value={profile.baseAge}
               onChange={(e) => {
@@ -132,8 +133,9 @@ const InputSection: React.FC<InputSectionProps> = ({ profile, setProfile, onRest
             />
           </div>
           <div>
-            <label className={labelClass}>Retirement Age</label>
+            <label htmlFor="retirementAge" className={labelClass}>Retirement Age</label>
             <input
+              id="retirementAge"
               type="number"
               value={profile.age}
               onChange={(e) => {
@@ -147,8 +149,9 @@ const InputSection: React.FC<InputSectionProps> = ({ profile, setProfile, onRest
             />
           </div>
           <div>
-            <label className={labelClass}>Filing Status</label>
+            <label htmlFor="filingStatus" className={labelClass}>Filing Status</label>
             <select
+              id="filingStatus"
               value={profile.filingStatus}
               onChange={(e) => handleChange('filingStatus', e.target.value)}
               className={inputClass}
@@ -159,7 +162,7 @@ const InputSection: React.FC<InputSectionProps> = ({ profile, setProfile, onRest
           </div>
           <div className="md:col-span-2">
             <div className="flex items-center justify-between mb-1">
-              <label className="text-sm font-medium text-slate-600 dark:text-slate-300">Annual Spending Need</label>
+              <label htmlFor="spendingNeed" className="text-sm font-medium text-slate-600 dark:text-slate-300">Annual Spending Need</label>
               <div className="flex bg-slate-100 dark:bg-slate-800 p-1 rounded-lg border border-slate-200 dark:border-slate-700 text-xs font-bold">
                 <button
                   onClick={() => handleChange('isSpendingReal', true)}
@@ -174,6 +177,8 @@ const InputSection: React.FC<InputSectionProps> = ({ profile, setProfile, onRest
             <div className="relative">
               <span className={iconClass}>$</span>
               <FormattedNumberInput
+                // @ts-ignore explicit id handling needs component update, ignoring for now or adding prop
+                id="spendingNeed"
                 value={profile.spendingNeed}
                 onChange={(val) => handleChange('spendingNeed', val)}
                 className={`${inputClass} pl-8 font-semibold text-lg`}
@@ -193,15 +198,16 @@ const InputSection: React.FC<InputSectionProps> = ({ profile, setProfile, onRest
           {[
             { label: 'Traditional IRA / 401k', key: 'traditionalIRA' as const },
             { label: 'Roth IRA / 401k', key: 'rothIRA' as const },
-            { label: 'Roth Carry/Basis', key: 'rothBasis' as const }, // Added Basis
+            { label: 'Roth Carry/Basis', key: 'rothBasis' as const },
             { label: 'Taxable Brokerage', key: 'brokerage' as const },
             { label: 'HSA', key: 'hsa' as const },
           ].map((item) => (
             <div key={item.key}>
-              <label className={labelClass}>{item.label}</label>
+              <label htmlFor={`asset-${item.key}`} className={labelClass}>{item.label}</label>
               <div className="relative">
                 <span className={iconClass}>$</span>
                 <FormattedNumberInput
+                  id={`asset-${item.key}`}
                   value={profile.assets[item.key] || 0}
                   onChange={(val) => handleAssetChange(item.key, val)}
                   className={`${inputClass} pl-8`}
@@ -227,10 +233,11 @@ const InputSection: React.FC<InputSectionProps> = ({ profile, setProfile, onRest
             { label: 'To HSA', key: 'hsa' as const },
           ].map((item) => (
             <div key={item.key}>
-              <label className={labelClass}>{item.label}</label>
+              <label htmlFor={`contribution-${item.key}`} className={labelClass}>{item.label}</label>
               <div className="relative">
                 <span className={iconClass}>$</span>
                 <FormattedNumberInput
+                  id={`contribution-${item.key}`}
                   value={profile.contributions[item.key]}
                   onChange={(val) => handleContributionChange(item.key, val)}
                   className={`${inputClass} pl-8`}
@@ -249,10 +256,11 @@ const InputSection: React.FC<InputSectionProps> = ({ profile, setProfile, onRest
         </h2>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
-            <label className={labelClass}>Social Security Benefit</label>
+            <label htmlFor="socialSecurity" className={labelClass}>Social Security Benefit</label>
             <div className="relative">
               <span className={iconClass}>$</span>
               <FormattedNumberInput
+                id="socialSecurity"
                 value={profile.income.socialSecurity}
                 onChange={(val) => handleIncomeChange('socialSecurity', val)}
                 className={`${inputClass} pl-8`}
@@ -260,9 +268,10 @@ const InputSection: React.FC<InputSectionProps> = ({ profile, setProfile, onRest
             </div>
           </div>
           <div>
-            <label className={labelClass}>SS Start Age</label>
+            <label htmlFor="ssStartAge" className={labelClass}>SS Start Age</label>
             <div className="relative">
               <input
+                id="ssStartAge"
                 type="number"
                 value={profile.income.socialSecurityStartAge || 62}
                 onChange={(e) => handleIncomeChange('socialSecurityStartAge', parseInt(e.target.value) || 62)}
@@ -271,10 +280,11 @@ const InputSection: React.FC<InputSectionProps> = ({ profile, setProfile, onRest
             </div>
           </div>
           <div>
-            <label className={labelClass}>Pension / Annuity</label>
+            <label htmlFor="pension" className={labelClass}>Pension / Annuity</label>
             <div className="relative">
               <span className={iconClass}>$</span>
               <FormattedNumberInput
+                id="pension"
                 value={profile.income.pension}
                 onChange={(val) => handleIncomeChange('pension', val)}
                 className={`${inputClass} pl-8`}
@@ -282,16 +292,18 @@ const InputSection: React.FC<InputSectionProps> = ({ profile, setProfile, onRest
             </div>
           </div>
           <div>
-            <label className={labelClass}>Brokerage Yield (%)</label>
+            <label htmlFor="brokerageYield" className={labelClass}>Brokerage Yield (%)</label>
             <PercentageInput
+              id="brokerageYield"
               value={profile.income.brokerageDividendYield}
               onChange={(val) => handleIncomeChange('brokerageDividendYield', val)}
               className={inputClass}
             />
           </div>
           <div>
-            <label className={labelClass}>Qualified Ratio (%)</label>
+            <label htmlFor="qualifiedRatio" className={labelClass}>Qualified Ratio (%)</label>
             <PercentageInput
+              id="qualifiedRatio"
               value={profile.income.qualifiedDividendRatio}
               onChange={(val) => handleIncomeChange('qualifiedDividendRatio', val)}
               className={inputClass}
@@ -308,16 +320,18 @@ const InputSection: React.FC<InputSectionProps> = ({ profile, setProfile, onRest
         </h2>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
-            <label className={labelClass}>Annual Return (%)</label>
+            <label htmlFor="rateOfReturn" className={labelClass}>Annual Return (%)</label>
             <PercentageInput
+              id="rateOfReturn"
               value={profile.assumptions.rateOfReturn}
               onChange={(val) => handleAssumptionChange('rateOfReturn', val)}
               className={inputClass}
             />
           </div>
           <div>
-            <label className={labelClass}>Inflation (%)</label>
+            <label htmlFor="inflationRate" className={labelClass}>Inflation (%)</label>
             <PercentageInput
+              id="inflationRate"
               value={profile.assumptions.inflationRate}
               onChange={(val) => handleAssumptionChange('inflationRate', val)}
               className={inputClass}
@@ -334,16 +348,18 @@ const InputSection: React.FC<InputSectionProps> = ({ profile, setProfile, onRest
         </h2>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
-            <label className={labelClass}>Annual Return (%)</label>
+            <label htmlFor="rateOfReturnRetirement" className={labelClass}>Annual Return (%)</label>
             <PercentageInput
+              id="rateOfReturnRetirement"
               value={profile.assumptions.rateOfReturnInRetirement}
               onChange={(val) => handleAssumptionChange('rateOfReturnInRetirement', val)}
               className={inputClass}
             />
           </div>
           <div>
-            <label className={labelClass}>Inflation (%)</label>
+            <label htmlFor="inflationRateRetirement" className={labelClass}>Inflation (%)</label>
             <PercentageInput
+              id="inflationRateRetirement"
               value={profile.assumptions.inflationRateInRetirement}
               onChange={(val) => handleAssumptionChange('inflationRateInRetirement', val)}
               className={inputClass}
