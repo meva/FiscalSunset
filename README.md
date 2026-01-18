@@ -18,7 +18,7 @@
 
 ## 📖 Overview
 
-FiscalSunset is a comprehensive retirement planning calculator that helps you optimize your withdrawal strategy across multiple account types. It implements the "FiscalSunset Approach" to minimize taxes by analyzing your assets, income, and spending needs to generate an optimal withdrawal strategy.
+FiscalSunset is a comprehensive retirement planning calculator that helps you optimize your withdrawal strategy across multiple account types. It implements the "FiscalSunset Approach" to minimize taxes by analyzing your assets, and spending needs to generate an optimal withdrawal strategy.
 
 The tool prioritizes tax-efficient withdrawals by:
 - Leveraging 0% capital gains tax brackets
@@ -191,21 +191,50 @@ fiscal-sunset/
 | **Dexie.js** | Wrapper for IndexedDB (Local Database) |
 | **Google Gemini AI** | Optional AI-powered insights |
 
-## 📚 Tax Calculations
+## 🧠 Calculation Methodology
 
-The application implements 2025 tax rules including:
+FiscalSunset uses a deterministic projection model with high-fidelity tax calculations. Unlike simple calculators that use effective tax rates, this engine simulates the actual IRS Form 1040 logic for every year of the projection.
 
-### Federal Tax Brackets (2025)
-- 10% / 12% / 22% / 24% / 32% / 35% / 37%
+### 1. The Tax Engine ("Two-Layer Cake")
+The application calculates federal taxes using the standard IRS method where **Ordinary Income** sits at the bottom and **Capital Gains/Dividends** sit on top.
 
-### Capital Gains Tax Brackets (2025)
-- 0% / 15% / 20%
+*   **Ordinary Income:** Wages, Interest, Pension, Traditional IRA withdrawals, and Taxable Social Security.
+*   **Capital Gains:** Qualified Dividends and Long-Term Capital Gains from brokerage sales.
+*   **Deductions:**
+    *   **Standard Deduction (2026):** ~$16,100 (Single) / $32,200 (Married).
+    *   **Age 65+ Catch-up:** Adds ~$2,050 (Single) / $1,650 (Married).
+    *   **OBBBA Senior Deduction:** Modeled 2025-2028 deduction of up to $12,000 for seniors, including phase-out logic ($1 reduction per $0.06 over thresholds).
 
-### Special Considerations
-- **Standard Deduction**: $15,000 (Single) / $30,000 (MFJ)
-- **Age 65+ Additional**: $1,950 (Single) / $1,550 per person (MFJ)
-- **OBBBA Senior Deduction**: Up to $6,000 (Single) / $12,000 (MFJ)
-- **RMD Start Age**: 73 years old
+### 2. Withdrawal Priority ("FiscalSunset Approach")
+To minimize lifetime tax liability, the engine withdraws assets in a specific order to fill the spending gap:
+
+1.  **Required Minimum Distributions (RMDs):** Mandatory withdrawals from Traditional IRAs starting at age 73 (using Uniform Lifetime Table).
+2.  **Taxable Brokerage:** Sold first to take advantage of 0% Capital Gains brackets.
+3.  **Roth IRA (Basis):** Contributions are withdrawn tax/penalty-free.
+4.  **Traditional IRA:** Withdrawn up to top of low tax brackets or to fill standard deduction.
+5.  **Roth IRA (Earnings):** Accessed last to maximize tax-free growth.
+6.  **HSA:** Treated as long-term care/medical reserve (last resort).
+
+*Early Retirement (FIRE) Logic:*
+If the user is under 59.5, the engine automatically simulates:
+*   **SEPP / 72(t) Payments:** Calculates substantially equal periodic payments to access Traditional IRA funds penalty-free.
+*   **Rule of 55:** Simulates penalty-free access if applicable.
+*   **Penalty Withdrawals:** Only triggers 10% penalty if no other liquidity sources exist.
+
+### 3. Roth Conversion Optimizer ("Fill Strategy")
+The "Strategy" tab runs an optimization loop to recommend Roth Conversions. It identifies "Headroom" in your current tax situation and recommends converting Traditional IRA funds to fill that space, up to the nearest "Cliff."
+
+**Constraints Checked:**
+*   **Tax Bracket:** Fills up to the top of the 10%, 12%, or 22% bracket.
+*   **IRMAA Cliffs:** Prevents conversion from triggering higher Medicare Part B/D premiums (e.g., crossing $212k MAGI).
+*   **Social Security "Torpedo":** Detects the effective marginal rate spike (up to 49.95%) caused by the taxation of Social Security benefits and advises restricting conversions in this zone.
+
+### 4. Longevity Projection
+The Longevity tab projects assets up to age 100.
+*   **Inflation:** Spending needs are inflated annually by the `Inflation Rate` (default 2.5-3.0%).
+*   **Growth:** Remaining assets grow by the `Rate of Return` (distinct rates for Accumulation vs. Retirement phases).
+*   **Depletion Order:** For the longevity visualizer, assets are burned down sequentially: Brokerage → Traditional IRA → Roth IRA → HSA.
+*   **Income Composition:** Tracks the shifting mix of fixed income (SS, Pension) vs. Portfolio Withdrawals over time to show how the "Paycheck" is constructed.
 
 ## 🤝 Contributing
 
