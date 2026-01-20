@@ -10,14 +10,13 @@ interface InputSectionProps {
 
 const FormattedNumberInput = ({ value, onChange, className, id }: { value: number; onChange: (val: number) => void; className?: string; id?: string }) => {
   const [displayValue, setDisplayValue] = useState(value.toLocaleString());
+  const lastExternalValue = React.useRef(value);
 
-  // Sync with external updates
+  // Sync with external updates (only when the external value actually changes)
   useEffect(() => {
-    // Check if the current display value (parsed) matches the new prop value to avoid cursor jumps/unnecessary updates
-    const currentRaw = displayValue.replace(/,/g, '');
-    const currentVal = currentRaw === '' ? 0 : Number(currentRaw);
-    if (currentVal !== value) {
+    if (value !== lastExternalValue.current) {
       setDisplayValue(value.toLocaleString());
+      lastExternalValue.current = value;
     }
   }, [value]);
 
@@ -25,8 +24,9 @@ const FormattedNumberInput = ({ value, onChange, className, id }: { value: numbe
     const raw = e.target.value.replace(/,/g, '');
     if (!/^\d*$/.test(raw)) return;
 
-    const newVal = Number(raw);
+    const newVal = raw === '' ? 0 : Number(raw);
     setDisplayValue(newVal.toLocaleString());
+    lastExternalValue.current = newVal; // Mark this as an internal change
     onChange(newVal);
   };
 
