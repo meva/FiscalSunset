@@ -9,8 +9,13 @@ export const getGeminiAdvice = async (profile: UserProfile, result: StrategyResu
 
     const ai = new GoogleGenAI({ apiKey });
 
+    const currentDividends = profile.assets.brokerage * profile.income.brokerageDividendYield;
     const totalAssets = profile.assets.brokerage + profile.assets.rothIRA + profile.assets.traditionalIRA + profile.assets.hsa;
-    const withdrawalNeeded = Math.max(0, (profile.spendingNeed + result.estimatedFederalTax) - (profile.income.socialSecurity + profile.income.pension + profile.income.brokerageDividends));
+
+    // Fix: Only subtract SS if age >= start age (default 62)
+    const ssIncome = (profile.age >= (profile.income.socialSecurityStartAge || 62)) ? profile.income.socialSecurity : 0;
+
+    const withdrawalNeeded = Math.max(0, (profile.spendingNeed + result.estimatedFederalTax) - (ssIncome + profile.income.pension + currentDividends));
     const withdrawalRate = totalAssets > 0 ? (withdrawalNeeded / totalAssets * 100).toFixed(1) : "0";
 
     // Extract Roth Conversion optimization details
@@ -36,20 +41,33 @@ export const getGeminiAdvice = async (profile: UserProfile, result: StrategyResu
       You have access to sophisticated tax optimization calculations. Analyze this scenario thoroughly.
       
       === USER PROFILE ===
-      Age: ${profile.age} ${profile.age >= 73 ? '(Subject to RMDs)' : profile.age >= 65 ? '(Eligible for Senior Deduction)' : ''}
+      Current Age: ${profile.baseAge}
+      Retirement Age (Target): ${profile.age} ${profile.age >= 73 ? '(Subject to RMDs)' : profile.age >= 65 ? '(Eligible for Senior Deduction)' : ''}
       Filing Status: ${profile.filingStatus}
       
-      Assets:
+      Economic Assumptions:
+      - Inflation: ${(profile.assumptions.inflationRate * 100).toFixed(2)}% (Pre-Retirement), ${(profile.assumptions.inflationRateInRetirement * 100).toFixed(2)}% (in Retirement)
+      - Investment Return: ${(profile.assumptions.rateOfReturn * 100).toFixed(2)}% (Pre-Retirement), ${(profile.assumptions.rateOfReturnInRetirement * 100).toFixed(2)}% (in Retirement)
+
+      Current Assets:
       - Traditional IRA/401(k): $${profile.assets.traditionalIRA.toLocaleString()}
-      - Roth IRA: $${profile.assets.rothIRA.toLocaleString()}
+      - Roth IRA: $${profile.assets.rothIRA.toLocaleString()} (Basis: $${(profile.assets.rothBasis || 0).toLocaleString()})
       - Taxable Brokerage: $${profile.assets.brokerage.toLocaleString()}
       - HSA: $${profile.assets.hsa.toLocaleString()}
       - Total Portfolio: $${totalAssets.toLocaleString()}
+
+      Annual Contributions (until Retirement Age ${profile.age}):
+      ${profile.baseAge < profile.age ? `
+      - Traditional (Tax-Deferred): $${profile.contributions.traditionalIRA.toLocaleString()}
+      - Roth (Post-Tax): $${profile.contributions.rothIRA.toLocaleString()}
+      - Brokerage (Taxable): $${profile.contributions.brokerage.toLocaleString()}
+      - HSA: $${profile.contributions.hsa.toLocaleString()}
+      ` : '- None (Already Retired)'}
       
       Income Sources:
-      - Social Security: $${profile.income.socialSecurity.toLocaleString()}/year
+      - Social Security: $${profile.income.socialSecurity.toLocaleString()}/year (Starting Age: ${profile.income.socialSecurityStartAge || 62})
       - Pension: $${profile.income.pension.toLocaleString()}/year
-      - Brokerage Dividends: $${profile.income.brokerageDividends.toLocaleString()}/year (${(profile.income.qualifiedDividendRatio * 100).toFixed(0)}% qualified)
+      - Brokerage Dividends: $${currentDividends.toLocaleString()}/year (${(profile.income.qualifiedDividendRatio * 100).toFixed(0)}% qualified)
       
       Annual Spending Need: $${profile.spendingNeed.toLocaleString()} (${profile.isSpendingReal ? 'inflation-adjusted real dollars' : 'nominal dollars'})
       
@@ -67,6 +85,8 @@ export const getGeminiAdvice = async (profile: UserProfile, result: StrategyResu
       
       Total Withdrawal: $${result.totalWithdrawal.toLocaleString()}
       Gap Filled: ${result.gapFilled ? 'Yes' : 'No - Spending need exceeds available assets'}
+      ${result.liquidityGapWarning ? 'WARNING: Early withdrawal penalties incurred due to liquidity gap.' : ''}
+      ${result.notes.length > 0 ? `Notes: ${result.notes.join(' ')}` : ''}
       ${rothSection}
       ${constraintDetails}
       === LONGEVITY ANALYSIS ===
@@ -83,6 +103,7 @@ export const getGeminiAdvice = async (profile: UserProfile, result: StrategyResu
          - IRMAA Medicare premium cliffs (income thresholds that trigger surcharges)
          - Senior Deduction phase-outs (OBBBA $6K/$12K deduction reduction at high income)
          - High withdrawal rates (>5%)
+         - Liquidity Gaps or Early Withdrawal Penalties (if triggered)
       
       3. **Roth Conversion Strategy**: If a Roth conversion is recommended, explain:
          - Why the recommended amount was chosen
