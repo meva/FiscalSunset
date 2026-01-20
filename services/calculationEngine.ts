@@ -346,9 +346,15 @@ export const calculateStrategy = (profile: UserProfile): StrategyResult => {
   }
 
   // Optimization Step (re-run outside loop to avoid circular logic or simpler: run once on result)
+  const totalAssets = assets.brokerage + assets.traditionalIRA + assets.rothIRA + assets.hsa;
+  const currentWithdrawalRate = totalAssets > 0 ? ((lastResult?.totalWithdrawal || 0) / totalAssets) * 100 : 0;
+
   const rothDetail = calculateRothConversionOptimization(profile,
     lastResult?.provisionalIncome || 0, // Approx
-    lastResult?.taxableSocialSecurity || 0
+    lastResult?.taxableSocialSecurity || 0,
+    undefined, // activeSocialSecurityAmount (not used here)
+    currentWithdrawalRate,
+    lastResult?.liquidityGapWarning
   );
 
   return {
@@ -669,13 +675,38 @@ export const calculateRothConversionOptimization = (
   profile: UserProfile,
   currentOrdinaryIncome: number,
   taxableSS: number,
-  activeSocialSecurityAmount?: number // Optional override for the effective SS amount 
+  activeSocialSecurityAmount?: number, // Optional override for the effective SS amount
+  withdrawalRate?: number, // New: Safety check
+  liquidityGapWarning?: boolean // New: Safety check
 ): RothConversionRecommendation => {
   const { age, filingStatus, assets, income } = profile;
 
   // Use the passed active SS amount or default to profile (logic should prefer the passed active amount)
   // If activeSocialSecurityAmount is defined, use it. Otherwise rely on profile check.
   const ssAmount = activeSocialSecurityAmount !== undefined ? activeSocialSecurityAmount : income.socialSecurity;
+
+  // ========================================
+  // SUSTAINABILITY OVERRIDE (Fiduciary Safety Check)
+  // ========================================
+  // If the user's withdrawal rate is dangerous (> 8%) or they are already facing liquidity gaps,
+  // do NOT recommend paying more taxes via conversion. Cash preservation is priority.
+  if ((withdrawalRate && withdrawalRate > 8.0) || liquidityGapWarning) {
+    return {
+      recommendedAmount: 0,
+      effectiveMarginalRate: 0,
+      constraints: [],
+      bindingConstraint: null,
+      reasoning: [
+        `SUSTAINABILITY OVERRIDE: Roth conversion not recommended.`,
+        liquidityGapWarning
+          ? `You have an immediate liquidity gap ensuring early withdrawal penalties. Preserving cash is critical.`
+          : `Current withdrawal rate (${withdrawalRate?.toFixed(1)}%) is critically high (>8%). Paying taxes now may make things worse.`
+      ],
+      warnings: ['Sustainability Risk: Portfolio depletion is imminent. Tax optimization is secondary to solvency.'],
+      inTorpedoZone: false,
+      torpedoMultiplier: 1.0,
+    };
+  }
 
   // No Traditional IRA = nothing to convert
   if (assets.traditionalIRA <= 0) {
