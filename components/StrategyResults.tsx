@@ -349,7 +349,12 @@ const StrategyResults: React.FC<StrategyResultsProps> = ({ result, profile, isDa
                 <div className="bg-blue-600 text-white w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold shrink-0 mt-0.5">{idx + 1}</div>
                 <div className="flex-1">
                   <div className="flex justify-between items-center w-full">
-                    <span className="text-sm font-semibold text-slate-800 dark:text-slate-200">{step.source}</span>
+                    <span className="text-sm font-semibold text-slate-800 dark:text-slate-200">
+                      {step.source}
+                      {step.taxType === 'CapitalGains' && (
+                        <span className="text-xs font-normal text-slate-500 dark:text-slate-400 ml-2">(Long Term Capital Gains)</span>
+                      )}
+                    </span>
                     <span className="text-sm font-bold text-blue-700 dark:text-blue-400">{formatCurrency(step.amount)}</span>
                   </div>
                   <p className="text-[11px] text-slate-600 dark:text-slate-400 mt-1">{step.description}</p>
