@@ -67,14 +67,7 @@ const App: React.FC = () => {
 
     const projectedAssets = projectAssets(
       profile.assets,
-      // Total Annual Contribution
-      (profile.contributions.traditionalIRA + profile.contributions.rothIRA + profile.contributions.brokerage + profile.contributions.hsa),
-      // Virtual Allocation based on contribution proportions
-      {
-        taxDeferred: ((profile.contributions.traditionalIRA) / (profile.contributions.traditionalIRA + profile.contributions.rothIRA + profile.contributions.brokerage + profile.contributions.hsa || 1)) * 100,
-        taxable: ((profile.contributions.brokerage) / (profile.contributions.traditionalIRA + profile.contributions.rothIRA + profile.contributions.brokerage + profile.contributions.hsa || 1)) * 100,
-        taxExempt: ((profile.contributions.rothIRA + profile.contributions.hsa) / (profile.contributions.traditionalIRA + profile.contributions.rothIRA + profile.contributions.brokerage + profile.contributions.hsa || 1)) * 100,
-      },
+      profile.contributions,
       profile.baseAge,
       profile.age,
       profile.assumptions

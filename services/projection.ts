@@ -1,3 +1,5 @@
+import { Assets, Contributions, MarketAssumptions } from '../types';
+
 export const projectAssets = (
     currentAssets: Assets,
     annualContributions: Contributions,
