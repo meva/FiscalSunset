@@ -262,6 +262,32 @@ const LongevityAnalysis: React.FC<LongevityAnalysisProps> = ({ longevity, profil
                                 <span>Trad IRA:</span>
                                 <span className="font-mono font-bold">${Math.round(data.withdrawalTrad).toLocaleString()}</span>
                               </div>
+                              {/* Early withdrawal breakdown (age < 59.5) */}
+                              {data.withdrawalTradSEPP > 0 && (
+                                <div className="flex justify-between items-center text-red-600 dark:text-red-400 text-[10px] italic">
+                                  <span>(72t SEPP):</span>
+                                  <span className="font-mono">${Math.round(data.withdrawalTradSEPP).toLocaleString()}</span>
+                                </div>
+                              )}
+                              {data.withdrawalTradPenalty > 0 && (
+                                <div className="flex justify-between items-center text-red-600 dark:text-red-400 text-[10px] italic">
+                                  <span>(Penalized):</span>
+                                  <span className="font-mono">${Math.round(data.withdrawalTradPenalty).toLocaleString()}</span>
+                                </div>
+                              )}
+                              {data.earlyWithdrawalPenalty > 0 && (
+                                <div className="flex justify-between items-center text-red-700 dark:text-red-500 text-[10px] font-semibold">
+                                  <span>⚠️ 10% Penalty:</span>
+                                  <span className="font-mono">-${Math.round(data.earlyWithdrawalPenalty).toLocaleString()}</span>
+                                </div>
+                              )}
+                              {/* RMD indicator (age 73+) */}
+                              {data.rmdAmount > 0 && (
+                                <div className="flex justify-between items-center text-orange-600 dark:text-orange-400 text-[10px] italic">
+                                  <span>(RMD Required):</span>
+                                  <span className="font-mono">${Math.round(data.rmdAmount).toLocaleString()}</span>
+                                </div>
+                              )}
                               <div className="flex justify-between items-center text-emerald-600 dark:text-emerald-400">
                                 <span>Roth IRA:</span>
                                 <span className="font-mono font-bold">${Math.round(data.withdrawalRoth).toLocaleString()}</span>

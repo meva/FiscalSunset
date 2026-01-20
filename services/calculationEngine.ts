@@ -77,81 +77,120 @@ export const getWithdrawalOrder = (
 ): { source: string; limit: number; taxType: 'Ordinary' | 'CapitalGains' | 'None'; penalty: boolean; isSEPP?: boolean }[] => {
   const order: { source: string; limit: number; taxType: 'Ordinary' | 'CapitalGains' | 'None'; penalty: boolean; isSEPP?: boolean }[] = [];
 
-  // LEVEL 1: Taxable Brokerage (Capital Gains) - Always accessible, efficient caps
-  order.push({ source: 'Taxable Brokerage', limit: assets.brokerage, taxType: 'CapitalGains', penalty: false });
-
-  // LEVEL 2: Roth Contributions (Basis) - Always tax/penalty free
-  // Note: We use assets.rothBasis. If undefined, we assume 0 or handle externally.
-  // We treat Basis as a sub-segment of Roth IRA.
   const rothBasisAvailable = Math.min(assets.rothBasis || 0, assets.rothIRA);
-  order.push({ source: 'Roth IRA (Basis)', limit: rothBasisAvailable, taxType: 'None', penalty: false });
 
-  // LEVEL 3: Early Access (Conditional)
-  // Rule of 55 (Simulation): If Age >= 55, Trad IRA is accessible penalty-free (assuming separation)
-  // Real world: Only from current 401k. We simplify for the tool.
-  if (age >= 55 && age < 59.5) {
+  // ========================================
+  // PHASE 1: FIRE / Early Retirement (Age < 59.5)
+  // Prioritizes penalty-free access
+  // ========================================
+  if (age < 59.5) {
+    // 1. Taxable Brokerage (Capital Gains) - Always accessible
+    order.push({ source: 'Taxable Brokerage', limit: assets.brokerage, taxType: 'CapitalGains', penalty: false });
+
+    // 2. Roth Contributions (Basis) - Always tax/penalty free
+    order.push({ source: 'Roth IRA (Basis)', limit: rothBasisAvailable, taxType: 'None', penalty: false });
+
+    // 3. Rule of 55 OR 72(t) SEPP - Penalty-free Traditional access
+    if (age >= 55) {
+      // Rule of 55: If age >= 55 and separated from employer
+      order.push({
+        source: 'Traditional IRA (Rule of 55)',
+        limit: assets.traditionalIRA,
+        taxType: 'Ordinary',
+        penalty: false
+      });
+    } else {
+      // 72(t) SEPP - Substantially Equal Periodic Payments
+      const maxSEPP = calculateSEPPPayment(assets.traditionalIRA, age);
+      if (maxSEPP > 0) {
+        order.push({
+          source: 'Traditional IRA (72t/SEPP)',
+          limit: maxSEPP,
+          taxType: 'Ordinary',
+          penalty: false,
+          isSEPP: true
+        });
+      }
+    }
+
+    // 4. Traditional IRA (Penalty) - Last resort
     order.push({
-      source: 'Traditional IRA (Rule of 55)',
+      source: 'Traditional IRA (Penalty)',
       limit: assets.traditionalIRA,
       taxType: 'Ordinary',
-      penalty: false
+      penalty: true
     });
-  } else if (age < 59.5) {
-    // 72(t) SEPP - If not 55+, use SEPP
-    // Calculate Max SEPP payment based on current Trad Balance
-    const maxSEPP = calculateSEPPPayment(assets.traditionalIRA, age);
-    if (maxSEPP > 0) {
+
+    // 5. Roth Earnings (Penalty + Tax) - Absolute last resort
+    const rothEarnings = Math.max(0, assets.rothIRA - rothBasisAvailable);
+    if (rothEarnings > 0) {
       order.push({
-        source: 'Traditional IRA (72t/SEPP)',
-        limit: maxSEPP,
+        source: 'Roth IRA Earnings (Penalty)',
+        limit: rothEarnings,
         taxType: 'Ordinary',
-        penalty: false,
-        isSEPP: true
+        penalty: true
+      });
+    }
+  }
+  // ========================================
+  // PHASE 2: Standard Retirement (Age >= 59.5)
+  // Prioritizes tax bracket optimization (Two-Layer Cake)
+  // ========================================
+  else {
+    // Calculate bracket-filling limit for Traditional IRA
+    // Goal: Fill ordinary income up through the 12% bracket for optimal tax efficiency
+    const brackets = TAX_BRACKETS[filingStatus];
+    const top12Bracket = brackets.find(b => b.rate === 0.12)?.limit || 50400;
+
+    // Optimal Traditional IRA withdrawal = fill up to top of 12% bracket
+    // This creates "room" for capital gains to sit in the 0% bracket
+    const optimalTradWithdrawal = Math.min(
+      assets.traditionalIRA,
+      stdDeductionNeed + top12Bracket // Fill deduction + 10%/12% brackets
+    );
+
+    // 1. Traditional IRA - Fill standard deduction & low brackets FIRST
+    // This is the key optimization: use ordinary income to fill low brackets
+    if (assets.traditionalIRA > 0) {
+      order.push({
+        source: 'Traditional IRA Fill standard deduction & low brackets',
+        limit: optimalTradWithdrawal,
+        taxType: 'Ordinary',
+        penalty: false
       });
     }
 
-    // Roth Conversion Ladder (Ladder logic complex, skipping for simplifed priority)
-    // Could add "Roth Earnings (Accessible)" if 5-year rules met, but usually covered by Basis logic order
-  }
+    // 2. Taxable Brokerage (Capital Gains) - Sits on top at 0%/15% rates
+    // After ordinary income fills lower brackets, cap gains get favorable rates
+    if (assets.brokerage > 0) {
+      order.push({
+        source: 'Taxable Brokerage',
+        limit: assets.brokerage,
+        taxType: 'CapitalGains',
+        penalty: false
+      });
+    }
 
-  // LEVEL 4: Standard / Penalty Access
-  // If > 59.5, Standard Access
-  if (age >= 59.5) {
-    order.push({
-      source: 'Traditional IRA',
-      limit: assets.traditionalIRA, // Remaining after Rule of 55 check if that was separate, but here we just add bucket
-      taxType: 'Ordinary',
-      penalty: false
-    });
-    // Remaining Roth (Earnings)
-    const rothEarnings = Math.max(0, assets.rothIRA - rothBasisAvailable);
-    order.push({
-      source: 'Roth IRA (Earnings)',
-      limit: rothEarnings,
-      taxType: 'None', // Tax free if > 59.5 and 5 year rule (assumed met)
-      penalty: false
-    });
-  } else {
-    // Age < 59.5 and Levels 1-3 exhausted
-    // Traditional IRA (Penalty)
-    // Note: If SEPP was added, this is the "Excess" above SEPP
-    // We can't double count the SEPP limit. Logic in calculation loop handles actual deduction.
-    // But distinct bucket helps. We set limit to Infinity (bounded by asset balance in loop)
-    order.push({
-      source: 'Traditional IRA (Penalty)',
-      limit: assets.traditionalIRA, // Loop will subtract what was used in SEPP
-      taxType: 'Ordinary',
-      penalty: true
-    });
+    // 3. Additional Traditional IRA - If more needed beyond bracket optimization
+    if (assets.traditionalIRA > optimalTradWithdrawal) {
+      order.push({
+        source: 'Traditional IRA (Additional)',
+        limit: assets.traditionalIRA - optimalTradWithdrawal,
+        taxType: 'Ordinary',
+        penalty: false
+      });
+    }
 
-    // Roth Earnings (Penalty + Tax)
-    const rothEarnings = Math.max(0, assets.rothIRA - rothBasisAvailable);
-    order.push({
-      source: 'Roth IRA Earnings (Penalty)',
-      limit: rothEarnings,
-      taxType: 'Ordinary', // Earnings taxable if non-qualified
-      penalty: true
-    });
+    // 4. Roth IRA - Tax-free, preserve for last (maximize tax-free growth)
+    // After 59.5 with 5-year rule met, all Roth is tax-free - no need to split basis/earnings
+    if (assets.rothIRA > 0) {
+      order.push({
+        source: 'Roth IRA',
+        limit: assets.rothIRA,
+        taxType: 'None',
+        penalty: false
+      });
+    }
   }
 
   return order;
@@ -341,6 +380,14 @@ export const calculateLongevity = (profile: UserProfile, strategy: StrategyResul
   // and inflate it. This simulates maintaining lifestyle + paying relative taxes.
   let currentProjectedGrossNeed = strategy.totalWithdrawal;
 
+  // 72(t) SEPP: Calculate FIXED payment at retirement start
+  // IRS Rule: Must maintain same payment for 5 years OR until age 59.5 (whichever is LONGER)
+  const seppStartAge = profile.age;
+  const seppEndAge = Math.max(seppStartAge + 5, 59.5); // 5 years OR age 59.5
+  const fixedSeppPayment = profile.age < 59.5
+    ? calculateSEPPPayment(profile.assets.traditionalIRA, profile.age)
+    : 0;
+
   // Calculate up to age 100
   const maxSimulationAge = 100;
   const yearsToSimulate = Math.max(40, maxSimulationAge - profile.age);
@@ -361,37 +408,89 @@ export const calculateLongevity = (profile: UserProfile, strategy: StrategyResul
 
     const totalFixedIncome = currentSS + basePension + currentDividends;
 
-    // 2. Determine Portfolio Draw Requirement
+    // 2. Calculate RMD for ages 73+ (IRS Required Minimum Distribution)
+    let rmdAmount = 0;
+    if (age >= RMD_START_AGE && currentTrad > 0) {
+      const divisor = UNIFORM_LIFETIME_TABLE[age] || 15.0; // Fallback for very old ages
+      rmdAmount = currentTrad / divisor;
+    }
+
+    // 3. Determine Portfolio Draw Requirement
     const requiredDraw = Math.max(0, currentProjectedGrossNeed - totalFixedIncome);
 
-    // 3. Subtract Draw from Assets (Simplified Order: Brokerage -> Trad -> Roth -> HSA)
-    // In reality, strategy mixes them for tax efficiency, but for longevity "burn down", 
-    // sequential buckets is a decent approximation if precise tax-filling isn't re-simulated every year.
-    // Given we want to see Dividends drop, we prioritize Brokerage usage?
-    // Actually, strategy usually prioritizes Brokerage first (to avoid RMD/high tax later) or fills low brackets.
-    // Let's stick to the Strategy's implicit order: Brokerage is usually first liquid source.
+    // 4. Subtract Draw from Assets using age-appropriate priority order
+    // FIRE phase (age < 59.5): Brokerage → Trad → Roth → HSA
+    // Standard phase (age >= 59.5): Trad → Brokerage → Roth → HSA
+    // For age 73+: RMD is mandatory minimum from Traditional IRA
 
     let remainingDraw = requiredDraw;
+    let fromBrokerage = 0;
+    let fromTrad = 0;
+    let fromRoth = 0;
+    let fromHSA = 0;
+    let fromTradSEPP = 0;
+    let fromTradPenalty = 0;
+    let penaltyAmount = 0;
 
-    // Withdraw from Brokerage first
-    const fromBrokerage = Math.min(currentBrokerage, remainingDraw);
-    currentBrokerage -= fromBrokerage;
-    remainingDraw -= fromBrokerage;
+    if (age < 59.5) {
+      // FIRE Phase: Brokerage first (penalty-free access priority)
+      fromBrokerage = Math.min(currentBrokerage, remainingDraw);
+      currentBrokerage -= fromBrokerage;
+      remainingDraw -= fromBrokerage;
 
-    // Withdraw from Trad (Subject to RMDs nominally, but here just bulk checking longevity)
-    const fromTrad = Math.min(currentTrad, remainingDraw);
-    currentTrad -= fromTrad;
-    remainingDraw -= fromTrad;
+      // 72(t) SEPP: Use FIXED payment amount calculated at retirement start
+      // SEPP is available only during the required period (5 years OR until 59.5)
+      const isSeppActive = age >= seppStartAge && age < seppEndAge;
+      const seppLimit = isSeppActive ? fixedSeppPayment : 0;
 
-    // Withdraw from Roth
-    const fromRoth = Math.min(currentRoth, remainingDraw);
-    currentRoth -= fromRoth;
-    remainingDraw -= fromRoth;
+      // Use SEPP first (penalty-free, but capped at fixed annual amount)
+      fromTradSEPP = Math.min(seppLimit, currentTrad, remainingDraw);
+      currentTrad -= fromTradSEPP;
+      remainingDraw -= fromTradSEPP;
 
-    // Withdraw from HSA
-    const fromHSA = Math.min(currentHSA, remainingDraw);
-    currentHSA -= fromHSA;
-    remainingDraw -= fromHSA;
+      // Additional Traditional IRA beyond SEPP incurs 10% early withdrawal penalty
+      fromTradPenalty = Math.min(currentTrad, remainingDraw);
+      currentTrad -= fromTradPenalty;
+      remainingDraw -= fromTradPenalty;
+      penaltyAmount = fromTradPenalty * 0.10;
+
+      // Total Traditional = SEPP + Penalty
+      fromTrad = fromTradSEPP + fromTradPenalty;
+
+      fromRoth = Math.min(currentRoth, remainingDraw);
+      currentRoth -= fromRoth;
+      remainingDraw -= fromRoth;
+
+      fromHSA = Math.min(currentHSA, remainingDraw);
+      currentHSA -= fromHSA;
+      remainingDraw -= fromHSA;
+    } else {
+      // Standard Phase: Traditional IRA first (fill low tax brackets)
+      // For age 73+: Must withdraw at least the RMD amount
+      const minTradWithdrawal = Math.max(rmdAmount, 0);
+      fromTrad = Math.max(minTradWithdrawal, Math.min(currentTrad, remainingDraw));
+      fromTrad = Math.min(fromTrad, currentTrad); // Can't withdraw more than available
+      currentTrad -= fromTrad;
+      remainingDraw -= fromTrad;
+
+      // If RMD exceeds spending needs, reinvest excess to brokerage
+      if (fromTrad > requiredDraw && rmdAmount > 0) {
+        const excessRMD = fromTrad - requiredDraw;
+        currentBrokerage += excessRMD; // Reinvest excess RMD
+      }
+
+      fromBrokerage = Math.min(currentBrokerage, Math.max(0, remainingDraw));
+      currentBrokerage -= fromBrokerage;
+      remainingDraw = Math.max(0, remainingDraw - fromBrokerage);
+
+      fromRoth = Math.min(currentRoth, remainingDraw);
+      currentRoth -= fromRoth;
+      remainingDraw -= fromRoth;
+
+      fromHSA = Math.min(currentHSA, remainingDraw);
+      currentHSA -= fromHSA;
+      remainingDraw -= fromHSA;
+    }
 
     const totalAssets = currentBrokerage + currentTrad + currentRoth + currentHSA;
 
@@ -413,6 +512,12 @@ export const calculateLongevity = (profile: UserProfile, strategy: StrategyResul
       socialSecurityIncome: currentSS,
       pensionIncome: basePension,
       dividendIncome: currentDividends,
+      // RMD (age 73+)
+      rmdAmount,
+      // Early withdrawal tracking (age < 59.5)
+      withdrawalTradSEPP: fromTradSEPP,
+      withdrawalTradPenalty: fromTradPenalty,
+      earlyWithdrawalPenalty: penaltyAmount,
       isDepleted: totalAssets <= 0
     });
 

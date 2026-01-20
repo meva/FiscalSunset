@@ -95,6 +95,12 @@ export interface YearProjection {
   socialSecurityIncome: number;
   pensionIncome: number;
   dividendIncome: number;
+  // RMD tracking (age 73+)
+  rmdAmount: number;
+  // Early withdrawal tracking (age < 59.5)
+  withdrawalTradSEPP: number; // 72(t) penalty-free amount
+  withdrawalTradPenalty: number; // Penalized withdrawal amount
+  earlyWithdrawalPenalty: number; // 10% penalty amount
   isDepleted: boolean;
 }
 
