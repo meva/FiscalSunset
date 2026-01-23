@@ -7,12 +7,13 @@ import AccumulationStrategy from './components/features/AccumulationStrategy';
 import TaxReference from './components/features/TaxReference';
 import FireAnalysis from './components/features/FireAnalysis';
 import { calculateStrategy, calculateLongevity } from './services/calculationEngine';
-import { TrendingUp, Calculator, AlertTriangle, BookOpen, Sun, Moon, PiggyBank, Settings, Flame } from 'lucide-react';
+import { TrendingUp, Calculator, AlertTriangle, BookOpen, Sun, Moon, PiggyBank, Settings, Flame, RefreshCw } from 'lucide-react';
 import Footer from './components/layout/Footer';
 import WizardModal from './components/features/wizard/WizardModal';
 import SettingsModal from './components/features/SettingsModal';
 import { db } from './services/db';
 import { projectAssets } from './services/projection';
+import WhatIfAnalysis from './components/features/WhatIfAnalysis';
 
 const INITIAL_PROFILE: UserProfile = {
   age: 65, // Retirement Start Age
@@ -35,7 +36,7 @@ const App: React.FC = () => {
   const [profile, setProfile] = useState<UserProfile>(INITIAL_PROFILE);
   const [strategyResult, setStrategyResult] = useState<StrategyResult | null>(null);
   const [longevityResult, setLongevityResult] = useState<LongevityResult | null>(null);
-  const [activeTab, setActiveTab] = useState<'withdrawal' | 'accumulation' | 'longevity' | 'reference' | 'fire'>('accumulation');
+  const [activeTab, setActiveTab] = useState<'withdrawal' | 'accumulation' | 'longevity' | 'reference' | 'fire' | 'scenarios'>('accumulation');
   const [isDarkMode, setIsDarkMode] = useState(false);
   const [isWizardOpen, setIsWizardOpen] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
@@ -254,6 +255,7 @@ const App: React.FC = () => {
                   { id: 'fire', icon: Flame, label: 'FIRE Analysis' },
                   { id: 'withdrawal', icon: Calculator, label: 'Withdrawal' },
                   { id: 'longevity', icon: TrendingUp, label: 'Longevity' },
+                  { id: 'scenarios', icon: RefreshCw, label: 'Scenarios' },
                   { id: 'reference', icon: BookOpen, label: 'Reference' }
                 ].map(tab => (
                   <button
@@ -296,6 +298,9 @@ const App: React.FC = () => {
                 </div>
                 <div className={activeTab === 'fire' ? 'block' : 'hidden'}>
                   <FireAnalysis profile={profile} isDarkMode={isDarkMode} />
+                </div>
+                <div className={activeTab === 'scenarios' ? 'block' : 'hidden'}>
+                  <WhatIfAnalysis profile={profile} isDarkMode={isDarkMode} />
                 </div>
                 <div className={activeTab === 'reference' ? 'block' : 'hidden'}>
                   <TaxReference />

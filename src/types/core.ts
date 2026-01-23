@@ -102,6 +102,8 @@ export interface YearProjection {
   withdrawalTradPenalty: number; // Penalized withdrawal amount
   earlyWithdrawalPenalty: number; // 10% penalty amount
   isDepleted: boolean;
+  estimatedTax: number; // New: Estimated federal tax for this year
+  effectiveTaxRate: number; // New: Effective tax rate
 }
 
 export interface LongevityResult {

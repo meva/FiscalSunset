@@ -523,6 +523,28 @@ export const calculateLongevity = (profile: UserProfile, strategy: StrategyResul
 
     const totalAssets = currentBrokerage + currentTrad + currentRoth + currentHSA;
 
+    // 4b. Calculate Estimated Tax for this Year
+    const ordIncome = basePension + fromTrad; // Trad Withdrawals are ordinary income
+    const qDivRatio = profile.income.qualifiedDividendRatio || 0.9;
+    const ordDividends = currentDividends * (1 - qDivRatio);
+    const qualDividends = currentDividends * qDivRatio;
+
+    // Brokerage Withdrawals: Simplified assumption (50% is gain).
+    // In a real app, we'd track basis depletion.
+    const brokerageGain = fromBrokerage * 0.5;
+
+    const totalOrdinaryForTax = ordIncome + ordDividends;
+    const totalCapGainsForTax = qualDividends + brokerageGain;
+
+    const taxableSS = calculateTaxableSocialSecurity(currentSS, totalOrdinaryForTax, profile.filingStatus);
+    const stdDeduction = STANDARD_DEDUCTION[profile.filingStatus] +
+      (age >= 65 ? AGE_DEDUCTION[profile.filingStatus] * (profile.filingStatus === FilingStatus.MarriedJoint ? 2 : 1) : 0);
+
+    const estimatedTax = calculateFederalTax(totalOrdinaryForTax + taxableSS, totalCapGainsForTax, profile.filingStatus, stdDeduction);
+    const totalCashFlow = fromBrokerage + fromTrad + fromRoth + fromHSA + totalFixedIncome;
+    const effectiveTaxRate = totalCashFlow > 0 ? estimatedTax / totalCashFlow : 0;
+
+
     projection.push({
       age,
       year: i,
@@ -547,7 +569,9 @@ export const calculateLongevity = (profile: UserProfile, strategy: StrategyResul
       withdrawalTradSEPP: fromTradSEPP,
       withdrawalTradPenalty: fromTradPenalty,
       earlyWithdrawalPenalty: penaltyAmount,
-      isDepleted: totalAssets <= 0
+      isDepleted: totalAssets <= 0,
+      estimatedTax,
+      effectiveTaxRate
     });
 
     if (totalAssets <= 0 && !depletionAge) depletionAge = age;
