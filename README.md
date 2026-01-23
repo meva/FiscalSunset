@@ -153,7 +153,6 @@ This will create a `dist` folder containing:
 - `assets/` (Compiled JavaScript and CSS)
 
 Upload the contents of this folder to your static file host.
-```
 
 ### Project Structure
 
