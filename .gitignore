@@ -33,5 +33,6 @@ deploy.sh
 dist-electron
 release
 electron
+DEVELOPMENT_WORKFLOW.md
 
 
