@@ -84,23 +84,9 @@ export const getWithdrawalOrder = (
   // Prioritizes penalty-free access
   // ========================================
   if (age < 59.5) {
-    // 1. Taxable Brokerage (Capital Gains) - Always accessible
-    order.push({ source: 'Taxable Brokerage', limit: assets.brokerage, taxType: 'CapitalGains', penalty: false });
-
-    // 2. Roth Contributions (Basis) - Always tax/penalty free
-    order.push({ source: 'Roth IRA (Basis)', limit: rothBasisAvailable, taxType: 'None', penalty: false });
-
-    // 3. Rule of 55 OR 72(t) SEPP - Penalty-free Traditional access
-    if (age >= 55) {
-      // Rule of 55: If age >= 55 and separated from employer
-      order.push({
-        source: 'Traditional IRA (Rule of 55)',
-        limit: assets.traditionalIRA,
-        taxType: 'Ordinary',
-        penalty: false
-      });
-    } else {
-      // 72(t) SEPP - Substantially Equal Periodic Payments
+    // 1. 72(t) SEPP - Substantially Equal Periodic Payments (Mandatory if active)
+    // This must happen first to fill the gap before discretionary sources
+    if (age < 55) {
       const maxSEPP = calculateSEPPPayment(assets.traditionalIRA, age);
       if (maxSEPP > 0) {
         order.push({
@@ -111,6 +97,22 @@ export const getWithdrawalOrder = (
           isSEPP: true
         });
       }
+    }
+
+    // 2. Taxable Brokerage (Capital Gains) - Always accessible
+    order.push({ source: 'Taxable Brokerage', limit: assets.brokerage, taxType: 'CapitalGains', penalty: false });
+
+    // 3. Roth Contributions (Basis) - Always tax/penalty free
+    order.push({ source: 'Roth IRA (Basis)', limit: rothBasisAvailable, taxType: 'None', penalty: false });
+
+    // 4. Rule of 55 - If age >= 55 and separated from employer
+    if (age >= 55) {
+      order.push({
+        source: 'Traditional IRA (Rule of 55)',
+        limit: assets.traditionalIRA,
+        taxType: 'Ordinary',
+        penalty: false
+      });
     }
 
     // 4. Traditional IRA (Penalty) - Last resort
@@ -263,7 +265,8 @@ export const calculateStrategy = (profile: UserProfile): StrategyResult => {
     let gap = targetNet - grossCash;
 
     for (const step of priorityOrder) {
-      if (gap <= 0.5) break; // Gap filled
+      // If gap is filled AND it's not a SEPP requirement, we can stop
+      if (gap <= 0.5 && !step.isSEPP) continue;
 
       // Determine available amount in this bucket based on currentAssets state
       let availableInBucket = 0;
@@ -274,12 +277,9 @@ export const calculateStrategy = (profile: UserProfile): StrategyResult => {
 
       // Apply step limit (e.g. SEPP limit)
       let limit = step.limit;
-      // Special Handling: If we already used some TradIRA for RMD, reduce available? 
-      // RMD comes out of TradIRA, so currentAssets.traditionalIRA is already reduced.
-      // However, SEPP limit is calculated on distinct balance. 
-      // For simplicity, we just take min(available, limit).
 
-      const pull = Math.min(gap, availableInBucket, limit);
+      // SEPP REQUIREMENT: Must take the FULL amount even if not needed to avoid "busting" the calculation
+      const pull = step.isSEPP ? Math.min(availableInBucket, limit) : Math.min(Math.max(0, gap), availableInBucket, limit);
 
       if (pull > 0) {
         // Adjust Assets
@@ -300,7 +300,7 @@ export const calculateStrategy = (profile: UserProfile): StrategyResult => {
           taxableAmount: taxableAmt,
           taxType: step.taxType,
           description: step.penalty ? 'WARN: Early withdrawal penalty applies.' :
-            step.isSEPP ? '72(t) SEPP withdrawal.' : 'Standard withdrawal.',
+            step.isSEPP ? '72(t) SEPP withdrawal (Fixed requirement).' : 'Standard withdrawal.',
         });
 
         // Add to Cash / Tax / Penalty
@@ -439,63 +439,86 @@ export const calculateLongevity = (profile: UserProfile, strategy: StrategyResul
     let penaltyAmount = 0;
 
     if (age < 59.5) {
-      // FIRE Phase: Brokerage first (penalty-free access priority)
-      fromBrokerage = Math.min(currentBrokerage, remainingDraw);
-      currentBrokerage -= fromBrokerage;
-      remainingDraw -= fromBrokerage;
+      // FIRE Phase Priority: SEPP first (mandatory) -> Brokerage -> Roth -> HSA
 
       // 72(t) SEPP: Use FIXED payment amount calculated at retirement start
       // SEPP is available only during the required period (5 years OR until 59.5)
       const isSeppActive = age >= seppStartAge && age < seppEndAge;
       const seppLimit = isSeppActive ? fixedSeppPayment : 0;
 
-      // Use SEPP first (penalty-free, but capped at fixed annual amount)
-      fromTradSEPP = Math.min(seppLimit, currentTrad, remainingDraw);
+      // SEPP REQUIREMENT: Must take the FULL amount even if not needed to avoid "busting" the calculation
+      // We withdraw the full seppLimit (capped by actual account balance)
+      fromTradSEPP = Math.min(seppLimit, currentTrad);
       currentTrad -= fromTradSEPP;
       remainingDraw -= fromTradSEPP;
 
+      // Brokerage next (penalty-free access)
+      if (remainingDraw > 0) {
+        fromBrokerage = Math.min(currentBrokerage, remainingDraw);
+        currentBrokerage -= fromBrokerage;
+        remainingDraw -= fromBrokerage;
+      }
+
       // Additional Traditional IRA beyond SEPP incurs 10% early withdrawal penalty
-      fromTradPenalty = Math.min(currentTrad, remainingDraw);
-      currentTrad -= fromTradPenalty;
-      remainingDraw -= fromTradPenalty;
-      penaltyAmount = fromTradPenalty * 0.10;
+      if (remainingDraw > 0) {
+        fromTradPenalty = Math.min(currentTrad, remainingDraw);
+        currentTrad -= fromTradPenalty;
+        remainingDraw -= fromTradPenalty;
+        penaltyAmount = fromTradPenalty * 0.10;
+      }
 
       // Total Traditional = SEPP + Penalty
       fromTrad = fromTradSEPP + fromTradPenalty;
 
-      fromRoth = Math.min(currentRoth, remainingDraw);
-      currentRoth -= fromRoth;
-      remainingDraw -= fromRoth;
+      if (remainingDraw > 0) {
+        fromRoth = Math.min(currentRoth, remainingDraw);
+        currentRoth -= fromRoth;
+        remainingDraw -= fromRoth;
+      }
 
-      fromHSA = Math.min(currentHSA, remainingDraw);
-      currentHSA -= fromHSA;
-      remainingDraw -= fromHSA;
+      if (remainingDraw > 0) {
+        fromHSA = Math.min(currentHSA, remainingDraw);
+        currentHSA -= fromHSA;
+        remainingDraw -= fromHSA;
+      }
+
+      // If we over-withdrew (due to mandatory SEPP), reinvest the excess to Brokerage
+      if (remainingDraw < 0) {
+        currentBrokerage += Math.abs(remainingDraw);
+        remainingDraw = 0;
+      }
     } else {
       // Standard Phase: Traditional IRA first (fill low tax brackets)
       // For age 73+: Must withdraw at least the RMD amount
       const minTradWithdrawal = Math.max(rmdAmount, 0);
-      fromTrad = Math.max(minTradWithdrawal, Math.min(currentTrad, remainingDraw));
+      fromTrad = Math.max(minTradWithdrawal, Math.min(currentTrad, Math.max(0, remainingDraw)));
       fromTrad = Math.min(fromTrad, currentTrad); // Can't withdraw more than available
       currentTrad -= fromTrad;
       remainingDraw -= fromTrad;
 
-      // If RMD exceeds spending needs, reinvest excess to brokerage
-      if (fromTrad > requiredDraw && rmdAmount > 0) {
-        const excessRMD = fromTrad - requiredDraw;
-        currentBrokerage += excessRMD; // Reinvest excess RMD
+      if (remainingDraw > 0) {
+        fromBrokerage = Math.min(currentBrokerage, remainingDraw);
+        currentBrokerage -= fromBrokerage;
+        remainingDraw -= fromBrokerage;
       }
 
-      fromBrokerage = Math.min(currentBrokerage, Math.max(0, remainingDraw));
-      currentBrokerage -= fromBrokerage;
-      remainingDraw = Math.max(0, remainingDraw - fromBrokerage);
+      if (remainingDraw > 0) {
+        fromRoth = Math.min(currentRoth, remainingDraw);
+        currentRoth -= fromRoth;
+        remainingDraw -= fromRoth;
+      }
 
-      fromRoth = Math.min(currentRoth, remainingDraw);
-      currentRoth -= fromRoth;
-      remainingDraw -= fromRoth;
+      if (remainingDraw > 0) {
+        fromHSA = Math.min(currentHSA, remainingDraw);
+        currentHSA -= fromHSA;
+        remainingDraw -= fromHSA;
+      }
 
-      fromHSA = Math.min(currentHSA, remainingDraw);
-      currentHSA -= fromHSA;
-      remainingDraw -= fromHSA;
+      // If we over-withdrew (due to mandatory RMD), reinvest the excess to Brokerage
+      if (remainingDraw < 0) {
+        currentBrokerage += Math.abs(remainingDraw);
+        remainingDraw = 0;
+      }
     }
 
     const totalAssets = currentBrokerage + currentTrad + currentRoth + currentHSA;
@@ -508,7 +531,7 @@ export const calculateLongevity = (profile: UserProfile, strategy: StrategyResul
       traditionalIRA: currentTrad,
       rothIRA: currentRoth,
       hsa: currentHSA,
-      withdrawal: requiredDraw,
+      withdrawal: fromBrokerage + fromTrad + fromRoth + fromHSA,
       // Breakdown of withdrawals
       withdrawalBrokerage: fromBrokerage,
       withdrawalTrad: fromTrad,
