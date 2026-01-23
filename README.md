@@ -318,6 +318,6 @@ SOFTWARE.
 
 **Made with ❤️ for a better retirement**
 
-⭐ Star this repo if you find it helpful!!
+⭐ Star this repo if you find it helpful!
 
 </div>
