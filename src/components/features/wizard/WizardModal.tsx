@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { WizardState } from './types';
-import { FilingStatus, UserProfile } from '../../types'; // Import UserProfile
+import { FilingStatus, UserProfile } from '../../../types'; // Import UserProfile
 import { mapWizardStateToProfile } from './wizardMapper';
 import Step1Timeline from './Steps/Step1Timeline';
 import Step2TaxProfile from './Steps/Step2TaxProfile';

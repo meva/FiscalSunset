@@ -1,4 +1,4 @@
-import { UserProfile, FilingStatus } from '../../types';
+import { UserProfile, FilingStatus } from '../../../types';
 import { WizardState } from './types';
 
 export const mapWizardStateToProfile = (wizardState: WizardState, currentProfile: UserProfile): UserProfile => {

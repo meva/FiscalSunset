@@ -1,6 +1,6 @@
 import React, { useState, useMemo } from 'react';
-import { UserProfile } from '../types';
-import { calculateFireMilestones } from '../services/fireCalculations';
+import { UserProfile } from '../../types';
+import { calculateFireMilestones } from '../../services/fireCalculations';
 import { FireInputs } from '../types/fire';
 import { Flame, TrendingUp, DollarSign, Calendar, RefreshCw } from 'lucide-react';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip as RechartsTooltip } from 'recharts';

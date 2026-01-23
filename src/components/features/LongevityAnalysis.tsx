@@ -1,5 +1,5 @@
 import React from 'react';
-import { LongevityResult, UserProfile } from '../types';
+import { LongevityResult, UserProfile } from '../../types';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar, Legend } from 'recharts';
 import { AlertTriangle, CheckCircle, HelpCircle } from 'lucide-react';
 

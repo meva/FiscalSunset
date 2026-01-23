@@ -1,10 +1,10 @@
 import React from 'react';
 import { WizardState } from '../types';
-import { calculateStrategy, calculateLongevity } from '../../../services/calculationEngine';
+import { calculateStrategy, calculateLongevity } from '../../../../services/calculationEngine';
 import { mapWizardStateToProfile } from '../wizardMapper';
-import { UserProfile, FilingStatus } from '../../../types';
+import { UserProfile, FilingStatus } from '../../../../types';
 import { RotateCcw } from 'lucide-react';
-import { projectAssets } from '../../../services/projection';
+import { projectAssets } from '../../../../services/projection';
 
 interface CheckProps {
     data: WizardState;

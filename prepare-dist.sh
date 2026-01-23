@@ -16,9 +16,9 @@ echo "🏗️  Running web build..."
 npm run build:web
 
 # Copy Images folder
-if [ -d "Images" ]; then
+if [ -d "public/Images" ]; then
     echo "🖼️  Copying Images folder..."
-    cp -r Images dist/
+    cp -r public/Images dist/
 fi
 
 echo "✅ Distribution folder is ready at ./dist"

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { X, Key, Trash2, Save, Check, RefreshCw } from 'lucide-react';
-import { db } from '../services/db';
+import { db } from '../../services/db';
 
 interface SettingsModalProps {
     isOpen: boolean;

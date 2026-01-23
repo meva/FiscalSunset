@@ -1,16 +1,16 @@
 import React, { useState, useEffect } from 'react';
 import { UserProfile, FilingStatus, StrategyResult, LongevityResult } from './types';
-import InputSection from './components/InputSection';
-import StrategyResults from './components/StrategyResults';
-import LongevityAnalysis from './components/LongevityAnalysis';
-import AccumulationStrategy from './components/AccumulationStrategy';
-import TaxReference from './components/TaxReference';
-import FireAnalysis from './components/FireAnalysis';
+import InputSection from './components/features/InputSection';
+import StrategyResults from './components/features/StrategyResults';
+import LongevityAnalysis from './components/features/LongevityAnalysis';
+import AccumulationStrategy from './components/features/AccumulationStrategy';
+import TaxReference from './components/features/TaxReference';
+import FireAnalysis from './components/features/FireAnalysis';
 import { calculateStrategy, calculateLongevity } from './services/calculationEngine';
 import { TrendingUp, Calculator, AlertTriangle, BookOpen, Sun, Moon, PiggyBank, Settings, Flame } from 'lucide-react';
-import Footer from './components/Footer';
-import WizardModal from './components/Wizard/WizardModal';
-import SettingsModal from './components/SettingsModal';
+import Footer from './components/layout/Footer';
+import WizardModal from './components/features/wizard/WizardModal';
+import SettingsModal from './components/features/SettingsModal';
 import { db } from './services/db';
 import { projectAssets } from './services/projection';
 

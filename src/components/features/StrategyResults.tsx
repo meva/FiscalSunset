@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { StrategyResult, UserProfile } from '../types';
+import { StrategyResult, UserProfile } from '../../types';
 import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Legend, CartesianGrid } from 'recharts';
 import { AlertCircle, CheckCircle, TrendingUp, Sparkles, MessageSquare, RefreshCw, ShieldAlert, Lock, Wallet, Info, AlertTriangle, ArrowRightLeft } from 'lucide-react';
-import { getGeminiAdvice } from '../services/geminiService';
+import { getGeminiAdvice } from '../../services/geminiService';
 
 interface StrategyResultsProps {
   result: StrategyResult;

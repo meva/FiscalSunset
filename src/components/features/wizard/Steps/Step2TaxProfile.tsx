@@ -1,6 +1,6 @@
 import React from 'react';
 import { WizardState } from '../types';
-import { FilingStatus } from '../../../types';
+import { FilingStatus } from '../../../../types';
 import { Users, User, Heart } from 'lucide-react';
 
 interface CheckProps {

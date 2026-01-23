@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { UserProfile, FilingStatus } from '../types';
+import { UserProfile, FilingStatus } from '../../types';
 import { HelpCircle, DollarSign, Briefcase, Activity, TrendingUp, PiggyBank, RotateCcw, PlusCircle, AlertTriangle } from 'lucide-react';
 
 interface InputSectionProps {

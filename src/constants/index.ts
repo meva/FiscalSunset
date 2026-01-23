@@ -1,4 +1,4 @@
-import { FilingStatus } from './types';
+import { FilingStatus } from '../types';
 
 // 2026 Standard Deductions (Estimated)
 export const STANDARD_DEDUCTION = {

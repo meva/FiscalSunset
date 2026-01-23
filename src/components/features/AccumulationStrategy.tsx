@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { UserProfile } from '../types';
+import { UserProfile } from '../../types';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, Legend } from 'recharts';
 import { Calendar, Wallet, TrendingUp, Table as TableIcon, Info, Rocket, ArrowRight, PieChart as PieIcon } from 'lucide-react';
 

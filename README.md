@@ -1,5 +1,5 @@
 <div align="center">
-<img width="1200" height="475" alt="FiscalSunset Banner" src="Images/Accumulation.png" />
+<img width="1200" height="475" alt="FiscalSunset Banner" src="public/Images/Accumulation.png" />
 
 # FiscalSunset: Tax-Efficient Withdrawal Strategist
 
@@ -42,7 +42,7 @@ The tool prioritizes tax-efficient withdrawals by:
 | **Accumulation** | Pre-retirement savings strategy and growth projections |
 | **Withdrawal** | Tax-optimized withdrawal sequence recommendations |
 | **Longevity** | Asset depletion analysis with projections |
-| **Reference** | Comprehensive guide: how-to, tax strategies, 2025 tax brackets, and disclaimers |
+| **Reference** | Comprehensive guide: how-to, tax strategies, 2026 tax brackets, and disclaimers |
 
 
 ### 🧠 Smart Tax Optimization
@@ -159,23 +159,24 @@ Upload the contents of this folder to your static file host.
 
 ```
 fiscal-sunset/
-├── components/              # React components
-│   ├── AccumulationStrategy.tsx   # Pre-retirement planning module
-│   ├── InputSection.tsx           # User profile input form
-│   ├── LongevityAnalysis.tsx      # Asset depletion projections
-│   ├── StrategyResults.tsx        # Withdrawal strategy display
-│   └── TaxReference.tsx           # Tax rules reference guide
-├── services/                # Business logic
-│   ├── calculationEngine.ts       # Core tax & strategy calculations
-│   └── geminiService.ts           # Google Gemini AI integration
-├── App.tsx                  # Main application component
-├── constants.ts             # Tax brackets, RMD tables, thresholds
-├── types.ts                 # TypeScript type definitions
+├── src/                     # Source code encapsulation
+│   ├── assets/              # Centralized assets (images, logos)
+│   ├── components/          # React components
+│   │   ├── features/        # Feature-specific modules (Accumulation, Withdrawal, etc.)
+│   │   └── layout/          # Global layout (Footer, Header)
+│   ├── constants/           # Tax tables, RMD factors, thresholds
+│   ├── services/            # Pure business logic & algorithm engines
+│   ├── types/               # Centralized TypeScript definitions
+│   ├── hooks/               # Custom React hooks (Persistence, Theme)
+│   ├── utils/               # Generic helpers (Formatting, Math)
+│   ├── App.tsx              # Main application container
+│   └── index.tsx            # Application entry point
+├── public/                  # Static assets (images served at root)
+├── electron/                # Desktop app main/preload scripts
 ├── index.html               # Entry HTML file
-├── index.tsx                # React entry point
 ├── vite.config.ts           # Vite configuration
 ├── tsconfig.json            # TypeScript configuration
-├── package.json             # Dependencies and scripts
+├── package.json             # Scripts & dependencies
 └── README.md                # This file
 ```
 
@@ -193,7 +194,7 @@ fiscal-sunset/
 
 ## 🧠 Calculation Methodology
 
-FiscalSunset uses a deterministic projection model with high-fidelity tax calculations. Unlike simple calculators that use effective tax rates, this engine simulates the actual IRS Form 1040 logic for every year of the projection.
+FiscalSunset uses a deterministic projection model with high-fidelity tax calculations. Unlike simple calculators that use effective tax rates, this engine simulates the actual IRS Form 1040 logic for every year of the projection using 2026 estimates.
 
 ### 1. The Tax Engine ("Two-Layer Cake")
 The application calculates federal taxes using the standard IRS method where **Ordinary Income** sits at the bottom and **Capital Gains/Dividends** sit on top.

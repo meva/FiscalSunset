@@ -1,4 +1,4 @@
-import { FilingStatus } from '../../types';
+import { FilingStatus } from '../../../types';
 
 export interface WizardState {
     currentAge: number;
