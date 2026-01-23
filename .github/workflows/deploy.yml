@@ -1,0 +1,62 @@
+name: Build and Deploy
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+  # Allow manual trigger from the Actions tab
+  workflow_dispatch:
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build Web Application
+        run: npm run build:web
+
+      - name: Prepare Distribution (images)
+        run: |
+          chmod +x prepare-dist.sh
+          ./prepare-dist.sh
+
+      # Deployment to S3
+      # Note: You need to set these secrets in your GitHub Repository Settings:
+      # AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY, AWS_S3_BUCKET, AWS_REGION
+     # - name: Deploy to S3
+      #  if: github.ref == 'refs/heads/main'
+       # uses: jakejarvis/s3-sync-action@master
+        #with:
+         # args: --follow-symlinks --delete
+       # env:
+       #   AWS_S3_BUCKET: ${{ secrets.AWS_S3_BUCKET }}
+       #   AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+       #   AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+       #   AWS_REGION: ${{ secrets.AWS_REGION }}
+       #   SOURCE_DIR: 'dist'
+
+      # Optional: Invalidate CloudFront Cache if you use it
+      # - name: Invalidate CloudFront
+      #   if: github.ref == 'refs/heads/main'
+      #   uses: chetan/invalidate-cloudfront-action@v2
+      #   env:
+      #     DISTRIBUTION: ${{ secrets.CLOUDFRONT_DISTRIBUTION_ID }}
+      #     PATHS: '/*'
+      #     AWS_REGION: ${{ secrets.AWS_REGION }}
+      #     AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      #     AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
