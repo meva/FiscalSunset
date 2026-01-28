@@ -99,20 +99,44 @@ export const getWithdrawalOrder = (
       }
     }
 
-    // 2. Taxable Brokerage (Capital Gains) - Always accessible
+    // 2. Rule of 55 - If age >= 55 (fills low brackets first, like standard retirement)
+    if (age >= 55) {
+      const brackets = TAX_BRACKETS[filingStatus];
+      const top12Bracket = brackets.find(b => b.rate === 0.12)?.limit || 50400;
+      const optimalTradWithdrawal = Math.min(
+        assets.traditionalIRA,
+        stdDeductionNeed + top12Bracket
+      );
+
+      if (optimalTradWithdrawal > 0) {
+        order.push({
+          source: 'Traditional IRA (Rule of 55)',
+          limit: optimalTradWithdrawal,
+          taxType: 'Ordinary',
+          penalty: false
+        });
+      }
+    }
+
+    // 3. Taxable Brokerage (Capital Gains) - Always accessible
     order.push({ source: 'Taxable Brokerage', limit: assets.brokerage, taxType: 'CapitalGains', penalty: false });
 
-    // 3. Roth Contributions (Basis) - Always tax/penalty free
+    // 4. Roth Contributions (Basis) - Always tax/penalty free
     order.push({ source: 'Roth IRA (Basis)', limit: rothBasisAvailable, taxType: 'None', penalty: false });
 
-    // 4. Rule of 55 - If age >= 55 and separated from employer
+    // 5. Additional Traditional IRA (Rule of 55) - If more needed beyond 12% bracket
     if (age >= 55) {
-      order.push({
-        source: 'Traditional IRA (Rule of 55)',
-        limit: assets.traditionalIRA,
-        taxType: 'Ordinary',
-        penalty: false
-      });
+      const brackets = TAX_BRACKETS[filingStatus];
+      const top12Bracket = brackets.find(b => b.rate === 0.12)?.limit || 50400;
+      const alreadyIncluded = Math.min(assets.traditionalIRA, stdDeductionNeed + top12Bracket);
+      if (assets.traditionalIRA > alreadyIncluded) {
+        order.push({
+          source: 'Traditional IRA (Rule of 55 - Additional)',
+          limit: assets.traditionalIRA - alreadyIncluded,
+          taxType: 'Ordinary',
+          penalty: false
+        });
+      }
     }
 
     // 4. Traditional IRA (Penalty) - Last resort
@@ -292,7 +316,7 @@ export const calculateStrategy = (profile: UserProfile): StrategyResult => {
 
         // Add to Plan
         const taxableAmt = (step.taxType === 'None') ? 0 :
-          (step.taxType === 'CapitalGains' ? pull * 0.5 : pull); // Simplifed 50% gain ratio
+          (step.taxType === 'CapitalGains' ? pull * 1.0 : pull); // Assumes 100% gain ratio (LTCG)
 
         withdrawalPlan.push({
           source: step.source,
@@ -523,6 +547,27 @@ export const calculateLongevity = (profile: UserProfile, strategy: StrategyResul
 
     const totalAssets = currentBrokerage + currentTrad + currentRoth + currentHSA;
 
+    // 4b. Calculate Estimated Tax for this Year
+    const ordIncome = basePension + fromTrad; // Trad Withdrawals are ordinary income
+    const qDivRatio = profile.income.qualifiedDividendRatio || 0.9;
+    const ordDividends = currentDividends * (1 - qDivRatio);
+    const qualDividends = currentDividends * qDivRatio;
+
+    // Brokerage Withdrawals: Assumes 100% is gain (most conservative for long-term savings)
+    const brokerageGain = fromBrokerage * 1.0;
+
+    const totalOrdinaryForTax = ordIncome + ordDividends;
+    const totalCapGainsForTax = qualDividends + brokerageGain;
+
+    const taxableSS = calculateTaxableSocialSecurity(currentSS, totalOrdinaryForTax, profile.filingStatus);
+    const stdDeduction = STANDARD_DEDUCTION[profile.filingStatus] +
+      (age >= 65 ? AGE_DEDUCTION[profile.filingStatus] * (profile.filingStatus === FilingStatus.MarriedJoint ? 2 : 1) : 0);
+
+    const estimatedTax = calculateFederalTax(totalOrdinaryForTax + taxableSS, totalCapGainsForTax, profile.filingStatus, stdDeduction);
+    const totalCashFlow = fromBrokerage + fromTrad + fromRoth + fromHSA + totalFixedIncome;
+    const effectiveTaxRate = totalCashFlow > 0 ? estimatedTax / totalCashFlow : 0;
+
+
     projection.push({
       age,
       year: i,
@@ -547,7 +592,9 @@ export const calculateLongevity = (profile: UserProfile, strategy: StrategyResul
       withdrawalTradSEPP: fromTradSEPP,
       withdrawalTradPenalty: fromTradPenalty,
       earlyWithdrawalPenalty: penaltyAmount,
-      isDepleted: totalAssets <= 0
+      isDepleted: totalAssets <= 0,
+      estimatedTax,
+      effectiveTaxRate
     });
 
     if (totalAssets <= 0 && !depletionAge) depletionAge = age;
