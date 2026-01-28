@@ -3,7 +3,7 @@ import { UserProfile, Contributions, FilingStatus } from '../../types';
 import { projectAssets } from '../../services/projection';
 import { calculateStrategy, calculateLongevity } from '../../services/calculationEngine';
 import { TrendingUp, DollarSign, ArrowRight, RefreshCw, AlertCircle } from 'lucide-react';
-import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Legend, Cell, CartesianGrid } from 'recharts';
+import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Legend, Cell, CartesianGrid, ComposedChart, Line } from 'recharts';
 
 interface WhatIfAnalysisProps {
     profile: UserProfile;
@@ -132,7 +132,9 @@ const WhatIfAnalysis: React.FC<WhatIfAnalysisProps> = ({ profile, isDarkMode }) 
             return {
                 age,
                 currentTax: currentYear?.estimatedTax || 0,
-                scenarioTax: scenarioYear?.estimatedTax || 0
+                scenarioTax: scenarioYear?.estimatedTax || 0,
+                currentAssets: currentYear?.totalAssets || 0,
+                scenarioAssets: scenarioYear?.totalAssets || 0
             };
         });
     }, [currentResult.projection, scenarioResult.projection]);
@@ -265,36 +267,62 @@ const WhatIfAnalysis: React.FC<WhatIfAnalysisProps> = ({ profile, isDarkMode }) 
                         </div>
                     </div>
 
-                    {/* Chart: Annual Tax Comparison */}
+                    {/* Chart: Annual Tax & Balance Comparison */}
                     <div className="h-64 flex flex-col">
-                        <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2 flex justify-center gap-4">
-                            <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-slate-400"></span> Current Plan Tax</span>
+                        <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2 flex justify-center gap-6">
+                            <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-slate-400"></span> Current Tax</span>
+                            <span className="flex items-center gap-1"><span className="w-2 h-0.5 bg-slate-400"></span> Current Assets</span>
                             <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-indigo-500"></span> What-If Tax</span>
+                            <span className="flex items-center gap-1"><span className="w-2 h-0.5 bg-indigo-500"></span> What-If Assets</span>
                         </div>
                         <ResponsiveContainer width="100%" height="100%">
-                            <BarChart data={mergedProjection} margin={{ top: 5, right: 10, left: 0, bottom: 5 }}>
+                            <ComposedChart data={mergedProjection} margin={{ top: 5, right: 10, left: 10, bottom: 5 }}>
                                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke={isDarkMode ? '#334155' : '#e2e8f0'} />
                                 <XAxis
                                     dataKey="age"
                                     tick={{ fill: isDarkMode ? '#94a3b8' : '#475569', fontSize: 10 }}
                                     axisLine={false}
                                     tickLine={false}
+                                    interval="preserveStartEnd"
                                 />
+                                {/* Left Y-Axis: Taxes */}
                                 <YAxis
+                                    yAxisId="left"
                                     tickFormatter={(val) => `$${(val / 1000).toFixed(0)}k`}
                                     tick={{ fill: isDarkMode ? '#94a3b8' : '#475569', fontSize: 10 }}
                                     axisLine={false}
                                     tickLine={false}
-                                    width={40}
+                                    width={35}
+                                />
+                                {/* Right Y-Axis: Assets */}
+                                <YAxis
+                                    yAxisId="right"
+                                    orientation="right"
+                                    tickFormatter={(val) => {
+                                        if (val >= 1000000) return `$${(val / 1000000).toFixed(1)}M`;
+                                        if (val >= 1000) return `$${(val / 1000).toFixed(0)}k`;
+                                        return `$${val}`;
+                                    }}
+                                    tick={{ fill: isDarkMode ? '#94a3b8' : '#475569', fontSize: 10 }}
+                                    axisLine={false}
+                                    tickLine={false}
+                                    width={45}
                                 />
                                 <Tooltip
-                                    formatter={(value: number) => formatCurrency(value)}
+                                    formatter={(value: number, name: string) => {
+                                        const formatted = formatCurrency(value);
+                                        if (name.includes('Assets')) return [formatted, name];
+                                        return [formatted, name];
+                                    }}
                                     contentStyle={{ backgroundColor: isDarkMode ? '#1e293b' : '#ffffff', borderColor: isDarkMode ? '#334155' : '#e2e8f0', borderRadius: '8px', fontSize: '11px' }}
                                     itemStyle={{ padding: '0' }}
                                 />
-                                <Bar dataKey="currentTax" fill={isDarkMode ? '#475569' : '#94a3b8'} name="Current Tax" radius={[2, 2, 0, 0]} />
-                                <Bar dataKey="scenarioTax" fill="#6366f1" name="What-If Tax" radius={[2, 2, 0, 0]} />
-                            </BarChart>
+                                <Bar yAxisId="left" dataKey="currentTax" fill={isDarkMode ? '#475569' : '#94a3b8'} name="Current Tax" radius={[2, 2, 0, 0]} opacity={0.6} />
+                                <Bar yAxisId="left" dataKey="scenarioTax" fill="#6366f1" name="What-If Tax" radius={[2, 2, 0, 0]} opacity={0.6} />
+
+                                <Line yAxisId="right" type="monotone" dataKey="currentAssets" stroke={isDarkMode ? '#94a3b8' : '#475569'} strokeWidth={2} dot={false} name="Current Assets" />
+                                <Line yAxisId="right" type="monotone" dataKey="scenarioAssets" stroke="#6366f1" strokeWidth={2} dot={false} name="What-If Assets" />
+                            </ComposedChart>
                         </ResponsiveContainer>
                     </div>
                 </div>
