@@ -99,20 +99,44 @@ export const getWithdrawalOrder = (
       }
     }
 
-    // 2. Taxable Brokerage (Capital Gains) - Always accessible
+    // 2. Rule of 55 - If age >= 55 (fills low brackets first, like standard retirement)
+    if (age >= 55) {
+      const brackets = TAX_BRACKETS[filingStatus];
+      const top12Bracket = brackets.find(b => b.rate === 0.12)?.limit || 50400;
+      const optimalTradWithdrawal = Math.min(
+        assets.traditionalIRA,
+        stdDeductionNeed + top12Bracket
+      );
+
+      if (optimalTradWithdrawal > 0) {
+        order.push({
+          source: 'Traditional IRA (Rule of 55)',
+          limit: optimalTradWithdrawal,
+          taxType: 'Ordinary',
+          penalty: false
+        });
+      }
+    }
+
+    // 3. Taxable Brokerage (Capital Gains) - Always accessible
     order.push({ source: 'Taxable Brokerage', limit: assets.brokerage, taxType: 'CapitalGains', penalty: false });
 
-    // 3. Roth Contributions (Basis) - Always tax/penalty free
+    // 4. Roth Contributions (Basis) - Always tax/penalty free
     order.push({ source: 'Roth IRA (Basis)', limit: rothBasisAvailable, taxType: 'None', penalty: false });
 
-    // 4. Rule of 55 - If age >= 55 and separated from employer
+    // 5. Additional Traditional IRA (Rule of 55) - If more needed beyond 12% bracket
     if (age >= 55) {
-      order.push({
-        source: 'Traditional IRA (Rule of 55)',
-        limit: assets.traditionalIRA,
-        taxType: 'Ordinary',
-        penalty: false
-      });
+      const brackets = TAX_BRACKETS[filingStatus];
+      const top12Bracket = brackets.find(b => b.rate === 0.12)?.limit || 50400;
+      const alreadyIncluded = Math.min(assets.traditionalIRA, stdDeductionNeed + top12Bracket);
+      if (assets.traditionalIRA > alreadyIncluded) {
+        order.push({
+          source: 'Traditional IRA (Rule of 55 - Additional)',
+          limit: assets.traditionalIRA - alreadyIncluded,
+          taxType: 'Ordinary',
+          penalty: false
+        });
+      }
     }
 
     // 4. Traditional IRA (Penalty) - Last resort
