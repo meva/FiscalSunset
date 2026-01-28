@@ -221,6 +221,9 @@ const WhatIfAnalysis: React.FC<WhatIfAnalysisProps> = ({ profile, isDarkMode }) 
                                     ? `Save ${formatCurrency(currentResult.totalTaxPaid - scenarioResult.totalTaxPaid)}`
                                     : `Pay ${formatCurrency(scenarioResult.totalTaxPaid - currentResult.totalTaxPaid)} more`}
                             </div>
+                            <div className="mt-2 pt-2 border-t border-slate-100 dark:border-slate-800 text-[9px] text-slate-400 uppercase tracking-tighter">
+                                Ret. Start Assets: {formatCurrency(currentResult.projectionStartAssets)}
+                            </div>
                         </div>
 
                         <div className="p-4 rounded-lg bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700">
@@ -240,6 +243,9 @@ const WhatIfAnalysis: React.FC<WhatIfAnalysisProps> = ({ profile, isDarkMode }) 
                                 {scenarioResult.endingBalance > currentResult.endingBalance
                                     ? `Gain ${formatCurrency(scenarioResult.endingBalance - currentResult.endingBalance)}`
                                     : `Lose ${formatCurrency(currentResult.endingBalance - scenarioResult.endingBalance)}`}
+                            </div>
+                            <div className="mt-2 pt-2 border-t border-slate-100 dark:border-slate-800 text-[9px] text-slate-400 uppercase tracking-tighter">
+                                Ret. Start Assets: {formatCurrency(scenarioResult.projectionStartAssets)}
                             </div>
                         </div>
                     </div>
