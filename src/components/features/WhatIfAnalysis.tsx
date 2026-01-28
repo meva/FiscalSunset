@@ -3,7 +3,7 @@ import { UserProfile, Contributions, FilingStatus } from '../../types';
 import { projectAssets } from '../../services/projection';
 import { calculateStrategy, calculateLongevity } from '../../services/calculationEngine';
 import { TrendingUp, DollarSign, ArrowRight, RefreshCw, AlertCircle } from 'lucide-react';
-import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Legend, Cell } from 'recharts';
+import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Legend, Cell, CartesianGrid } from 'recharts';
 
 interface WhatIfAnalysisProps {
     profile: UserProfile;
@@ -102,25 +102,40 @@ const WhatIfAnalysis: React.FC<WhatIfAnalysisProps> = ({ profile, isDarkMode }) 
         // Diagnostic Assets
         const projectionStartAssets = retirementProfile.assets.traditionalIRA + retirementProfile.assets.rothIRA + retirementProfile.assets.brokerage + retirementProfile.assets.hsa;
 
-        return { totalTaxPaid, endingBalance, endingBalancePV, depletionAge, projectionStartAssets };
+        return {
+            totalTaxPaid,
+            endingBalance,
+            endingBalancePV,
+            depletionAge,
+            projectionStartAssets,
+            projection: longevity.projection
+        };
     };
 
     const currentResult = useMemo(() => runSimulation(profile.contributions), [profile]);
     const scenarioResult = useMemo(() => runSimulation(scenarioContributions), [profile, scenarioContributions]);
 
     // --- Comparison Data ---
-    const comparisonData = [
-        {
-            name: 'Current Plan',
-            Tax: currentResult.totalTaxPaid,
-            Legacy: currentResult.endingBalance,
-        },
-        {
-            name: 'What-If Scenario',
-            Tax: scenarioResult.totalTaxPaid,
-            Legacy: scenarioResult.endingBalance,
-        },
-    ];
+    const mergedProjection = useMemo(() => {
+        const currentData = currentResult.projection || [];
+        const scenarioData = scenarioResult.projection || [];
+
+        // Find common age range
+        const ages = Array.from(new Set([
+            ...currentData.map(p => p.age),
+            ...scenarioData.map(p => p.age)
+        ])).sort((a, b) => a - b);
+
+        return ages.map(age => {
+            const currentYear = currentData.find(p => p.age === age);
+            const scenarioYear = scenarioData.find(p => p.age === age);
+            return {
+                age,
+                currentTax: currentYear?.estimatedTax || 0,
+                scenarioTax: scenarioYear?.estimatedTax || 0
+            };
+        });
+    }, [currentResult.projection, scenarioResult.projection]);
 
     const formatCurrency = (val: number) => new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 }).format(val);
 
@@ -250,20 +265,35 @@ const WhatIfAnalysis: React.FC<WhatIfAnalysisProps> = ({ profile, isDarkMode }) 
                         </div>
                     </div>
 
-                    {/* Chart */}
-                    <div className="h-64">
+                    {/* Chart: Annual Tax Comparison */}
+                    <div className="h-64 flex flex-col">
+                        <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2 flex justify-center gap-4">
+                            <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-slate-400"></span> Current Plan Tax</span>
+                            <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-indigo-500"></span> What-If Tax</span>
+                        </div>
                         <ResponsiveContainer width="100%" height="100%">
-                            <BarChart data={comparisonData} layout="vertical" margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
-                                <XAxis type="number" hide />
-                                <YAxis dataKey="name" type="category" width={100} tick={{ fill: isDarkMode ? '#94a3b8' : '#475569', fontSize: 12 }} />
+                            <BarChart data={mergedProjection} margin={{ top: 5, right: 10, left: 0, bottom: 5 }}>
+                                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke={isDarkMode ? '#334155' : '#e2e8f0'} />
+                                <XAxis
+                                    dataKey="age"
+                                    tick={{ fill: isDarkMode ? '#94a3b8' : '#475569', fontSize: 10 }}
+                                    axisLine={false}
+                                    tickLine={false}
+                                />
+                                <YAxis
+                                    tickFormatter={(val) => `$${(val / 1000).toFixed(0)}k`}
+                                    tick={{ fill: isDarkMode ? '#94a3b8' : '#475569', fontSize: 10 }}
+                                    axisLine={false}
+                                    tickLine={false}
+                                    width={40}
+                                />
                                 <Tooltip
                                     formatter={(value: number) => formatCurrency(value)}
-                                    contentStyle={{ backgroundColor: isDarkMode ? '#1e293b' : '#ffffff', borderColor: isDarkMode ? '#334155' : '#e2e8f0', borderRadius: '8px', color: isDarkMode ? '#f1f5f9' : '#0f172a' }}
-                                    itemStyle={{ color: isDarkMode ? '#f1f5f9' : '#0f172a' }}
+                                    contentStyle={{ backgroundColor: isDarkMode ? '#1e293b' : '#ffffff', borderColor: isDarkMode ? '#334155' : '#e2e8f0', borderRadius: '8px', fontSize: '11px' }}
+                                    itemStyle={{ padding: '0' }}
                                 />
-                                <Legend />
-                                <Bar dataKey="Tax" fill="#ef4444" name="Total Taxes" radius={[0, 4, 4, 0]} barSize={20} />
-                                <Bar dataKey="Legacy" fill="#10b981" name="Ending Balance" radius={[0, 4, 4, 0]} barSize={20} />
+                                <Bar dataKey="currentTax" fill={isDarkMode ? '#475569' : '#94a3b8'} name="Current Tax" radius={[2, 2, 0, 0]} />
+                                <Bar dataKey="scenarioTax" fill="#6366f1" name="What-If Tax" radius={[2, 2, 0, 0]} />
                             </BarChart>
                         </ResponsiveContainer>
                     </div>
