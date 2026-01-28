@@ -149,7 +149,7 @@ const StrategyResults: React.FC<StrategyResultsProps> = ({ result, profile, isDa
       </div>
 
       {/* High Level Summary Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className={`grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 ${result.totalWithdrawal - (result.nominalSpendingNeeded + result.estimatedFederalTax) > 100 ? 'lg:grid-cols-5' : 'lg:grid-cols-4'} gap-4`}>
         <div className="bg-white dark:bg-slate-900 p-4 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm transition-colors">
           <h3 className="text-slate-500 dark:text-slate-400 text-xs font-bold uppercase">Spending (Net)</h3>
           <p className="text-xl font-bold text-slate-900 dark:text-white">{formatCurrency(result.nominalSpendingNeeded)}</p>
@@ -167,6 +167,23 @@ const StrategyResults: React.FC<StrategyResultsProps> = ({ result, profile, isDa
           <p className="text-xl font-bold text-blue-600 dark:text-blue-400">{formatCurrency(result.totalWithdrawal)}</p>
           <p className="text-[10px] text-slate-500 mt-1">Portfolio + Benefits Needed</p>
         </div>
+
+        {/* Calculated Surplus (e.g. from 72t or RMDs) */}
+        {result.totalWithdrawal - (result.nominalSpendingNeeded + result.estimatedFederalTax) > 100 && (
+          <div className="bg-white dark:bg-slate-900 p-4 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm transition-colors border-l-4 border-l-emerald-500 group relative">
+            <div className="flex items-center gap-1.5 mb-0.5">
+              <h3 className="text-slate-500 dark:text-slate-400 text-xs font-bold uppercase">Reinvested Surplus</h3>
+              <div className="group-hover:block hidden absolute bottom-full left-0 mb-2 w-48 p-2 bg-slate-800 text-white text-[10px] rounded shadow-xl z-10 border border-slate-700">
+                Mandatory rules (like 72t or RMDs) require withdrawing more than you need. This excess is automatically reinvested in your brokerage account.
+              </div>
+              <Info className="w-3 h-3 text-slate-300 cursor-help" />
+            </div>
+            <p className="text-xl font-bold text-emerald-600 dark:text-emerald-400">
+              {formatCurrency(result.totalWithdrawal - (result.nominalSpendingNeeded + result.estimatedFederalTax))}
+            </p>
+            <p className="text-[10px] text-slate-500 mt-1">Excess Mandatory Cash</p>
+          </div>
+        )}
 
         <div className={`p-4 rounded-xl border shadow-sm transition-colors ${feasibilityStyles[feasibility]}`}>
           <h3 className="text-xs font-bold uppercase">Feasibility</h3>
