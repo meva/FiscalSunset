@@ -178,7 +178,7 @@ const WhatIfAnalysis: React.FC<WhatIfAnalysisProps> = ({ profile, isDarkMode }) 
                                 <p className="mb-2">The sum of all estimated federal taxes paid during retirement.</p>
                                 <ul className="list-disc list-inside text-xs text-slate-500 space-y-1">
                                     <li>Traditional Withdrawals: Taxed as Ordinary Income</li>
-                                    <li>Brokerage Withdrawals: Taxed as Capital Gains (assumes 50% gain, long-term rates)</li>
+                                    <li>Brokerage Withdrawals: Taxed as Capital Gains (assumes 100% is gain/growth, long-term rates)</li>
                                     <li>Roth/HSA Withdrawals: Tax-Free</li>
                                 </ul>
                             </div>

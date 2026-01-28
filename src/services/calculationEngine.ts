@@ -292,7 +292,7 @@ export const calculateStrategy = (profile: UserProfile): StrategyResult => {
 
         // Add to Plan
         const taxableAmt = (step.taxType === 'None') ? 0 :
-          (step.taxType === 'CapitalGains' ? pull * 0.5 : pull); // Simplifed 50% gain ratio
+          (step.taxType === 'CapitalGains' ? pull * 1.0 : pull); // Assumes 100% gain ratio (LTCG)
 
         withdrawalPlan.push({
           source: step.source,
@@ -529,9 +529,8 @@ export const calculateLongevity = (profile: UserProfile, strategy: StrategyResul
     const ordDividends = currentDividends * (1 - qDivRatio);
     const qualDividends = currentDividends * qDivRatio;
 
-    // Brokerage Withdrawals: Simplified assumption (50% is gain).
-    // In a real app, we'd track basis depletion.
-    const brokerageGain = fromBrokerage * 0.5;
+    // Brokerage Withdrawals: Assumes 100% is gain (most conservative for long-term savings)
+    const brokerageGain = fromBrokerage * 1.0;
 
     const totalOrdinaryForTax = ordIncome + ordDividends;
     const totalCapGainsForTax = qualDividends + brokerageGain;
