@@ -3,7 +3,7 @@ import { UserProfile, Contributions, FilingStatus } from '../../types';
 import { projectAssets } from '../../services/projection';
 import { calculateStrategy, calculateLongevity } from '../../services/calculationEngine';
 import { TrendingUp, DollarSign, ArrowRight, RefreshCw, AlertCircle } from 'lucide-react';
-import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Legend, Cell, CartesianGrid, ComposedChart, Line } from 'recharts';
+import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Legend, Cell, CartesianGrid, ComposedChart, Line, Area } from 'recharts';
 
 interface WhatIfAnalysisProps {
     profile: UserProfile;
@@ -187,7 +187,7 @@ const WhatIfAnalysis: React.FC<WhatIfAnalysisProps> = ({ profile, isDarkMode }) 
                                 <p className="mb-2">The projected total portfolio value specifically at Age 100.</p>
                                 <ul className="list-disc list-inside text-xs text-slate-500 space-y-1">
                                     <li>If portfolio depletes before 100, this is $0.</li>
-                                    <li>Adjusted for inflation to show "Present Value" (Today's buying power) for realistic comparison.</li>
+                                    <li>Adjusted for inflation to show \"Present Value\" (Today's buying power) for realistic comparison.</li>
                                 </ul>
                             </div>
                         </div>
@@ -309,19 +309,58 @@ const WhatIfAnalysis: React.FC<WhatIfAnalysisProps> = ({ profile, isDarkMode }) 
                                     width={45}
                                 />
                                 <Tooltip
-                                    formatter={(value: number, name: string) => {
-                                        const formatted = formatCurrency(value);
-                                        if (name.includes('Assets')) return [formatted, name];
-                                        return [formatted, name];
+                                    content={({ active, payload, label }) => {
+                                        if (active && payload && payload.length) {
+                                            const data = payload[0].payload;
+                                            return (
+                                                <div style={{ backgroundColor: isDarkMode ? '#1e293b' : '#ffffff', borderColor: isDarkMode ? '#334155' : '#e2e8f0' }} className="p-3 border rounded-xl shadow-xl text-[11px] min-w-[200px]">
+                                                    <p className="font-bold mb-3 text-xs border-b pb-1.5 border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white">Age {label}</p>
+                                                    <div className="space-y-3">
+                                                        <div>
+                                                            <div className="flex items-center gap-1.5 mb-1">
+                                                                <div className="w-1.5 h-1.5 rounded-full bg-slate-400"></div>
+                                                                <p className="text-[9px] uppercase font-bold tracking-wider text-slate-500">Current Plan</p>
+                                                            </div>
+                                                            <div className="space-y-1 pl-3 border-l border-slate-200 dark:border-slate-800">
+                                                                <div className="flex justify-between items-center text-slate-600 dark:text-slate-300">
+                                                                    <span>Assets:</span>
+                                                                    <span className="font-mono font-bold">{formatCurrency(data.currentAssets)}</span>
+                                                                </div>
+                                                                <div className="flex justify-between items-center text-slate-500 dark:text-slate-400">
+                                                                    <span>Annual Tax:</span>
+                                                                    <span className="font-mono font-bold">{formatCurrency(data.currentTax)}</span>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                        <div>
+                                                            <div className="flex items-center gap-1.5 mb-1">
+                                                                <div className="w-1.5 h-1.5 rounded-full bg-indigo-500"></div>
+                                                                <p className="text-[9px] uppercase font-bold tracking-wider text-indigo-500">What-If Scenario</p>
+                                                            </div>
+                                                            <div className="space-y-1 pl-3 border-l border-indigo-200 dark:border-indigo-900">
+                                                                <div className="flex justify-between items-center text-indigo-700 dark:text-indigo-200 font-semibold">
+                                                                    <span>Assets:</span>
+                                                                    <span className="font-mono font-bold">{formatCurrency(data.scenarioAssets)}</span>
+                                                                </div>
+                                                                <div className="flex justify-between items-center text-indigo-500 dark:text-indigo-400">
+                                                                    <span>Annual Tax:</span>
+                                                                    <span className="font-mono font-bold">{formatCurrency(data.scenarioTax)}</span>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            );
+                                        }
+                                        return null;
                                     }}
-                                    contentStyle={{ backgroundColor: isDarkMode ? '#1e293b' : '#ffffff', borderColor: isDarkMode ? '#334155' : '#e2e8f0', borderRadius: '8px', fontSize: '11px' }}
-                                    itemStyle={{ padding: '0' }}
                                 />
-                                <Bar yAxisId="left" dataKey="currentTax" fill={isDarkMode ? '#475569' : '#94a3b8'} name="Current Tax" radius={[2, 2, 0, 0]} opacity={0.6} />
-                                <Bar yAxisId="left" dataKey="scenarioTax" fill="#6366f1" name="What-If Tax" radius={[2, 2, 0, 0]} opacity={0.6} />
+                                <Bar yAxisId="left" dataKey="currentTax" fill={isDarkMode ? '#334155' : '#cbd5e1'} name="Current Tax" radius={[2, 2, 0, 0]} barSize={8} />
+                                <Bar yAxisId="left" dataKey="scenarioTax" fill={isDarkMode ? '#818cf8' : '#4f46e5'} name="What-If Tax" radius={[2, 2, 0, 0]} barSize={8} />
 
-                                <Line yAxisId="right" type="monotone" dataKey="currentAssets" stroke={isDarkMode ? '#94a3b8' : '#475569'} strokeWidth={2} dot={false} name="Current Assets" />
-                                <Line yAxisId="right" type="monotone" dataKey="scenarioAssets" stroke="#6366f1" strokeWidth={2} dot={false} name="What-If Assets" />
+                                <Line yAxisId="right" type="monotone" dataKey="currentAssets" stroke={isDarkMode ? '#475569' : '#94a3b8'} strokeWidth={2} dot={false} name="Current Assets" strokeDasharray="5 5" />
+                                <Line yAxisId="right" type="monotone" dataKey="scenarioAssets" stroke={isDarkMode ? '#a5b4fc' : '#6366f1'} strokeWidth={4} dot={false} name="What-If Assets" />
+                                <Area yAxisId="right" type="monotone" dataKey="scenarioAssets" fill={isDarkMode ? '#6366f1' : '#6366f1'} fillOpacity={0.05} stroke="none" />
                             </ComposedChart>
                         </ResponsiveContainer>
                     </div>
