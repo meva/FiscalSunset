@@ -89,9 +89,10 @@ const InputSection: React.FC<InputSectionProps> = ({ profile, setProfile, onRest
   const headerClass = "text-xl font-bold text-slate-800 dark:text-white flex items-center gap-2 mb-4";
 
   // const isFutureScenario = (Number(profile.age) || 0) !== profile.baseAge;
-  const [isPortfolioModalOpen, setIsPortfolioModalOpen] = useState(false);
+  const [activeModal, setActiveModal] = useState<'accumulation' | 'retirement' | null>(null);
 
-  const simulationYears = Math.max(30, (profile.age || 65) - (profile.baseAge || 30));
+  const accumulationYears = Math.max(5, (profile.age || 65) - (profile.baseAge || 30)); // Min 5 years to show meaningful data
+  const retirementLongevityYears = Math.max(30, 95 - (profile.age || 65)); // Plan for at least 30 years or until age 95
 
   return (
     <div className={containerClass}>
@@ -332,7 +333,7 @@ const InputSection: React.FC<InputSectionProps> = ({ profile, setProfile, onRest
               className={inputClass}
             />
             <button
-              onClick={() => setIsPortfolioModalOpen(true)}
+              onClick={() => setActiveModal('accumulation')}
               className="absolute right-2 top-[2.4rem] text-indigo-600 hover:text-indigo-800 bg-indigo-50 hover:bg-indigo-100 p-1 rounded-md transition-colors"
               title="Calculate using Portfolio Simulator"
             >
@@ -358,7 +359,7 @@ const InputSection: React.FC<InputSectionProps> = ({ profile, setProfile, onRest
           Market Assumptions (Retirement)
         </h2>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div>
+          <div className="relative">
             <label htmlFor="rateOfReturnRetirement" className={labelClass}>Annual Return (%)</label>
             <PercentageInput
               id="rateOfReturnRetirement"
@@ -366,6 +367,13 @@ const InputSection: React.FC<InputSectionProps> = ({ profile, setProfile, onRest
               onChange={(val) => handleAssumptionChange('rateOfReturnInRetirement', val)}
               className={inputClass}
             />
+            <button
+              onClick={() => setActiveModal('retirement')}
+              className="absolute right-2 top-[2.4rem] text-teal-600 hover:text-teal-800 bg-teal-50 hover:bg-teal-100 p-1 rounded-md transition-colors"
+              title="Calculate using Portfolio Simulator"
+            >
+              <Calculator className="w-4 h-4" />
+            </button>
           </div>
           <div>
             <label htmlFor="inflationRateRetirement" className={labelClass}>Inflation (%)</label>
@@ -378,15 +386,24 @@ const InputSection: React.FC<InputSectionProps> = ({ profile, setProfile, onRest
           </div>
         </div>
       </div>
-      {isPortfolioModalOpen && (
+      {activeModal && (
         <PortfolioSelectorModal
-          isOpen={isPortfolioModalOpen}
-          onClose={() => setIsPortfolioModalOpen(false)}
+          isOpen={!!activeModal}
+          onClose={() => setActiveModal(null)}
           onConfirm={(rate) => {
-            handleAssumptionChange('rateOfReturn', rate);
-            setIsPortfolioModalOpen(false);
+            if (activeModal === 'accumulation') {
+              handleAssumptionChange('rateOfReturn', rate);
+            } else {
+              handleAssumptionChange('rateOfReturnInRetirement', rate);
+            }
+            setActiveModal(null);
           }}
-          simulationDurationYears={simulationYears}
+          simulationDurationYears={
+            activeModal === 'accumulation'
+              ? accumulationYears
+              : retirementLongevityYears
+          }
+          scenario={activeModal}
         />
       )}
     </div>

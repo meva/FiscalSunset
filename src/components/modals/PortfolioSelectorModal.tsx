@@ -28,7 +28,7 @@ const PortfolioSelectorModal: React.FC<PortfolioSelectorModalProps> = ({
     isOpen,
     onClose,
     onConfirm,
-    simulationDurationYears
+    simulationDurationYears,
     scenario
 }) => {
     const [mode, setMode] = useState<'preset' | 'custom'>('preset');
