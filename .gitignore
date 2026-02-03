@@ -27,7 +27,7 @@ gcpdeploy.md
 .env*
 gcpdeploy.md
 deploy.sh
-
+.agent/*
 
 # local install
 dist-electron
