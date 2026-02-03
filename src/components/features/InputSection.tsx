@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { UserProfile, FilingStatus } from '../../types';
-import { HelpCircle, DollarSign, Briefcase, Activity, TrendingUp, PiggyBank, RotateCcw, PlusCircle, AlertTriangle } from 'lucide-react';
+import { HelpCircle, DollarSign, Briefcase, Activity, TrendingUp, PiggyBank, RotateCcw, PlusCircle, AlertTriangle, Calculator } from 'lucide-react';
+import PortfolioSelectorModal from '../modals/PortfolioSelectorModal';
 
 interface InputSectionProps {
   profile: UserProfile;
@@ -88,6 +89,9 @@ const InputSection: React.FC<InputSectionProps> = ({ profile, setProfile, onRest
   const headerClass = "text-xl font-bold text-slate-800 dark:text-white flex items-center gap-2 mb-4";
 
   // const isFutureScenario = (Number(profile.age) || 0) !== profile.baseAge;
+  const [isPortfolioModalOpen, setIsPortfolioModalOpen] = useState(false);
+
+  const simulationYears = Math.max(30, (profile.age || 65) - (profile.baseAge || 30));
 
   return (
     <div className={containerClass}>
@@ -319,7 +323,7 @@ const InputSection: React.FC<InputSectionProps> = ({ profile, setProfile, onRest
           Market Assumptions (Accumulation)
         </h2>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div>
+          <div className="relative">
             <label htmlFor="rateOfReturn" className={labelClass}>Annual Return (%)</label>
             <PercentageInput
               id="rateOfReturn"
@@ -327,6 +331,13 @@ const InputSection: React.FC<InputSectionProps> = ({ profile, setProfile, onRest
               onChange={(val) => handleAssumptionChange('rateOfReturn', val)}
               className={inputClass}
             />
+            <button
+              onClick={() => setIsPortfolioModalOpen(true)}
+              className="absolute right-2 top-[2.4rem] text-indigo-600 hover:text-indigo-800 bg-indigo-50 hover:bg-indigo-100 p-1 rounded-md transition-colors"
+              title="Calculate using Portfolio Simulator"
+            >
+              <Calculator className="w-4 h-4" />
+            </button>
           </div>
           <div>
             <label htmlFor="inflationRate" className={labelClass}>Inflation (%)</label>
@@ -367,6 +378,17 @@ const InputSection: React.FC<InputSectionProps> = ({ profile, setProfile, onRest
           </div>
         </div>
       </div>
+      {isPortfolioModalOpen && (
+        <PortfolioSelectorModal
+          isOpen={isPortfolioModalOpen}
+          onClose={() => setIsPortfolioModalOpen(false)}
+          onConfirm={(rate) => {
+            handleAssumptionChange('rateOfReturn', rate);
+            setIsPortfolioModalOpen(false);
+          }}
+          simulationDurationYears={simulationYears}
+        />
+      )}
     </div>
   );
 };
