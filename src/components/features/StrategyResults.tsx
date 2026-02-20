@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { StrategyResult, UserProfile } from '../../types';
-import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Legend, CartesianGrid } from 'recharts';
+import { PieChart, Pie, Cell, Tooltip as RechartsTooltip, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Legend, CartesianGrid } from 'recharts';
 import { AlertCircle, CheckCircle, TrendingUp, Sparkles, MessageSquare, RefreshCw, ShieldAlert, Lock, Wallet, Info, AlertTriangle, ArrowRightLeft } from 'lucide-react';
 import { getGeminiAdvice } from '../../services/geminiService';
+import Tooltip from '../common/Tooltip';
 
 interface StrategyResultsProps {
   result: StrategyResult;
@@ -214,7 +215,7 @@ const StrategyResults: React.FC<StrategyResultsProps> = ({ result, profile, isDa
             <p className="font-bold text-slate-900 dark:text-white">{formatCurrency(result.taxableSocialSecurity)}</p>
           </div>
           <div className="p-2 bg-slate-50 dark:bg-slate-800 rounded">
-            <span className="text-slate-500">Provisional Income</span>
+            <span className="text-slate-500 flex items-center gap-1">Provisional Income <Tooltip content="IRS formula used to determine how much of your Social Security benefits are subject to federal income tax." /></span>
             <p className="font-bold text-slate-900 dark:text-white">{formatCurrency(result.provisionalIncome)}</p>
           </div>
           <div className="p-2 bg-slate-50 dark:bg-slate-800 rounded">
@@ -248,7 +249,7 @@ const StrategyResults: React.FC<StrategyResultsProps> = ({ result, profile, isDa
               </p>
             </div>
             <div className="p-2 bg-slate-50 dark:bg-slate-800 rounded">
-              <span className="text-slate-500 text-[10px]">Effective Marginal Rate</span>
+              <span className="text-slate-500 text-[10px] flex items-center gap-1">Effective Marginal Rate <Tooltip content="The actual tax rate paid on your last dollar of income, accounting for hidden taxes like the Social Security tax torpedo." /></span>
               <p className={`font-bold ${result.rothConversionDetail.effectiveMarginalRate > 0.30
                 ? 'text-red-600 dark:text-red-400'
                 : 'text-slate-900 dark:text-white'
@@ -310,7 +311,7 @@ const StrategyResults: React.FC<StrategyResultsProps> = ({ result, profile, isDa
                     <div className="text-right">
                       {c.headroom > 0 && <span className="text-slate-600 dark:text-slate-400">Headroom: {formatCurrency(c.headroom)}</span>}
                       {c.annualCost && c.annualCost > 0 && (
-                        <p className="text-red-500 text-[10px]">IRMAA: {formatCurrency(c.annualCost)}/yr if crossed</p>
+                        <p className="text-red-500 text-[10px] flex items-center gap-1 justify-end">IRMAA: {formatCurrency(c.annualCost)}/yr if crossed <Tooltip content="Income-Related Monthly Adjustment Amount: A surcharge added to your Medicare Part B and Part D premiums if your income is too high." /></p>
                       )}
                     </div>
                   </div>
@@ -340,7 +341,7 @@ const StrategyResults: React.FC<StrategyResultsProps> = ({ result, profile, isDa
                   stroke={axisColor}
                   tickFormatter={(value) => value.length > 15 ? value.substring(0, 12) + '...' : value}
                 />
-                <Tooltip
+                <RechartsTooltip
                   formatter={(value: number) => formatCurrency(value)}
                   contentStyle={{ backgroundColor: tooltipBg, borderColor: gridColor, color: tooltipText, fontSize: '12px' }}
                 />

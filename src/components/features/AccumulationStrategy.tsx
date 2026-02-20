@@ -1,7 +1,8 @@
 import React, { useState, useMemo } from 'react';
 import { UserProfile } from '../../types';
-import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, Legend } from 'recharts';
+import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer, PieChart, Pie, Cell, Legend } from 'recharts';
 import { Calendar, Wallet, TrendingUp, Table as TableIcon, Info, Rocket, ArrowRight, PieChart as PieIcon } from 'lucide-react';
+import Tooltip from '../common/Tooltip';
 
 interface AccumulationStrategyProps {
     profile: UserProfile;
@@ -113,6 +114,7 @@ const AccumulationStrategy: React.FC<AccumulationStrategyProps> = ({ profile, se
                     <div className="flex items-center gap-1 bg-slate-100 dark:bg-slate-800 p-1 rounded-lg border border-slate-200 dark:border-slate-700">
                         <button onClick={() => setIsInflationAdjusted(false)} className={`px-4 py-2 text-xs font-bold rounded-md min-h-[36px] transition-colors ${!isInflationAdjusted ? 'bg-white dark:bg-slate-700 text-blue-600 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}>Nominal</button>
                         <button onClick={() => setIsInflationAdjusted(true)} className={`px-4 py-2 text-xs font-bold rounded-md min-h-[36px] transition-colors ${isInflationAdjusted ? 'bg-white dark:bg-slate-700 text-blue-600 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}>Adj Inflation's $</button>
+                        <Tooltip content="Shows future portfolio balances adjusted for inflation (Today's Purchasing Power) versus unadjusted Nominal values." className="mr-1" />
                     </div>
                 </div>
                 <div className="flex flex-col sm:flex-row gap-6 items-center">
@@ -184,7 +186,7 @@ const AccumulationStrategy: React.FC<AccumulationStrategyProps> = ({ profile, se
                                 tick={{ fontSize: 10 }}
                                 width={50}
                             />
-                            <Tooltip
+                            <RechartsTooltip
                                 contentStyle={{ backgroundColor: tooltipBg, borderColor: gridColor, color: tooltipText, borderRadius: '10px', fontSize: '12px' }}
                                 formatter={(value: number) => `$${value.toLocaleString()}`}
                                 labelFormatter={(label) => `Age ${label}`}
@@ -231,7 +233,7 @@ const AccumulationStrategy: React.FC<AccumulationStrategyProps> = ({ profile, se
                                         <Cell key={`cell-${index}`} fill={entry.color} />
                                     ))}
                                 </Pie>
-                                <Tooltip
+                                <RechartsTooltip
                                     formatter={(value: number) => `$${value.toLocaleString()}`}
                                     contentStyle={{ backgroundColor: tooltipBg, color: tooltipText, borderRadius: '8px' }}
                                 />

@@ -1,6 +1,7 @@
 import React from 'react';
 import { LongevityResult, UserProfile } from '../../types';
-import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar, Legend } from 'recharts';
+import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer, BarChart, Bar, Legend } from 'recharts';
+import Tooltip from '../common/Tooltip';
 import { AlertTriangle, CheckCircle, HelpCircle } from 'lucide-react';
 
 interface LongevityAnalysisProps {
@@ -26,8 +27,9 @@ const LongevityAnalysis: React.FC<LongevityAnalysisProps> = ({ longevity, profil
           ? 'bg-green-50 dark:bg-green-950/30 border-green-200 dark:border-green-900'
           : 'bg-orange-50 dark:bg-orange-950/30 border-orange-200 dark:border-orange-900'
           }`}>
-          <h3 className={`text-sm font-medium uppercase ${sustainable ? 'text-green-800 dark:text-green-400' : 'text-orange-800 dark:text-orange-400'}`}>
+          <h3 className={`text-sm font-medium uppercase flex items-center gap-2 ${sustainable ? 'text-green-800 dark:text-green-400' : 'text-orange-800 dark:text-orange-400'}`}>
             Initial Withdrawal Rate
+            <Tooltip content="The percentage of your total portfolio withdrawn in the first year of retirement to cover expenses and taxes. Lower is safer." />
           </h3>
           <div className="flex items-baseline gap-2 mt-1">
             <span className="text-3xl font-bold text-slate-900 dark:text-white">{(initialWithdrawalRate * 100).toFixed(1)}%</span>
@@ -96,7 +98,7 @@ const LongevityAnalysis: React.FC<LongevityAnalysisProps> = ({ longevity, profil
                 width={80}
                 stroke={axisColor}
               />
-              <Tooltip
+              <RechartsTooltip
                 content={({ active, payload, label }) => {
                   if (active && payload && payload.length) {
                     const data = payload[0].payload;
@@ -219,7 +221,7 @@ const LongevityAnalysis: React.FC<LongevityAnalysisProps> = ({ longevity, profil
                 width={80}
                 stroke={axisColor}
               />
-              <Tooltip
+              <RechartsTooltip
                 cursor={{ fill: isDarkMode ? '#1e293b' : '#f1f5f9', opacity: 0.5 }}
                 content={({ active, payload, label }) => {
                   if (active && payload && payload.length) {
@@ -284,7 +286,7 @@ const LongevityAnalysis: React.FC<LongevityAnalysisProps> = ({ longevity, profil
                               {/* RMD indicator (age 73+) */}
                               {data.rmdAmount > 0 && (
                                 <div className="flex justify-between items-center text-orange-600 dark:text-orange-400 text-[10px] italic">
-                                  <span>(RMD Required):</span>
+                                  <span className="flex items-center gap-1">(RMD Required): <Tooltip content="Required Minimum Distribution: The minimum amount the IRS requires you to withdraw from tax-deferred accounts annually." /></span>
                                   <span className="font-mono">${Math.round(data.rmdAmount).toLocaleString()}</span>
                                 </div>
                               )}
