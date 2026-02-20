@@ -57,6 +57,11 @@ The tool prioritizes tax-efficient withdrawals by:
 - Contextual recommendations based on your specific situation
 - Withdrawal rate analysis against the 4-5% rule of thumb
 
+### 📈 Portfolio Modeler & Monte Carlo Simulator
+- **Visualizer**: see the probability of success for different portfolio allocations
+- **Customization**: Build your own portfolio or use preset strategies (Conservative, Moderate, Aggressive) tailored for Accumulation vs. Retirement.
+- **Monte Carlo Engine**: Runs 10,000 simulations to project likely (median), unlucky (10th percentile), and lucky (90th percentile) return scenarios based on historical asset data (VTI, VXUS, BND, BNDX).
+
 ### 🎨 Modern UI/UX
 - Responsive design works on desktop and mobile
 - Dark/Light mode toggle
@@ -235,6 +240,12 @@ The Longevity tab projects assets up to age 100.
 *   **Growth:** Remaining assets grow by the `Rate of Return` (distinct rates for Accumulation vs. Retirement phases).
 *   **Depletion Order:** For the longevity visualizer, assets are burned down sequentially: Brokerage → Traditional IRA → Roth IRA → HSA.
 *   **Income Composition:** Tracks the shifting mix of fixed income (SS, Pension) vs. Portfolio Withdrawals over time to show how the "Paycheck" is constructed.
+
+### 5. Monte Carlo Simulation
+The optional Portfolio Modeler uses Geometric Brownian Motion to simulate 10,000 possible market paths for your customized portfolio.
+*   **Asset Classes:** Uses historical return and volatility data for US Stock (VTI), Int'l Stock (VXUS), US Bond (BND), and Int'l Bond (BNDX).
+*   **Correlations:** Implements a correlation matrix to account for how assets move in relation to one another (diversification benefit).
+*   **Outputs:** Proves a statistical "range of outcomes" rather than a single static guess, helping you choose a more robust Annual Return assumption.
 
 ## 🤝 Contributing
 

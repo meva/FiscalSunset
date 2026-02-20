@@ -25,7 +25,8 @@ import {
     Linkedin,
     Mail,
     Heart,
-    Sparkles
+    Sparkles,
+    Activity
 } from 'lucide-react';
 
 interface AccordionSectionProps {
@@ -685,6 +686,99 @@ const TaxReference: React.FC = () => {
                     <p className="text-sm text-slate-600 dark:text-slate-400 text-center pt-2">
                         Always verify calculations with a qualified tax professional or financial advisor before making major financial decisions.
                     </p>
+                </div>
+            </AccordionSection>
+
+            {/* Portfolio Modeler & Monte Carlo Logic */}
+            <AccordionSection
+                title="Portfolio Modeler & Monte Carlo Logic"
+                icon={<TrendingUp className="w-5 h-5" />}
+                accentColor="green"
+            >
+                <div className="space-y-6">
+                    <p className="text-sm text-slate-600 dark:text-slate-400">
+                        The Portfolio Modeler helps you move beyond guessing a single "Annual Return" number. By simulating thousands of possible market futures, it provides a statistical range of outcomes for your specific asset allocation.
+                    </p>
+
+                    {/* How It Works */}
+                    <div className={cardClass}>
+                        <div className="flex items-center gap-2 mb-3">
+                            <Activity className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
+                            <h4 className="font-bold text-slate-800 dark:text-white">How probability works</h4>
+                        </div>
+                        <p className="text-sm text-slate-600 dark:text-slate-400 mb-3">
+                            Markets are volatile. A portfolio averaging 7% long-term might have years of -20% and +30%. This volatility "drag" means your compound annual growth rate (CAGR) is often lower than the simple average.
+                        </p>
+                        <p className="text-sm text-slate-600 dark:text-slate-400 mb-3">
+                            Our engine runs <strong>10,000 simulations</strong> using Geometric Brownian Motion to model this volatility. It outputs a bell curve of results:
+                        </p>
+                        <ul className="space-y-2 text-sm text-slate-700 dark:text-slate-300 ml-2">
+                            <li className="flex items-center gap-2">
+                                <span className="px-2 py-0.5 rounded bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-300 font-bold text-xs">Unlucky (10th Percentile)</span>
+                                <span>A conservative estimate. 90% of the simulated features performed better than this. Use this if you want to be safe.</span>
+                            </li>
+                            <li className="flex items-center gap-2">
+                                <span className="px-2 py-0.5 rounded bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 font-bold text-xs">Median (50th Percentile)</span>
+                                <span>The most likely outcome. Half the simulations were better, half were worse.</span>
+                            </li>
+                            <li className="flex items-center gap-2">
+                                <span className="px-2 py-0.5 rounded bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300 font-bold text-xs">Lucky (90th Percentile)</span>
+                                <span>An optimistic outcome. Only 10% of simulations performed this well.</span>
+                            </li>
+                        </ul>
+                    </div>
+
+                    {/* Asset Assumptions */}
+                    <div className={cardClass}>
+                        <div className="flex items-center gap-2 mb-3">
+                            <Table className="w-5 h-5 text-blue-600 dark:text-blue-400" />
+                            <h4 className="font-bold text-slate-800 dark:text-white">Asset Assumptions</h4>
+                        </div>
+                        <p className="text-sm text-slate-600 dark:text-slate-400 mb-4">
+                            The simulation uses historical risk/return profiles for four core index fund types.
+                        </p>
+                        <div className="overflow-x-auto">
+                            <table className="w-full text-sm">
+                                <thead className={tableHeadClass}>
+                                    <tr>
+                                        <th className="px-4 py-2 rounded-l-lg">Asset Class</th>
+                                        <th className="px-4 py-2">Representative Fund</th>
+                                        <th className="px-4 py-2">Modeled Return</th>
+                                        <th className="px-4 py-2 rounded-r-lg">Volatility (Std Dev)</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr className={tableRowClass}>
+                                        <td className="px-4 py-3 font-medium text-slate-800 dark:text-white">US Total Stock Market</td>
+                                        <td className={tableCellClass}><span className="font-mono bg-slate-100 dark:bg-slate-700 px-1 rounded">VTI</span></td>
+                                        <td className="px-4 py-3 text-emerald-600 dark:text-emerald-400 font-bold">10.5%</td>
+                                        <td className={tableCellClass}>15.5%</td>
+                                    </tr>
+                                    <tr className={tableRowClass}>
+                                        <td className="px-4 py-3 font-medium text-slate-800 dark:text-white">Total International Stock</td>
+                                        <td className={tableCellClass}><span className="font-mono bg-slate-100 dark:bg-slate-700 px-1 rounded">VXUS</span></td>
+                                        <td className="px-4 py-3 text-emerald-600 dark:text-emerald-400 font-bold">8.5%</td>
+                                        <td className={tableCellClass}>18.0%</td>
+                                    </tr>
+                                    <tr className={tableRowClass}>
+                                        <td className="px-4 py-3 font-medium text-slate-800 dark:text-white">US Total Bond Market</td>
+                                        <td className={tableCellClass}><span className="font-mono bg-slate-100 dark:bg-slate-700 px-1 rounded">BND</span></td>
+                                        <td className="px-4 py-3 text-blue-600 dark:text-blue-400 font-bold">4.5%</td>
+                                        <td className={tableCellClass}>5.0%</td>
+                                    </tr>
+                                    <tr className={tableRowClass}>
+                                        <td className="px-4 py-3 font-medium text-slate-800 dark:text-white">Total International Bond</td>
+                                        <td className={tableCellClass}><span className="font-mono bg-slate-100 dark:bg-slate-700 px-1 rounded">BNDX</span></td>
+                                        <td className="px-4 py-3 text-blue-600 dark:text-blue-400 font-bold">4.0%</td>
+                                        <td className={tableCellClass}>4.5%</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        <p className="text-xs text-slate-500 dark:text-slate-400 mt-3 italic">
+                            * Correlation Matrix assumed: Stocks correlate highly (0.7), Bonds correlate moderately (0.5), and Stock/Bond correlation is low (0.1) for diversification benefits.
+                        </p>
+                    </div>
                 </div>
             </AccordionSection>
 

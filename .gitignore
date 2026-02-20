@@ -30,6 +30,7 @@ deploy.sh
 todo.md
 .agent/*
 
+.agent/*
 
 # local install
 dist-electron
