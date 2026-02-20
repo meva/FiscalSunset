@@ -27,6 +27,8 @@ gcpdeploy.md
 .env*
 gcpdeploy.md
 deploy.sh
+todo.md
+.agent/*
 
 
 # local install
