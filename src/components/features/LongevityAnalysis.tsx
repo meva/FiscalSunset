@@ -2,7 +2,8 @@ import React from 'react';
 import { LongevityResult, UserProfile } from '../../types';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer, BarChart, Bar, Legend } from 'recharts';
 import Tooltip from '../common/Tooltip';
-import { AlertTriangle, CheckCircle, HelpCircle } from 'lucide-react';
+import { AlertTriangle, CheckCircle, HelpCircle, Download } from 'lucide-react';
+import { exportLongevityToCsv } from '../../utils/exportCsv';
 
 interface LongevityAnalysisProps {
   longevity: LongevityResult;
@@ -72,7 +73,16 @@ const LongevityAnalysis: React.FC<LongevityAnalysisProps> = ({ longevity, profil
 
       {/* Chart */}
       <div className="bg-white dark:bg-slate-900 p-6 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm min-h-[400px] transition-colors">
-        <h3 className="text-lg font-bold text-slate-800 dark:text-white mb-4">Portfolio Balance Projection</h3>
+        <div className="flex justify-between items-center mb-4">
+          <h3 className="text-lg font-bold text-slate-800 dark:text-white">Portfolio Balance Projection</h3>
+          <button
+            onClick={() => exportLongevityToCsv(projection)}
+            className="flex items-center gap-2 px-3 py-1.5 text-sm font-medium text-slate-700 bg-white border border-slate-300 rounded-lg hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-slate-500 focus:border-slate-500 dark:bg-slate-800 dark:text-slate-200 dark:border-slate-600 dark:hover:bg-slate-700 transition-colors"
+          >
+            <Download className="w-4 h-4" />
+            Export to CSV
+          </button>
+        </div>
         <div className="h-[300px] w-full">
           <ResponsiveContainer width="100%" height="100%">
             <AreaChart
