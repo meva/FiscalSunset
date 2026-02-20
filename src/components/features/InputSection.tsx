@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { UserProfile, FilingStatus } from '../../types';
 import { HelpCircle, DollarSign, Briefcase, Activity, TrendingUp, PiggyBank, RotateCcw, PlusCircle, AlertTriangle, Calculator } from 'lucide-react';
 import PortfolioSelectorModal from '../modals/PortfolioSelectorModal';
+import Tooltip from '../common/Tooltip';
 
 interface InputSectionProps {
   profile: UserProfile;
@@ -90,6 +91,7 @@ const InputSection: React.FC<InputSectionProps> = ({ profile, setProfile, onRest
 
   // const isFutureScenario = (Number(profile.age) || 0) !== profile.baseAge;
   const [activeModal, setActiveModal] = useState<'accumulation' | 'retirement' | null>(null);
+  const [showRestartConfirm, setShowRestartConfirm] = useState(false);
 
   const accumulationYears = Math.max(5, (profile.age || 65) - (profile.baseAge || 30)); // Min 5 years to show meaningful data
   const retirementLongevityYears = Math.max(30, 95 - (profile.age || 65)); // Plan for at least 30 years or until age 95
@@ -106,12 +108,20 @@ const InputSection: React.FC<InputSectionProps> = ({ profile, setProfile, onRest
             </h2>
           </div>
           <div className="flex items-center gap-2 flex-wrap">
-            <button
-              onClick={onRestartWizard}
-              className="text-xs font-semibold text-blue-600 dark:text-blue-400 hover:text-blue-800 bg-blue-50 dark:bg-blue-900/30 px-3 py-2 rounded-lg transition-colors min-h-[36px] border border-blue-100 dark:border-blue-800"
-            >
-              Restart Guided Wizard
-            </button>
+            {!showRestartConfirm ? (
+              <button
+                onClick={() => setShowRestartConfirm(true)}
+                className="text-xs font-semibold text-blue-600 dark:text-blue-400 hover:text-blue-800 bg-blue-50 dark:bg-blue-900/30 px-3 py-2 rounded-lg transition-colors min-h-[36px] border border-blue-100 dark:border-blue-800"
+              >
+                Restart Guided Wizard
+              </button>
+            ) : (
+              <div className="flex items-center gap-2 bg-red-50 dark:bg-red-900/30 p-1.5 rounded-lg border border-red-100 dark:border-red-800">
+                <span className="text-xs text-red-600 dark:text-red-400 font-bold ml-1">Are you sure?</span>
+                <button onClick={onRestartWizard} className="text-xs bg-red-600 hover:bg-red-700 text-white px-3 py-1.5 rounded transition-colors font-medium">Yes</button>
+                <button onClick={() => setShowRestartConfirm(false)} className="text-xs bg-slate-200 hover:bg-slate-300 dark:bg-slate-700 dark:hover:bg-slate-600 text-slate-800 dark:text-slate-200 px-3 py-1.5 rounded transition-colors font-medium">No</button>
+              </div>
+            )}
             {profile.age < profile.baseAge && (
               <div className="flex items-center gap-1 text-xs font-bold text-red-600 bg-red-50 dark:bg-red-900/30 px-2 py-1.5 rounded-md border border-red-200 dark:border-red-800">
                 <AlertTriangle className="w-3 h-3" />
@@ -167,7 +177,10 @@ const InputSection: React.FC<InputSectionProps> = ({ profile, setProfile, onRest
           </div>
           <div className="md:col-span-2">
             <div className="flex items-center justify-between mb-1">
-              <label htmlFor="spendingNeed" className="text-sm font-medium text-slate-600 dark:text-slate-300">Annual Spending Need</label>
+              <label htmlFor="spendingNeed" className="text-sm font-medium text-slate-600 dark:text-slate-300">
+                Annual Spending Need
+                <Tooltip content="Estimated annual retirement living expenses (net of taxes). The strategy engine will calculate the gross withdrawal needed to cover this amount plus estimated federal taxes." className="ml-1" />
+              </label>
               <div className="flex bg-slate-100 dark:bg-slate-800 p-1 rounded-lg border border-slate-200 dark:border-slate-700 text-xs font-bold">
                 <button
                   onClick={() => handleChange('isSpendingReal', true)}
@@ -177,6 +190,9 @@ const InputSection: React.FC<InputSectionProps> = ({ profile, setProfile, onRest
                   onClick={() => handleChange('isSpendingReal', false)}
                   className={`px-3 py-1.5 rounded-md min-h-[32px] transition-colors ${!profile.isSpendingReal ? 'bg-white dark:bg-slate-600 text-blue-600 dark:text-blue-300 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
                 >Future $</button>
+                <Tooltip content="Select whether your spending goal is measured in today's purchasing power (adjusted for inflation) or future nominal dollars." className="ml-1 mt-1.5">
+                  <div className="w-4 h-4" />
+                </Tooltip>
               </div>
             </div>
             <div className="relative">
@@ -203,12 +219,15 @@ const InputSection: React.FC<InputSectionProps> = ({ profile, setProfile, onRest
           {[
             { label: 'Traditional IRA / 401k', key: 'traditionalIRA' as const },
             { label: 'Roth IRA / 401k', key: 'rothIRA' as const },
-            { label: 'Roth Carry/Basis', key: 'rothBasis' as const },
+            { label: 'Roth Carry/Basis', key: 'rothBasis' as const, tooltip: 'Your total accumulated contributions to Roth accounts. This basis can be withdrawn tax-free and penalty-free at any time, making it a key liquidity source before age 59½.' },
             { label: 'Taxable Brokerage', key: 'brokerage' as const },
-            { label: 'HSA', key: 'hsa' as const },
+            { label: 'HSA', key: 'hsa' as const, tooltip: 'Health Savings Account balance. Funds can be withdrawn tax-free for qualified medical expenses.' },
           ].map((item) => (
             <div key={item.key}>
-              <label htmlFor={`asset-${item.key}`} className={labelClass}>{item.label}</label>
+              <label htmlFor={`asset-${item.key}`} className={labelClass}>
+                {item.label}
+                {item.tooltip && <Tooltip content={item.tooltip} className="ml-1" />}
+              </label>
               <div className="relative">
                 <span className={iconClass}>$</span>
                 <FormattedNumberInput

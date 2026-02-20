@@ -35,8 +35,7 @@ const Step8Results: React.FC<CheckProps> = ({ data, onComplete, onRestart }) => 
     // at the start of retirement to run the withdrawal strategy correctly.
     const projectedAssets = projectAssets(
         baseProfile.assets,
-        baseProfile.contributions.traditionalIRA + baseProfile.contributions.rothIRA + baseProfile.contributions.brokerage, // Total annual contrib
-        data.contributionAllocation || { taxDeferred: 50, taxable: 30, taxExempt: 20 }, // Allocation %
+        baseProfile.contributions,
         baseProfile.baseAge, // Current Age
         baseProfile.age,     // Retirement Age
         baseProfile.assumptions
