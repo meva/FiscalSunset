@@ -215,7 +215,7 @@ const StrategyResults: React.FC<StrategyResultsProps> = ({ result, profile, isDa
             <p className="font-bold text-slate-900 dark:text-white">{formatCurrency(result.taxableSocialSecurity)}</p>
           </div>
           <div className="p-2 bg-slate-50 dark:bg-slate-800 rounded">
-            <span className="text-slate-500 flex items-center gap-1">Provisional Income <Tooltip content="IRS formula used to determine how much of your Social Security benefits are subject to federal income tax." /></span>
+            <span className="text-slate-500 flex items-center gap-1">Provisional Income <Tooltip content="An IRS formula (Social Security + 50% of benefits + other income) used to determine how much of your Social Security is taxable." /></span>
             <p className="font-bold text-slate-900 dark:text-white">{formatCurrency(result.provisionalIncome)}</p>
           </div>
           <div className="p-2 bg-slate-50 dark:bg-slate-800 rounded">
@@ -249,7 +249,7 @@ const StrategyResults: React.FC<StrategyResultsProps> = ({ result, profile, isDa
               </p>
             </div>
             <div className="p-2 bg-slate-50 dark:bg-slate-800 rounded">
-              <span className="text-slate-500 text-[10px] flex items-center gap-1">Effective Marginal Rate <Tooltip content="The actual tax rate paid on your last dollar of income, accounting for hidden taxes like the Social Security tax torpedo." /></span>
+              <span className="text-slate-500 text-[10px] flex items-center gap-1">Effective Marginal Rate <Tooltip content="The tax rate applied to your very last dollar of income, which can be higher than your average rate due to deduction phase-outs." /></span>
               <p className={`font-bold ${result.rothConversionDetail.effectiveMarginalRate > 0.30
                 ? 'text-red-600 dark:text-red-400'
                 : 'text-slate-900 dark:text-white'
@@ -311,7 +311,7 @@ const StrategyResults: React.FC<StrategyResultsProps> = ({ result, profile, isDa
                     <div className="text-right">
                       {c.headroom > 0 && <span className="text-slate-600 dark:text-slate-400">Headroom: {formatCurrency(c.headroom)}</span>}
                       {c.annualCost && c.annualCost > 0 && (
-                        <p className="text-red-500 text-[10px] flex items-center gap-1 justify-end">IRMAA: {formatCurrency(c.annualCost)}/yr if crossed <Tooltip content="Income-Related Monthly Adjustment Amount: A surcharge added to your Medicare Part B and Part D premiums if your income is too high." /></p>
+                        <p className="text-red-500 text-[10px] flex items-center gap-1 justify-end">IRMAA: {formatCurrency(c.annualCost)}/yr if crossed <Tooltip content="Income-Related Monthly Adjustment Amount. A surcharge added to Medicare premiums if your modified adjusted gross income (MAGI) exceeds certain cliffs." /></p>
                       )}
                     </div>
                   </div>

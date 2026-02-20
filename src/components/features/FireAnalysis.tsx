@@ -335,11 +335,11 @@ const FireAnalysis: React.FC<FireAnalysisProps> = ({ profile, isDarkMode }) => {
                                             <div className="flex items-center justify-between mb-1">
                                                 <h4 className="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2">
                                                     {milestone.type} FIRE
-                                                    {milestone.type === 'Lean' && <Tooltip content="Goal: Minimalist living expenses covered." className="ml-1" />}
+                                                    {milestone.type === 'Lean' && <Tooltip content="You have enough to cover basic living expenses, but with little room for luxury." className="ml-1" />}
                                                     {milestone.type === 'Standard' && <Tooltip content="Goal: Current lifestyle technically 'independent'." className="ml-1" />}
                                                     {milestone.type === 'Fat' && <Tooltip content="Goal: Luxury lifestyle with buffer." className="ml-1" />}
-                                                    {milestone.type === 'Coast' && <Tooltip content="Goal: Saved enough to stop contributing today." className="ml-1" />}
-                                                    {milestone.type === 'Barista' && <Tooltip content="Assumes you work part-time to earn supplemental income." className="ml-1" />}
+                                                    {milestone.type === 'Coast' && <Tooltip content="You've saved enough that you no longer need to contribute to reach your goal, but still need to work to cover current expenses." className="ml-1" />}
+                                                    {milestone.type === 'Barista' && <Tooltip content="Your portfolio covers a portion of your expenses, allowing you to switch to a lower-stress part-time job." className="ml-1" />}
                                                     {milestone.percentageProgress >= 100 && (
                                                         <span className="px-2 py-0.5 text-[10px] font-bold uppercase bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 rounded-full">
                                                             Achieved

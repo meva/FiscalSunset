@@ -29,7 +29,7 @@ const LongevityAnalysis: React.FC<LongevityAnalysisProps> = ({ longevity, profil
           }`}>
           <h3 className={`text-sm font-medium uppercase flex items-center gap-2 ${sustainable ? 'text-green-800 dark:text-green-400' : 'text-orange-800 dark:text-orange-400'}`}>
             Initial Withdrawal Rate
-            <Tooltip content="The percentage of your total portfolio withdrawn in the first year of retirement to cover expenses and taxes. Lower is safer." />
+            <Tooltip content="The percentage of your portfolio you'll withdraw in the first year of retirement. 4% is traditionally considered a 'safe' benchmark." />
           </h3>
           <div className="flex items-baseline gap-2 mt-1">
             <span className="text-3xl font-bold text-slate-900 dark:text-white">{(initialWithdrawalRate * 100).toFixed(1)}%</span>
@@ -286,7 +286,7 @@ const LongevityAnalysis: React.FC<LongevityAnalysisProps> = ({ longevity, profil
                               {/* RMD indicator (age 73+) */}
                               {data.rmdAmount > 0 && (
                                 <div className="flex justify-between items-center text-orange-600 dark:text-orange-400 text-[10px] italic">
-                                  <span className="flex items-center gap-1">(RMD Required): <Tooltip content="Required Minimum Distribution: The minimum amount the IRS requires you to withdraw from tax-deferred accounts annually." /></span>
+                                  <span className="flex items-center gap-1">(RMD Required): <Tooltip content="Required Minimum Distribution. The mandatory annual withdrawal amount from tax-deferred accounts (like Traditional IRAs) starting at age 73 or 75." /></span>
                                   <span className="font-mono">${Math.round(data.rmdAmount).toLocaleString()}</span>
                                 </div>
                               )}

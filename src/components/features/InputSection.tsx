@@ -84,7 +84,7 @@ const InputSection: React.FC<InputSectionProps> = ({ profile, setProfile, onRest
   // const resetToToday = () => { ... }
 
   const inputClass = "w-full rounded-md border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-900 dark:text-white shadow-sm focus:border-blue-500 focus:ring-blue-500 border p-2 transition-colors";
-  const labelClass = "block text-sm font-medium text-slate-600 dark:text-slate-300 mb-1";
+  const labelClass = "flex items-center gap-1 text-sm font-medium text-slate-600 dark:text-slate-300 mb-1";
   const iconClass = "absolute left-3 top-2 text-slate-400 dark:text-slate-500";
   const containerClass = "bg-white dark:bg-slate-900 rounded-xl shadow-sm border border-slate-200 dark:border-slate-800 p-6 space-y-8 transition-colors";
   const headerClass = "text-xl font-bold text-slate-800 dark:text-white flex items-center gap-2 mb-4";
@@ -177,9 +177,9 @@ const InputSection: React.FC<InputSectionProps> = ({ profile, setProfile, onRest
           </div>
           <div className="md:col-span-2">
             <div className="flex items-center justify-between mb-1">
-              <label htmlFor="spendingNeed" className="text-sm font-medium text-slate-600 dark:text-slate-300">
+              <label htmlFor="spendingNeed" className="text-sm font-medium text-slate-600 dark:text-slate-300 flex items-center gap-1">
                 Annual Spending Need
-                <Tooltip content="Estimated annual retirement living expenses (net of taxes). The strategy engine will calculate the gross withdrawal needed to cover this amount plus estimated federal taxes." className="ml-1" />
+                <Tooltip content="Annual Spending Need in Retirement. This is your target annual budget (net of taxes) once retired." />
               </label>
               <div className="flex bg-slate-100 dark:bg-slate-800 p-1 rounded-lg border border-slate-200 dark:border-slate-700 text-xs font-bold">
                 <button
@@ -190,9 +190,9 @@ const InputSection: React.FC<InputSectionProps> = ({ profile, setProfile, onRest
                   onClick={() => handleChange('isSpendingReal', false)}
                   className={`px-3 py-1.5 rounded-md min-h-[32px] transition-colors ${!profile.isSpendingReal ? 'bg-white dark:bg-slate-600 text-blue-600 dark:text-blue-300 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
                 >Future $</button>
-                <Tooltip content="Select whether your spending goal is measured in today's purchasing power (adjusted for inflation) or future nominal dollars." className="ml-1 mt-1.5">
-                  <div className="w-4 h-4" />
-                </Tooltip>
+                <div className="flex items-center pr-1 pl-1">
+                  <Tooltip content="Today's $ represents values in current purchasing power. Future $ shows nominal amounts inflated at your target rate." />
+                </div>
               </div>
             </div>
             <div className="relative">
@@ -219,9 +219,9 @@ const InputSection: React.FC<InputSectionProps> = ({ profile, setProfile, onRest
           {[
             { label: 'Traditional IRA / 401k', key: 'traditionalIRA' as const },
             { label: 'Roth IRA / 401k', key: 'rothIRA' as const },
-            { label: 'Roth Carry/Basis', key: 'rothBasis' as const, tooltip: 'Your total accumulated contributions to Roth accounts. This basis can be withdrawn tax-free and penalty-free at any time, making it a key liquidity source before age 59½.' },
+            { label: 'Roth Carry/Basis', key: 'rothBasis' as const, tooltip: "The total amount of after-tax principal you've contributed to your Roth accounts. This portion can always be withdrawn tax-free and penalty-free." },
             { label: 'Taxable Brokerage', key: 'brokerage' as const },
-            { label: 'HSA', key: 'hsa' as const, tooltip: 'Health Savings Account balance. Funds can be withdrawn tax-free for qualified medical expenses.' },
+            { label: 'HSA', key: 'hsa' as const, tooltip: "Health Savings Account. A triple-tax-advantaged account where contributions are tax-deductible, growth is tax-free, and withdrawals for medical expenses are tax-free." },
           ].map((item) => (
             <div key={item.key}>
               <label htmlFor={`asset-${item.key}`} className={labelClass}>
