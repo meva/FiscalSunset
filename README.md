@@ -35,13 +35,15 @@ The tool prioritizes tax-efficient withdrawals by:
 - **Taxable Brokerage** - Capital gains optimization with qualified dividend tracking
 - **Health Savings Account (HSA)** - Triple tax-advantaged healthcare savings
 
-### 📊 Four Integrated Planning Modules
+### 📊 Integrated Planning Modules
 
 | Module | Description |
 |--------|-------------|
 | **Accumulation** | Pre-retirement savings strategy and growth projections |
 | **Withdrawal** | Tax-optimized withdrawal sequence recommendations |
 | **Longevity** | Asset depletion analysis with projections |
+| **What-If Analysis** | Side-by-side comparison of different savings strategies and long-term tax impacts |
+| **FIRE Analysis** | Early retirement milestone tracking (Lean, Coast, Barista, Fat) |
 | **Reference** | Comprehensive guide: how-to, tax strategies, 2026 tax brackets, and disclaimers |
 
 
@@ -63,6 +65,8 @@ The tool prioritizes tax-efficient withdrawals by:
 - **Monte Carlo Engine**: Runs 10,000 simulations to project likely (median), unlucky (10th percentile), and lucky (90th percentile) return scenarios based on historical asset data (VTI, VXUS, BND, BNDX).
 
 ### 🎨 Modern UI/UX
+- **Guided Onboarding Wizard** - Simplifies data entry for new users
+- **Educational Tooltips** - In-app explanations for complex tax concepts
 - Responsive design works on desktop and mobile
 - Dark/Light mode toggle
 - Interactive charts powered by Recharts
@@ -183,6 +187,17 @@ fiscal-sunset/
 ├── package.json             # Scripts & dependencies
 └── README.md                # This file
 ```
+
+## 🧱 Services Architecture
+
+The business logic of FiscalSunset is decoupled from the UI layer into distinct service modules located in `src/services/`:
+
+- **`calculationEngine.ts`**: The core "tax brain" of the application. It handles complex IRS rules including the "Two-Layer Cake" tax calculation, RMD requirements, Social Security taxation, and the "Fill Strategy" algorithm for optimal Roth Conversions.
+- **`fireCalculations.ts`**: Specialized math for the early retirement community. Projects when users will achieve various FIRE milestones (Lean, Barista, Coast, Standard, Fat) based on real rate-of-return models.
+- **`MonteCarloEngine.ts`**: Statistical engine evaluating portfolio viability. Runs 10,000-iteration probability simulations using Geometric Brownian Motion and historical asset correlations (VTI, VXUS, BND, BNDX).
+- **`projection.ts`**: Handles deterministic asset accumulation projections prior to retirement, factoring in inflation, growth assumptions, and recurring contributions.
+- **`geminiService.ts`**: AI integration layer. Constructs highly detailed, context-aware prompts encapsulating the user's entire financial state to securely query the Google Gemini API for fiduciary-style advice.
+- **`db.ts`**: The local persistence layer. Implements Dexie.js to interface with the browser's IndexedDB, ensuring user profiles and API keys are stored securely on the device without any external database.
 
 ## ⚙️ Tech Stack
 
