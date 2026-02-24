@@ -192,7 +192,7 @@ const InputSection: React.FC<InputSectionProps> = ({ profile, setProfile, onRest
                   className={`px-3 py-1.5 rounded-md min-h-[32px] transition-colors ${!profile.isSpendingReal ? 'bg-white dark:bg-slate-600 text-blue-600 dark:text-blue-300 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
                 >Future $</button>
                 <div className="flex items-center pr-1 pl-1">
-                  <Tooltip content="Today's $ represents values in current purchasing power. Future $ shows nominal amounts inflated at your target rate." />
+                  <Tooltip content="Today's $: enter your spending in current purchasing power — the app inflates it to retirement date automatically. Future $: enter the nominal dollar amount you expect to spend at retirement." />
                 </div>
               </div>
             </div>
