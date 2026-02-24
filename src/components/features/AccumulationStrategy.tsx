@@ -149,12 +149,15 @@ const AccumulationStrategy: React.FC<AccumulationStrategyProps> = ({ profile, se
                         <p className="text-blue-100 mt-1 max-w-sm">Move over to the withdrawal tab to see how should you withdraw your money, and the strategy to pay the least amount of taxes, values are in Nominal Dollars</p>
                     </div>
                 </div>
-                <button
-                    onClick={transitionToRetirement}
-                    className="bg-white text-blue-700 px-8 py-4 rounded-2xl font-bold flex items-center gap-2 hover:bg-blue-50 transition-all shadow-2xl shrink-0 group hover:scale-105 active:scale-95"
-                >
-                    Confirm & Transition to Retirement <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
-                </button>
+                <div className="flex flex-col items-center gap-1.5 shrink-0">
+                    <button
+                        onClick={transitionToRetirement}
+                        className="bg-white text-blue-700 px-8 py-4 rounded-2xl font-bold flex items-center gap-2 hover:bg-blue-50 transition-all shadow-2xl group hover:scale-105 active:scale-95"
+                    >
+                        Explore Withdrawal Phase <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+                    </button>
+                    <span className="text-xs text-blue-200">You can return to accumulation view anytime.</span>
+                </div>
             </div>
 
             {/* Portfolio Path Chart (Full Width) */}
