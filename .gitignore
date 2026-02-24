@@ -29,6 +29,7 @@ gcpdeploy.md
 deploy.sh
 todo.md
 .agent/*
+.github/copilot-instructions.md
 
 .agent/*
 
