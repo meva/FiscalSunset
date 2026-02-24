@@ -76,6 +76,8 @@ const PercentageInput = ({ value, onChange, className, step = 0.1, id }: { value
 
 const InputSection: React.FC<InputSectionProps> = ({ profile, setProfile, onRestartWizard, savedAt }) => {
   const [showSaved, setShowSaved] = useState(false);
+  const [showInflationCallout, setShowInflationCallout] = useState(false);
+  const prevIsSpendingReal = React.useRef(profile.isSpendingReal);
 
   useEffect(() => {
     if (!savedAt) return;
@@ -83,6 +85,16 @@ const InputSection: React.FC<InputSectionProps> = ({ profile, setProfile, onRest
     const timer = setTimeout(() => setShowSaved(false), 3000);
     return () => clearTimeout(timer);
   }, [savedAt]);
+
+  useEffect(() => {
+    if (prevIsSpendingReal.current !== profile.isSpendingReal) {
+      setShowInflationCallout(true);
+      const timer = setTimeout(() => setShowInflationCallout(false), 3000);
+      prevIsSpendingReal.current = profile.isSpendingReal;
+      return () => clearTimeout(timer);
+    }
+  }, [profile.isSpendingReal]);
+
   const handleChange = (field: keyof UserProfile, value: any) => setProfile({ ...profile, [field]: value });
   const handleAssetChange = (field: keyof UserProfile['assets'], value: number) => setProfile({ ...profile, assets: { ...profile.assets, [field]: value } });
   const handleContributionChange = (field: keyof UserProfile['contributions'], value: number) => setProfile({ ...profile, contributions: { ...profile.contributions, [field]: value } });
@@ -220,6 +232,13 @@ const InputSection: React.FC<InputSectionProps> = ({ profile, setProfile, onRest
                 className={`${inputClass} pl-8 font-semibold text-lg`}
               />
             </div>
+            {profile.age > profile.baseAge && (
+              <p className={`text-xs mt-1.5 font-medium transition-opacity duration-700 ${profile.isSpendingReal && showInflationCallout ? 'opacity-100' : 'opacity-0'} text-blue-600 dark:text-blue-400`}>
+                {profile.isSpendingReal
+                  ? `→ ~$${Math.round(profile.spendingNeed * Math.pow(1 + profile.assumptions.inflationRate, profile.age - profile.baseAge)).toLocaleString()}/yr at retirement (${profile.assumptions.inflationRate * 100}% inflation over ${profile.age - profile.baseAge} yrs)`
+                  : 'Using nominal (future) dollar amount as entered'}
+              </p>
+            )}
           </div>
         </div>
       </div>
