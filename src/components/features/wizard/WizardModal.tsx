@@ -93,8 +93,8 @@ const WizardModal: React.FC<WizardModalProps> = ({ isOpen, onClose, onComplete, 
     const progress = (effectiveCurrentStep / effectiveTotalSteps) * 100;
 
     return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/80 backdrop-blur-sm animate-in fade-in duration-300">
-            <div className="bg-white dark:bg-slate-900 w-full max-w-2xl rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-800 flex flex-col max-h-[90vh]">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/80 backdrop-blur-sm animate-in fade-in duration-300" onClick={onClose}>
+            <div className="bg-white dark:bg-slate-900 w-full max-w-2xl rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-800 flex flex-col max-h-[90vh]" onClick={(e) => e.stopPropagation()}>
                 {/* Header */}
                 <div className="flex items-center justify-between p-6 border-b border-slate-100 dark:border-slate-800">
                     <div className="flex flex-col">
