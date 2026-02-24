@@ -7,7 +7,8 @@ import AccumulationStrategy from './components/features/AccumulationStrategy';
 import TaxReference from './components/features/TaxReference';
 import FireAnalysis from './components/features/FireAnalysis';
 import { calculateStrategy, calculateLongevity } from './services/calculationEngine';
-import { TrendingUp, Calculator, AlertTriangle, BookOpen, Sun, Moon, PiggyBank, Settings, Flame, RefreshCw } from 'lucide-react';
+import { TrendingUp, Calculator, AlertTriangle, Sun, Moon, PiggyBank, Settings, Flame, RefreshCw, HelpCircle, X } from 'lucide-react';
+import ErrorBoundary from './components/common/ErrorBoundary';
 import Footer from './components/layout/Footer';
 import WizardModal from './components/features/wizard/WizardModal';
 import SettingsModal from './components/features/SettingsModal';
@@ -36,12 +37,14 @@ const App: React.FC = () => {
   const [profile, setProfile] = useState<UserProfile>(INITIAL_PROFILE);
   const [strategyResult, setStrategyResult] = useState<StrategyResult | null>(null);
   const [longevityResult, setLongevityResult] = useState<LongevityResult | null>(null);
-  const [activeTab, setActiveTab] = useState<'withdrawal' | 'accumulation' | 'longevity' | 'reference' | 'fire' | 'scenarios'>('accumulation');
+  const [activeTab, setActiveTab] = useState<'withdrawal' | 'accumulation' | 'longevity' | 'fire' | 'scenarios'>('accumulation');
+  const [isReferenceOpen, setIsReferenceOpen] = useState(false);
   const [isDarkMode, setIsDarkMode] = useState(false);
   const [isWizardOpen, setIsWizardOpen] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [apiKey, setApiKey] = useState('');
   const [isLoaded, setIsLoaded] = useState(false);
+  const [savedAt, setSavedAt] = useState<Date | null>(null);
 
   // Computed Retirement Profile
   // If the user is currently 55 but retiring at 65, we must project their assets
@@ -92,14 +95,31 @@ const App: React.FC = () => {
 
   }, [profile]);
 
+  // Profile validation
+  const profileErrors: string[] = [];
+  if (profile.age < profile.baseAge) profileErrors.push('Retirement age must be ≥ current age.');
+  if (profile.spendingNeed <= 0) profileErrors.push('Annual spending need must be greater than $0.');
+  if (profile.baseAge <= 0) profileErrors.push('Current age must be greater than 0.');
+  const isProfileValid = profileErrors.length === 0;
 
   useEffect(() => {
-    // Run strategy on the computed RETIREMENT profile
-    const sResult = calculateStrategy(retirementProfile);
-    const lResult = calculateLongevity(retirementProfile, sResult);
-    setStrategyResult(sResult);
-    setLongevityResult(lResult);
-  }, [retirementProfile]); // Depend on retirementProfile instead of profile
+    if (!isProfileValid) {
+      setStrategyResult(null);
+      setLongevityResult(null);
+      return;
+    }
+    try {
+      // Run strategy on the computed RETIREMENT profile
+      const sResult = calculateStrategy(retirementProfile);
+      const lResult = calculateLongevity(retirementProfile, sResult);
+      setStrategyResult(sResult);
+      setLongevityResult(lResult);
+    } catch (error) {
+      console.error('Calculation error:', error);
+      setStrategyResult(null);
+      setLongevityResult(null);
+    }
+  }, [retirementProfile, isProfileValid]); // Depend on retirementProfile instead of profile
 
   useEffect(() => {
     const loadData = async () => {
@@ -160,7 +180,7 @@ const App: React.FC = () => {
   useEffect(() => {
     if (!isLoaded) return;
     const timer = setTimeout(() => {
-      db.profiles.put({ ...profile, id: 1 }).catch(e => console.error("Save failed:", e));
+      db.profiles.put({ ...profile, id: 1 }).then(() => setSavedAt(new Date())).catch(e => console.error("Save failed:", e));
     }, 1000);
     return () => clearTimeout(timer);
   }, [profile, isLoaded]);
@@ -211,7 +231,25 @@ const App: React.FC = () => {
         setApiKey={setApiKey}
         onReset={handleReset}
       />
-      <div className="bg-amber-50 dark:bg-amber-950/30 border-b border-amber-200 dark:border-amber-900/50 px-4 py-2 transition-colors">
+      {isReferenceOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-in fade-in duration-200" onClick={() => setIsReferenceOpen(false)}>
+          <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-xl w-full max-w-4xl max-h-[90vh] border border-slate-200 dark:border-slate-800 overflow-hidden animate-in zoom-in-95 duration-200 flex flex-col" onClick={(e) => e.stopPropagation()}>
+            <div className="flex items-center justify-between p-4 border-b border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/50 shrink-0">
+              <h2 className="text-lg font-bold text-slate-800 dark:text-white flex items-center gap-2">
+                <HelpCircle className="w-5 h-5 text-blue-600" />
+                Tax Reference
+              </h2>
+              <button onClick={() => setIsReferenceOpen(false)} className="p-2 rounded-full hover:bg-slate-200 dark:hover:bg-slate-800 text-slate-500 transition-colors">
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            <div className="overflow-y-auto p-4">
+              <TaxReference />
+            </div>
+          </div>
+        </div>
+      )}
+      <div className="bg-amber-100 dark:bg-amber-950/50 border-b border-amber-300 dark:border-amber-900/50 border-l-4 border-l-amber-500 px-4 py-2 transition-colors">
         <div className="max-w-7xl mx-auto flex items-center justify-center gap-2 text-[10px] md:text-xs font-medium text-amber-900 dark:text-amber-200 text-center uppercase tracking-wider">
           <AlertTriangle className="w-3 h-3 text-amber-600" />
           Educational purposes only. No professional financial or tax advice intended.
@@ -223,16 +261,21 @@ const App: React.FC = () => {
           <div className="flex items-center gap-3">
             <img src="/Images/logo.png" alt="FiscalSunset Logo" className="w-10 h-10 object-contain" />
             <div>
-              <h1 className="text-xl font-bold text-slate-900 dark:text-white flex items-center gap-1">FiscalSunset<span className="text-blue-600">.</span></h1>
+              <h1 className="text-xl font-bold text-slate-900 dark:text-white">FiscalSunset<span className="text-blue-600">.</span></h1>
               <p className="text-[10px] text-slate-500 font-medium uppercase tracking-tighter">Tax-Efficient Planner</p>
             </div>
           </div>
-          <button onClick={toggleTheme} className="p-2 rounded-lg text-slate-500 hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-slate-800 transition-colors">
-            {isDarkMode ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
-          </button>
-          <button onClick={() => setIsSettingsOpen(true)} className="p-2 rounded-lg text-slate-500 hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-slate-800 transition-colors ml-1">
-            <Settings className="w-5 h-5" />
-          </button>
+          <div className="flex items-center gap-1">
+            <button onClick={() => setIsReferenceOpen(true)} className="p-2 rounded-lg text-slate-500 hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-slate-800 transition-colors" title="Tax Reference">
+              <HelpCircle className="w-5 h-5" />
+            </button>
+            <button onClick={toggleTheme} className="p-2 rounded-lg text-slate-500 hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-slate-800 transition-colors">
+              {isDarkMode ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
+            </button>
+            <button onClick={() => setIsSettingsOpen(true)} className="p-2 rounded-lg text-slate-500 hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-slate-800 transition-colors">
+              <Settings className="w-5 h-5" />
+            </button>
+          </div>
         </div>
       </header>
 
@@ -243,6 +286,7 @@ const App: React.FC = () => {
               profile={profile}
               setProfile={setProfile}
               onRestartWizard={() => setIsWizardOpen(true)}
+              savedAt={savedAt}
             />
           </div>
 
@@ -255,8 +299,7 @@ const App: React.FC = () => {
                   { id: 'fire', icon: Flame, label: 'FIRE Analysis' },
                   { id: 'withdrawal', icon: Calculator, label: 'Withdrawal' },
                   { id: 'longevity', icon: TrendingUp, label: 'Longevity' },
-                  { id: 'scenarios', icon: RefreshCw, label: 'Scenarios' },
-                  { id: 'reference', icon: BookOpen, label: 'Reference' }
+                  { id: 'scenarios', icon: RefreshCw, label: 'Scenarios' }
                 ].map(tab => (
                   <button
                     key={tab.id}
@@ -274,39 +317,48 @@ const App: React.FC = () => {
               <div className="absolute right-0 top-0 bottom-0 w-8 bg-gradient-to-l from-slate-200 dark:from-slate-800 to-transparent pointer-events-none rounded-r-xl md:hidden" />
             </div>
 
-            {strategyResult && longevityResult ? (
-              <div className="animate-in fade-in slide-in-from-bottom-2 duration-300">
-                <div className={activeTab === 'withdrawal' ? 'block' : 'hidden'}>
-                  <StrategyResults
-                    result={strategyResult}
-                    profile={retirementProfile}
-                    isDarkMode={isDarkMode}
-                    apiKey={apiKey}
-                    onOpenSettings={() => setIsSettingsOpen(true)}
-                  />
+            <ErrorBoundary onReset={() => setProfile(p => ({ ...p }))}>
+              {strategyResult && longevityResult ? (
+                <div className="animate-in fade-in slide-in-from-bottom-2 duration-300">
+                  <div className={activeTab === 'withdrawal' ? 'block' : 'hidden'}>
+                    <StrategyResults
+                      result={strategyResult}
+                      profile={retirementProfile}
+                      isDarkMode={isDarkMode}
+                      apiKey={apiKey}
+                      onOpenSettings={() => setIsSettingsOpen(true)}
+                    />
+                  </div>
+                  <div className={activeTab === 'accumulation' ? 'block' : 'hidden'}>
+                    <AccumulationStrategy
+                      profile={profile}
+                      setProfile={setProfile}
+                      isDarkMode={isDarkMode}
+                      onRetire={() => setActiveTab('withdrawal')}
+                    />
+                  </div>
+                  <div className={activeTab === 'longevity' ? 'block' : 'hidden'}>
+                    <LongevityAnalysis longevity={longevityResult} profile={retirementProfile} isDarkMode={isDarkMode} />
+                  </div>
+                  <div className={activeTab === 'fire' ? 'block' : 'hidden'}>
+                    <FireAnalysis profile={profile} isDarkMode={isDarkMode} />
+                  </div>
+                  <div className={activeTab === 'scenarios' ? 'block' : 'hidden'}>
+                    <WhatIfAnalysis profile={profile} isDarkMode={isDarkMode} />
+                  </div>
                 </div>
-                <div className={activeTab === 'accumulation' ? 'block' : 'hidden'}>
-                  <AccumulationStrategy
-                    profile={profile}
-                    setProfile={setProfile}
-                    isDarkMode={isDarkMode}
-                    onRetire={() => setActiveTab('withdrawal')}
-                  />
+              ) : !isProfileValid ? (
+                <div className="h-96 flex items-center justify-center">
+                  <div className="bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-900 rounded-xl p-6 max-w-md text-center space-y-3">
+                    <AlertTriangle className="w-8 h-8 text-red-500 mx-auto" />
+                    <h3 className="text-sm font-bold text-red-800 dark:text-red-300">Fix input errors to see results</h3>
+                    <ul className="text-xs text-red-700 dark:text-red-400 space-y-1">
+                      {profileErrors.map((err, i) => <li key={i}>{err}</li>)}
+                    </ul>
+                  </div>
                 </div>
-                <div className={activeTab === 'longevity' ? 'block' : 'hidden'}>
-                  <LongevityAnalysis longevity={longevityResult} profile={retirementProfile} isDarkMode={isDarkMode} />
-                </div>
-                <div className={activeTab === 'fire' ? 'block' : 'hidden'}>
-                  <FireAnalysis profile={profile} isDarkMode={isDarkMode} />
-                </div>
-                <div className={activeTab === 'scenarios' ? 'block' : 'hidden'}>
-                  <WhatIfAnalysis profile={profile} isDarkMode={isDarkMode} />
-                </div>
-                <div className={activeTab === 'reference' ? 'block' : 'hidden'}>
-                  <TaxReference />
-                </div>
-              </div>
-            ) : <div className="h-96 flex items-center justify-center text-slate-400">Loading strategy...</div>}
+              ) : <div className="h-96 flex items-center justify-center text-slate-400">Loading strategy...</div>}
+            </ErrorBoundary>
           </div>
         </div>
       </main>

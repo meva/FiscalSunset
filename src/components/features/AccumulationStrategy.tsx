@@ -113,7 +113,7 @@ const AccumulationStrategy: React.FC<AccumulationStrategyProps> = ({ profile, se
                     </h3>
                     <div className="flex items-center gap-1 bg-slate-100 dark:bg-slate-800 p-1 rounded-lg border border-slate-200 dark:border-slate-700">
                         <button onClick={() => setIsInflationAdjusted(false)} className={`px-4 py-2 text-xs font-bold rounded-md min-h-[36px] transition-colors ${!isInflationAdjusted ? 'bg-white dark:bg-slate-700 text-blue-600 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}>Nominal</button>
-                        <button onClick={() => setIsInflationAdjusted(true)} className={`px-4 py-2 text-xs font-bold rounded-md min-h-[36px] transition-colors ${isInflationAdjusted ? 'bg-white dark:bg-slate-700 text-blue-600 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}>Adj Inflation's $</button>
+                        <button onClick={() => setIsInflationAdjusted(true)} className={`px-4 py-2 text-xs font-bold rounded-md min-h-[36px] transition-colors ${isInflationAdjusted ? 'bg-white dark:bg-slate-700 text-blue-600 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}>Inflation-Adjusted $</button>
                         <Tooltip content="Clarifies the difference between the 'face value' of the portfolio in the future vs. its equivalent value in today's economy." className="mr-1" />
                     </div>
                 </div>
@@ -149,12 +149,15 @@ const AccumulationStrategy: React.FC<AccumulationStrategyProps> = ({ profile, se
                         <p className="text-blue-100 mt-1 max-w-sm">Move over to the withdrawal tab to see how should you withdraw your money, and the strategy to pay the least amount of taxes, values are in Nominal Dollars</p>
                     </div>
                 </div>
-                <button
-                    onClick={transitionToRetirement}
-                    className="bg-white text-blue-700 px-8 py-4 rounded-2xl font-bold flex items-center gap-2 hover:bg-blue-50 transition-all shadow-2xl shrink-0 group hover:scale-105 active:scale-95"
-                >
-                    Confirm & Transition to Retirement <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
-                </button>
+                <div className="flex flex-col items-center gap-1.5 shrink-0">
+                    <button
+                        onClick={transitionToRetirement}
+                        className="bg-white text-blue-700 px-8 py-4 rounded-2xl font-bold flex items-center gap-2 hover:bg-blue-50 transition-all shadow-2xl group hover:scale-105 active:scale-95"
+                    >
+                        Explore Withdrawal Phase <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+                    </button>
+                    <span className="text-xs text-blue-200">You can return to accumulation view anytime.</span>
+                </div>
             </div>
 
             {/* Portfolio Path Chart (Full Width) */}
@@ -192,6 +195,7 @@ const AccumulationStrategy: React.FC<AccumulationStrategyProps> = ({ profile, se
                                 labelFormatter={(label) => `Age ${label}`}
                                 labelStyle={{ fontWeight: 'bold', color: tooltipText }}
                             />
+                            <Legend iconType="circle" wrapperStyle={{ fontSize: '12px', paddingTop: '8px' }} />
                             <Area type="monotone" dataKey="trad" stackId="1" stroke={ACCOUNT_COLORS.trad} fill={ACCOUNT_COLORS.trad} fillOpacity={0.6} name="Trad IRA/401k" />
                             <Area type="monotone" dataKey="roth" stackId="1" stroke={ACCOUNT_COLORS.roth} fill={ACCOUNT_COLORS.roth} fillOpacity={0.6} name="Roth IRA/401k" />
                             <Area type="monotone" dataKey="brokerage" stackId="1" stroke={ACCOUNT_COLORS.brokerage} fill={ACCOUNT_COLORS.brokerage} fillOpacity={0.6} name="Brokerage" />

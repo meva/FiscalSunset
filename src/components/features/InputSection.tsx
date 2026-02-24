@@ -8,9 +8,10 @@ interface InputSectionProps {
   profile: UserProfile;
   setProfile: (profile: UserProfile) => void;
   onRestartWizard: () => void;
+  savedAt?: Date | null;
 }
 
-const FormattedNumberInput = ({ value, onChange, className, id }: { value: number; onChange: (val: number) => void; className?: string; id?: string }) => {
+const FormattedNumberInput = ({ value, onChange, className, id, ...rest }: { value: number; onChange: (val: number) => void; className?: string; id?: string } & React.InputHTMLAttributes<HTMLInputElement>) => {
   const [displayValue, setDisplayValue] = useState(value.toLocaleString());
   const lastExternalValue = React.useRef(value);
 
@@ -32,11 +33,11 @@ const FormattedNumberInput = ({ value, onChange, className, id }: { value: numbe
     onChange(newVal);
   };
 
-  return <input id={id} type="text" value={displayValue} onChange={handleChange} className={className} />;
+  return <input id={id} type="text" value={displayValue} onChange={handleChange} className={className} {...rest} />;
 };
 
 // Handles percentage inputs (stored as decimal, displayed as percentage)
-const PercentageInput = ({ value, onChange, className, step = 0.1, id }: { value: number; onChange: (val: number) => void; className?: string; step?: number; id?: string }) => {
+const PercentageInput = ({ value, onChange, className, step = 0.1, id, ...rest }: { value: number; onChange: (val: number) => void; className?: string; step?: number; id?: string } & React.InputHTMLAttributes<HTMLInputElement>) => {
   const [displayValue, setDisplayValue] = useState((value * 100).toFixed(1));
 
   useEffect(() => {
@@ -70,10 +71,30 @@ const PercentageInput = ({ value, onChange, className, step = 0.1, id }: { value
     }
   };
 
-  return <input id={id} type="number" step={step} value={displayValue} onChange={handleChange} onBlur={handleBlur} className={className} />;
+  return <input id={id} type="number" step={step} value={displayValue} onChange={handleChange} onBlur={handleBlur} className={className} {...rest} />;
 };
 
-const InputSection: React.FC<InputSectionProps> = ({ profile, setProfile, onRestartWizard }) => {
+const InputSection: React.FC<InputSectionProps> = ({ profile, setProfile, onRestartWizard, savedAt }) => {
+  const [showSaved, setShowSaved] = useState(false);
+  const [showInflationCallout, setShowInflationCallout] = useState(false);
+  const prevIsSpendingReal = React.useRef(profile.isSpendingReal);
+
+  useEffect(() => {
+    if (!savedAt) return;
+    setShowSaved(true);
+    const timer = setTimeout(() => setShowSaved(false), 3000);
+    return () => clearTimeout(timer);
+  }, [savedAt]);
+
+  useEffect(() => {
+    if (prevIsSpendingReal.current !== profile.isSpendingReal) {
+      setShowInflationCallout(true);
+      const timer = setTimeout(() => setShowInflationCallout(false), 3000);
+      prevIsSpendingReal.current = profile.isSpendingReal;
+      return () => clearTimeout(timer);
+    }
+  }, [profile.isSpendingReal]);
+
   const handleChange = (field: keyof UserProfile, value: any) => setProfile({ ...profile, [field]: value });
   const handleAssetChange = (field: keyof UserProfile['assets'], value: number) => setProfile({ ...profile, assets: { ...profile.assets, [field]: value } });
   const handleContributionChange = (field: keyof UserProfile['contributions'], value: number) => setProfile({ ...profile, contributions: { ...profile.contributions, [field]: value } });
@@ -86,8 +107,9 @@ const InputSection: React.FC<InputSectionProps> = ({ profile, setProfile, onRest
   const inputClass = "w-full rounded-md border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-900 dark:text-white shadow-sm focus:border-blue-500 focus:ring-blue-500 border p-2 transition-colors";
   const labelClass = "flex items-center gap-1 text-sm font-medium text-slate-600 dark:text-slate-300 mb-1";
   const iconClass = "absolute left-3 top-2 text-slate-400 dark:text-slate-500";
-  const containerClass = "bg-white dark:bg-slate-900 rounded-xl shadow-sm border border-slate-200 dark:border-slate-800 p-6 space-y-8 transition-colors";
-  const headerClass = "text-xl font-bold text-slate-800 dark:text-white flex items-center gap-2 mb-4";
+  const containerClass = "bg-white dark:bg-slate-900 rounded-xl shadow-sm border border-slate-200 dark:border-slate-800 p-3 space-y-3 transition-colors";
+  const sectionClass = "rounded-xl p-5 bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700";
+  const headerClass = "text-xl font-bold text-slate-800 dark:text-white flex items-center gap-2 mb-5";
 
   // const isFutureScenario = (Number(profile.age) || 0) !== profile.baseAge;
   const [activeModal, setActiveModal] = useState<'accumulation' | 'retirement' | null>(null);
@@ -98,9 +120,14 @@ const InputSection: React.FC<InputSectionProps> = ({ profile, setProfile, onRest
 
   return (
     <div className={containerClass}>
+      <div className={`flex justify-end transition-opacity duration-700 ${showSaved ? 'opacity-100' : 'opacity-0'}`}>
+        <span className="text-xs font-medium text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-900/30 px-2.5 py-1 rounded-full border border-emerald-200 dark:border-emerald-800">
+          ✓ Saved
+        </span>
+      </div>
       {/* Personal Details */}
-      <div>
-        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 mb-4">
+      <div className={sectionClass}>
+        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 mb-5">
           <div className="flex items-center gap-3">
             <h2 className="text-xl font-bold text-slate-800 dark:text-white flex items-center gap-2">
               <Briefcase className="w-5 h-5 text-blue-600" />
@@ -191,31 +218,38 @@ const InputSection: React.FC<InputSectionProps> = ({ profile, setProfile, onRest
                   className={`px-3 py-1.5 rounded-md min-h-[32px] transition-colors ${!profile.isSpendingReal ? 'bg-white dark:bg-slate-600 text-blue-600 dark:text-blue-300 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
                 >Future $</button>
                 <div className="flex items-center pr-1 pl-1">
-                  <Tooltip content="Today's $ represents values in current purchasing power. Future $ shows nominal amounts inflated at your target rate." />
+                  <Tooltip content="Today's $: enter your spending in current purchasing power — the app inflates it to retirement date automatically. Future $: enter the nominal dollar amount you expect to spend at retirement." />
                 </div>
               </div>
             </div>
             <div className="relative">
               <span className={iconClass}>$</span>
               <FormattedNumberInput
-                // @ts-ignore explicit id handling needs component update, ignoring for now or adding prop
                 id="spendingNeed"
                 value={profile.spendingNeed}
                 onChange={(val) => handleChange('spendingNeed', val)}
                 className={`${inputClass} pl-8 font-semibold text-lg`}
+                aria-label="Annual Spending Need in Retirement"
               />
             </div>
+            {profile.age > profile.baseAge && (
+              <p className={`text-xs mt-1.5 font-medium transition-opacity duration-700 ${profile.isSpendingReal && showInflationCallout ? 'opacity-100' : 'opacity-0'} text-blue-600 dark:text-blue-400`}>
+                {profile.isSpendingReal
+                  ? `→ ~$${Math.round(profile.spendingNeed * Math.pow(1 + profile.assumptions.inflationRate, profile.age - profile.baseAge)).toLocaleString()}/yr at retirement (${profile.assumptions.inflationRate * 100}% inflation over ${profile.age - profile.baseAge} yrs)`
+                  : 'Using nominal (future) dollar amount as entered'}
+              </p>
+            )}
           </div>
         </div>
       </div>
 
       {/* Assets */}
-      <div>
+      <div className={sectionClass}>
         <h2 className={headerClass}>
           <DollarSign className="w-5 h-5 text-green-600" />
           Assets (Portfolio)
         </h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 gap-3">
           {[
             { label: 'Traditional IRA / 401k', key: 'traditionalIRA' as const },
             { label: 'Roth IRA / 401k', key: 'rothIRA' as const },
@@ -235,6 +269,7 @@ const InputSection: React.FC<InputSectionProps> = ({ profile, setProfile, onRest
                   value={profile.assets[item.key] || 0}
                   onChange={(val) => handleAssetChange(item.key, val)}
                   className={`${inputClass} pl-8`}
+                  aria-label={item.tooltip ? `${item.label}: ${item.tooltip}` : item.label}
                 />
               </div>
             </div>
@@ -243,13 +278,15 @@ const InputSection: React.FC<InputSectionProps> = ({ profile, setProfile, onRest
       </div>
 
       {/* Annual Contributions */}
-      <div>
-        <h2 className={headerClass}>
-          <PlusCircle className="w-5 h-5 text-indigo-600" />
-          Annual Contributions
-        </h2>
-        <p className="text-[10px] text-slate-500 dark:text-slate-400 mb-4 uppercase tracking-wider font-bold">For accumulation phase</p>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div className={sectionClass}>
+        <div className="mb-5">
+          <h2 className="text-xl font-bold text-slate-800 dark:text-white flex items-center gap-2">
+            <PlusCircle className="w-5 h-5 text-indigo-600" />
+            Annual Contributions
+          </h2>
+          <p className="text-[10px] text-slate-500 dark:text-slate-400 mt-1 uppercase tracking-wider font-bold pl-7">For accumulation phase</p>
+        </div>
+        <div className="grid grid-cols-1 gap-3">
           {[
             { label: 'Traditional IRA / 401k', key: 'traditionalIRA' as const },
             { label: 'Roth IRA / Roth 401k', key: 'rothIRA' as const },
@@ -273,7 +310,7 @@ const InputSection: React.FC<InputSectionProps> = ({ profile, setProfile, onRest
       </div>
 
       {/* Income Sources */}
-      <div>
+      <div className={sectionClass}>
         <h2 className={headerClass}>
           <Activity className="w-5 h-5 text-purple-600" />
           Income (Annual) While in Retirement
@@ -303,7 +340,7 @@ const InputSection: React.FC<InputSectionProps> = ({ profile, setProfile, onRest
               />
             </div>
           </div>
-          <div>
+          <div className="md:col-span-2">
             <label htmlFor="pension" className={labelClass}>Pension / Annuity</label>
             <div className="relative">
               <span className={iconClass}>$</span>
@@ -337,7 +374,7 @@ const InputSection: React.FC<InputSectionProps> = ({ profile, setProfile, onRest
       </div>
 
       {/* Market Assumptions (Accumulation) */}
-      <div>
+      <div className={sectionClass}>
         <h2 className={headerClass}>
           <TrendingUp className="w-5 h-5 text-orange-600" />
           Market Assumptions (Accumulation)
@@ -372,7 +409,7 @@ const InputSection: React.FC<InputSectionProps> = ({ profile, setProfile, onRest
       </div>
 
       {/* Market Assumptions (Retirement) */}
-      <div>
+      <div className={sectionClass}>
         <h2 className={headerClass}>
           <TrendingUp className="w-5 h-5 text-teal-600" />
           Market Assumptions (Retirement)

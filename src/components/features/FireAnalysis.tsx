@@ -2,7 +2,7 @@ import React, { useState, useMemo } from 'react';
 import { UserProfile } from '../../types';
 import { calculateFireMilestones } from '../../services/fireCalculations';
 import { FireInputs } from '../../types/fire';
-import { Flame, TrendingUp, DollarSign, Calendar, RefreshCw } from 'lucide-react';
+import { Flame, TrendingUp, DollarSign, Calendar, RefreshCw, ChevronDown, ChevronUp } from 'lucide-react';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip as RechartsTooltip } from 'recharts';
 import Tooltip from '../common/Tooltip';
 
@@ -82,9 +82,9 @@ const FireAnalysis: React.FC<FireAnalysisProps> = ({ profile, isDarkMode }) => {
                         <h2 className="text-lg font-bold text-slate-800 dark:text-white">How is this calculated?</h2>
                     </div>
                     {isOpen ? (
-                        <TrendingUp className="w-5 h-5 text-slate-400 transform rotate-180" />
+                        <ChevronUp className="w-5 h-5 text-slate-400" />
                     ) : (
-                        <TrendingUp className="w-5 h-5 text-slate-400" />
+                        <ChevronDown className="w-5 h-5 text-slate-400" />
                     )}
                 </button>
                 {isOpen && (
@@ -163,15 +163,19 @@ const FireAnalysis: React.FC<FireAnalysisProps> = ({ profile, isDarkMode }) => {
                                         ${spendingNeed.toLocaleString()}
                                     </div>
                                 </div>
-                                <input
-                                    type="range"
-                                    min={20000}
-                                    max={200000}
-                                    step={1000}
-                                    value={spendingNeed}
-                                    onChange={(e) => setSpendingNeed(Number(e.target.value))}
-                                    className="w-full h-2 bg-slate-200 dark:bg-slate-700 rounded-lg appearance-none cursor-pointer accent-indigo-600"
-                                />
+                                <div className="flex items-center gap-2">
+                                    <span className="text-xs text-slate-400 shrink-0">$20k</span>
+                                    <input
+                                        type="range"
+                                        min={20000}
+                                        max={200000}
+                                        step={1000}
+                                        value={spendingNeed}
+                                        onChange={(e) => setSpendingNeed(Number(e.target.value))}
+                                        className="w-full h-2 bg-slate-200 dark:bg-slate-700 rounded-lg appearance-none cursor-pointer accent-indigo-600"
+                                    />
+                                    <span className="text-xs text-slate-400 shrink-0">$200k</span>
+                                </div>
                                 <p className="text-xs text-slate-400">Impacts FIRE Number directly.</p>
                             </div>
 
@@ -183,15 +187,19 @@ const FireAnalysis: React.FC<FireAnalysisProps> = ({ profile, isDarkMode }) => {
                                         {(rateOfReturn * 100).toFixed(1)}%
                                     </div>
                                 </div>
-                                <input
-                                    type="range"
-                                    min={0.01}
-                                    max={0.12}
-                                    step={0.001}
-                                    value={rateOfReturn}
-                                    onChange={(e) => setRateOfReturn(Number(e.target.value))}
-                                    className="w-full h-2 bg-slate-200 dark:bg-slate-700 rounded-lg appearance-none cursor-pointer accent-emerald-600"
-                                />
+                                <div className="flex items-center gap-2">
+                                    <span className="text-xs text-slate-400 shrink-0">1%</span>
+                                    <input
+                                        type="range"
+                                        min={0.01}
+                                        max={0.12}
+                                        step={0.001}
+                                        value={rateOfReturn}
+                                        onChange={(e) => setRateOfReturn(Number(e.target.value))}
+                                        className="w-full h-2 bg-slate-200 dark:bg-slate-700 rounded-lg appearance-none cursor-pointer accent-emerald-600"
+                                    />
+                                    <span className="text-xs text-slate-400 shrink-0">12%</span>
+                                </div>
                                 <p className="text-xs text-slate-400">Higher returns accelerate timeline.</p>
                             </div>
 
@@ -203,15 +211,19 @@ const FireAnalysis: React.FC<FireAnalysisProps> = ({ profile, isDarkMode }) => {
                                         {targetRetirementAge}
                                     </div>
                                 </div>
-                                <input
-                                    type="range"
-                                    min={profile.baseAge + 1}
-                                    max={80}
-                                    step={1}
-                                    value={targetRetirementAge}
-                                    onChange={(e) => setTargetRetirementAge(Number(e.target.value))}
-                                    className="w-full h-2 bg-slate-200 dark:bg-slate-700 rounded-lg appearance-none cursor-pointer accent-blue-600"
-                                />
+                                <div className="flex items-center gap-2">
+                                    <span className="text-xs text-slate-400 shrink-0">{profile.baseAge + 1}</span>
+                                    <input
+                                        type="range"
+                                        min={profile.baseAge + 1}
+                                        max={80}
+                                        step={1}
+                                        value={targetRetirementAge}
+                                        onChange={(e) => setTargetRetirementAge(Number(e.target.value))}
+                                        className="w-full h-2 bg-slate-200 dark:bg-slate-700 rounded-lg appearance-none cursor-pointer accent-blue-600"
+                                    />
+                                    <span className="text-xs text-slate-400 shrink-0">80</span>
+                                </div>
                                 <p className="text-xs text-slate-400">Affects Coast FIRE target.</p>
                             </div>
 
@@ -223,15 +235,19 @@ const FireAnalysis: React.FC<FireAnalysisProps> = ({ profile, isDarkMode }) => {
                                         {formatCurrency(consultingIncome)}/yr
                                     </div>
                                 </div>
-                                <input
-                                    type="range"
-                                    min={0}
-                                    max={100000}
-                                    step={1000}
-                                    value={consultingIncome}
-                                    onChange={(e) => setConsultingIncome(Number(e.target.value))}
-                                    className="w-full h-2 bg-slate-200 dark:bg-slate-700 rounded-lg appearance-none cursor-pointer accent-purple-600"
-                                />
+                                <div className="flex items-center gap-2">
+                                    <span className="text-xs text-slate-400 shrink-0">$0</span>
+                                    <input
+                                        type="range"
+                                        min={0}
+                                        max={100000}
+                                        step={1000}
+                                        value={consultingIncome}
+                                        onChange={(e) => setConsultingIncome(Number(e.target.value))}
+                                        className="w-full h-2 bg-slate-200 dark:bg-slate-700 rounded-lg appearance-none cursor-pointer accent-purple-600"
+                                    />
+                                    <span className="text-xs text-slate-400 shrink-0">$100k</span>
+                                </div>
                                 <p className="text-xs text-slate-400">Side income for Barista FIRE.</p>
                             </div>
                         </div>

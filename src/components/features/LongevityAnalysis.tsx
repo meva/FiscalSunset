@@ -14,6 +14,15 @@ interface LongevityAnalysisProps {
 const LongevityAnalysis: React.FC<LongevityAnalysisProps> = ({ longevity, profile, isDarkMode }) => {
   const { projection, depletionAge, initialWithdrawalRate, sustainable } = longevity;
 
+  // Determine outcome tier for depletion age styling
+  const GOOD_AGE_THRESHOLD = 90;
+  const WARNING_AGE_THRESHOLD = 85;
+  const outcomeLevel: 'good' | 'caution' | 'danger' = !depletionAge || depletionAge >= GOOD_AGE_THRESHOLD
+    ? 'good'
+    : depletionAge >= WARNING_AGE_THRESHOLD
+      ? 'caution'
+      : 'danger';
+
   // Chart styling colors
   const axisColor = isDarkMode ? '#94a3b8' : '#64748b';
   const gridColor = isDarkMode ? '#334155' : '#e2e8f0';
@@ -42,28 +51,43 @@ const LongevityAnalysis: React.FC<LongevityAnalysisProps> = ({ longevity, profil
           </p>
         </div>
 
-        <div className={`p-4 rounded-xl border shadow-sm transition-colors ${!depletionAge
-          ? 'bg-blue-50 dark:bg-blue-950/30 border-blue-200 dark:border-blue-900'
-          : 'bg-red-50 dark:bg-red-950/30 border-red-200 dark:border-red-900'
+        <div className={`p-4 rounded-xl border shadow-sm transition-colors ${
+          outcomeLevel === 'good'
+            ? 'bg-green-50 dark:bg-green-950/30 border-green-200 dark:border-green-900'
+            : outcomeLevel === 'caution'
+              ? 'bg-amber-50 dark:bg-amber-950/30 border-amber-200 dark:border-amber-900'
+              : 'bg-red-50 dark:bg-red-950/30 border-red-200 dark:border-red-900'
           }`}>
           <h3 className="text-sm font-medium uppercase text-slate-600 dark:text-slate-400">
             Projected Outcome
           </h3>
           <div className="flex items-center gap-2 mt-1">
-            {depletionAge ? (
+            {outcomeLevel === 'good' ? (
               <>
-                <AlertTriangle className="w-8 h-8 text-red-600 dark:text-red-500" />
+                <CheckCircle className="w-8 h-8 text-green-600 dark:text-green-500" />
                 <div>
-                  <span className="text-xl font-bold text-red-900 dark:text-red-200">Depleted at Age {depletionAge}</span>
-                  <p className="text-xs text-red-700 dark:text-red-300">Money runs out in {depletionAge - profile.age} years.</p>
+                  <span className="text-xl font-bold text-green-900 dark:text-green-200">
+                    {depletionAge ? `Lasts to Age ${depletionAge}` : 'Sustainable'}
+                  </span>
+                  <p className="text-xs text-green-700 dark:text-green-300">
+                    {depletionAge ? `Portfolio supports ${depletionAge - profile.age} years of retirement.` : 'Portfolio lasts to age 100+.'}
+                  </p>
+                </div>
+              </>
+            ) : outcomeLevel === 'caution' ? (
+              <>
+                <AlertTriangle className="w-8 h-8 text-amber-600 dark:text-amber-500" />
+                <div>
+                  <span className="text-xl font-bold text-amber-900 dark:text-amber-200">Depleted at Age {depletionAge}</span>
+                  <p className="text-xs text-amber-700 dark:text-amber-300">Money runs out in {depletionAge! - profile.age} years. Consider adjustments.</p>
                 </div>
               </>
             ) : (
               <>
-                <CheckCircle className="w-8 h-8 text-blue-600 dark:text-blue-500" />
+                <AlertTriangle className="w-8 h-8 text-red-600 dark:text-red-500" />
                 <div>
-                  <span className="text-xl font-bold text-blue-900 dark:text-blue-200">Sustainable</span>
-                  <p className="text-xs text-blue-700 dark:text-blue-300">Portfolio lasts to age 100+.</p>
+                  <span className="text-xl font-bold text-red-900 dark:text-red-200">Depleted at Age {depletionAge}</span>
+                  <p className="text-xs text-red-700 dark:text-red-300">Money runs out in {depletionAge! - profile.age} years.</p>
                 </div>
               </>
             )}

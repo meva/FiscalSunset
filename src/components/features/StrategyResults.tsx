@@ -92,6 +92,20 @@ const StrategyResults: React.FC<StrategyResultsProps> = ({ result, profile, isDa
   if (!result.gapFilled) feasibility = 'Shortfall';
   else if (withdrawalRate > 0.05) feasibility = 'Risk';
 
+  // Guidance calculations
+  const shortfallAmount = feasibility === 'Shortfall'
+    ? Math.max(0, (result.nominalSpendingNeeded + result.estimatedFederalTax) - result.totalWithdrawal)
+    : 0;
+  const annualContributions = profile.contributions.traditionalIRA + profile.contributions.rothIRA + profile.contributions.brokerage + profile.contributions.hsa;
+  const delayYears = annualContributions > 0 && shortfallAmount > 0
+    ? Math.ceil(shortfallAmount / (annualContributions * (1 + profile.assumptions.rateOfReturn)))
+    : null;
+
+  // Risk guidance: how much to reduce spending to reach a safe 4% withdrawal rate
+  const safeWithdrawalTarget = totalPortfolio * 0.04;
+  const excessDraw = portfolioDraw - safeWithdrawalTarget;
+  const spendingReduction = feasibility === 'Risk' ? Math.max(0, Math.round(excessDraw)) : 0;
+
   const feasibilityStyles = {
     Safe: 'bg-green-50 dark:bg-green-950/30 border-green-200 dark:border-green-900 text-green-700 dark:text-green-400',
     Risk: 'bg-amber-50 dark:bg-amber-950/30 border-amber-200 dark:border-amber-900 text-amber-700 dark:text-amber-400',
@@ -198,6 +212,44 @@ const StrategyResults: React.FC<StrategyResultsProps> = ({ result, profile, isDa
           </div>
         </div>
       </div>
+
+      {/* Shortfall Guidance */}
+      {feasibility === 'Shortfall' && shortfallAmount > 0 && (
+        <div className="bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-900 p-4 rounded-xl flex items-start gap-3 animate-in fade-in slide-in-from-top-2">
+          <AlertCircle className="w-5 h-5 text-red-600 dark:text-red-400 mt-0.5 shrink-0" />
+          <div>
+            <h3 className="text-sm font-bold text-red-800 dark:text-red-300">Your plan has an annual shortfall of {formatCurrency(shortfallAmount)}</h3>
+            <p className="text-xs text-red-700 dark:text-red-400 mt-1">Consider one or more of these adjustments:</p>
+            <ul className="mt-2 space-y-1.5 text-xs text-red-700 dark:text-red-400 list-disc pl-4">
+              <li><strong>Reduce spending</strong> by at least {formatCurrency(shortfallAmount)}/yr to close the gap.</li>
+              {delayYears !== null && delayYears > 0 && (
+                <li><strong>Delay retirement</strong> by ~{delayYears} year{delayYears > 1 ? 's' : ''} to build a larger portfolio with continued contributions.</li>
+              )}
+              <li><strong>Increase contributions</strong> now — even small additional savings compound significantly over time.</li>
+            </ul>
+          </div>
+        </div>
+      )}
+
+      {/* Risk Guidance */}
+      {feasibility === 'Risk' && (
+        <div className="bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-900 p-4 rounded-xl flex items-start gap-3 animate-in fade-in slide-in-from-top-2">
+          <AlertTriangle className="w-5 h-5 text-amber-600 dark:text-amber-400 mt-0.5 shrink-0" />
+          <div>
+            <h3 className="text-sm font-bold text-amber-800 dark:text-amber-300">
+              Withdrawal rate of {(withdrawalRate * 100).toFixed(1)}% exceeds the safe 4% guideline
+            </h3>
+            <p className="text-xs text-amber-700 dark:text-amber-400 mt-1">Consider one or more of these adjustments:</p>
+            <ul className="mt-2 space-y-1.5 text-xs text-amber-700 dark:text-amber-400 list-disc pl-4">
+              {spendingReduction > 0 && (
+                <li><strong>Reduce spending</strong> by ~{formatCurrency(spendingReduction)}/yr to bring your withdrawal rate closer to 4%.</li>
+              )}
+              <li><strong>Delay retirement</strong> to allow your portfolio more time to grow and reduce the draw-down percentage.</li>
+              <li><strong>Increase contributions</strong> now to build a larger portfolio base before retirement.</li>
+            </ul>
+          </div>
+        </div>
+      )}
 
       {/* Tax Engine Explanation */}
       <div className="bg-white dark:bg-slate-900 p-4 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm">
