@@ -86,7 +86,7 @@ const InputSection: React.FC<InputSectionProps> = ({ profile, setProfile, onRest
   const inputClass = "w-full rounded-md border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-900 dark:text-white shadow-sm focus:border-blue-500 focus:ring-blue-500 border p-2 transition-colors";
   const labelClass = "flex items-center gap-1 text-sm font-medium text-slate-600 dark:text-slate-300 mb-1";
   const iconClass = "absolute left-3 top-2 text-slate-400 dark:text-slate-500";
-  const containerClass = "bg-white dark:bg-slate-900 rounded-xl shadow-sm border border-slate-200 dark:border-slate-800 p-6 space-y-4 transition-colors";
+  const containerClass = "bg-white dark:bg-slate-900 rounded-xl shadow-sm border border-slate-200 dark:border-slate-800 p-3 space-y-3 transition-colors";
   const sectionClass = "rounded-xl p-5 bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700";
   const headerClass = "text-xl font-bold text-slate-800 dark:text-white flex items-center gap-2 mb-5";
 
