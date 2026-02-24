@@ -243,7 +243,7 @@ const App: React.FC = () => {
           <div className="flex items-center gap-3">
             <img src="/Images/logo.png" alt="FiscalSunset Logo" className="w-10 h-10 object-contain" />
             <div>
-              <h1 className="text-xl font-bold text-slate-900 dark:text-white flex items-center gap-1">FiscalSunset<span className="text-blue-600">.</span></h1>
+              <h1 className="text-xl font-bold text-slate-900 dark:text-white">FiscalSunset<span className="text-blue-600">.</span></h1>
               <p className="text-[10px] text-slate-500 font-medium uppercase tracking-tighter">Tax-Efficient Planner</p>
             </div>
           </div>
