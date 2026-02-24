@@ -195,6 +195,7 @@ const AccumulationStrategy: React.FC<AccumulationStrategyProps> = ({ profile, se
                                 labelFormatter={(label) => `Age ${label}`}
                                 labelStyle={{ fontWeight: 'bold', color: tooltipText }}
                             />
+                            <Legend iconType="circle" wrapperStyle={{ fontSize: '12px', paddingTop: '8px' }} />
                             <Area type="monotone" dataKey="trad" stackId="1" stroke={ACCOUNT_COLORS.trad} fill={ACCOUNT_COLORS.trad} fillOpacity={0.6} name="Trad IRA/401k" />
                             <Area type="monotone" dataKey="roth" stackId="1" stroke={ACCOUNT_COLORS.roth} fill={ACCOUNT_COLORS.roth} fillOpacity={0.6} name="Roth IRA/401k" />
                             <Area type="monotone" dataKey="brokerage" stackId="1" stroke={ACCOUNT_COLORS.brokerage} fill={ACCOUNT_COLORS.brokerage} fillOpacity={0.6} name="Brokerage" />
