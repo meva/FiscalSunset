@@ -216,7 +216,7 @@ const InputSection: React.FC<InputSectionProps> = ({ profile, setProfile, onRest
           <DollarSign className="w-5 h-5 text-green-600" />
           Assets (Portfolio)
         </h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 gap-3">
           {[
             { label: 'Traditional IRA / 401k', key: 'traditionalIRA' as const },
             { label: 'Roth IRA / 401k', key: 'rothIRA' as const },
@@ -252,7 +252,7 @@ const InputSection: React.FC<InputSectionProps> = ({ profile, setProfile, onRest
           </h2>
           <p className="text-[10px] text-slate-500 dark:text-slate-400 mt-1 uppercase tracking-wider font-bold pl-7">For accumulation phase</p>
         </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 gap-3">
           {[
             { label: 'Traditional IRA / 401k', key: 'traditionalIRA' as const },
             { label: 'Roth IRA / Roth 401k', key: 'rothIRA' as const },
@@ -306,7 +306,7 @@ const InputSection: React.FC<InputSectionProps> = ({ profile, setProfile, onRest
               />
             </div>
           </div>
-          <div>
+          <div className="md:col-span-2">
             <label htmlFor="pension" className={labelClass}>Pension / Annuity</label>
             <div className="relative">
               <span className={iconClass}>$</span>
