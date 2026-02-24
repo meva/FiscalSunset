@@ -8,6 +8,7 @@ interface InputSectionProps {
   profile: UserProfile;
   setProfile: (profile: UserProfile) => void;
   onRestartWizard: () => void;
+  savedAt?: Date | null;
 }
 
 const FormattedNumberInput = ({ value, onChange, className, id }: { value: number; onChange: (val: number) => void; className?: string; id?: string }) => {
@@ -73,7 +74,15 @@ const PercentageInput = ({ value, onChange, className, step = 0.1, id }: { value
   return <input id={id} type="number" step={step} value={displayValue} onChange={handleChange} onBlur={handleBlur} className={className} />;
 };
 
-const InputSection: React.FC<InputSectionProps> = ({ profile, setProfile, onRestartWizard }) => {
+const InputSection: React.FC<InputSectionProps> = ({ profile, setProfile, onRestartWizard, savedAt }) => {
+  const [showSaved, setShowSaved] = useState(false);
+
+  useEffect(() => {
+    if (!savedAt) return;
+    setShowSaved(true);
+    const timer = setTimeout(() => setShowSaved(false), 3000);
+    return () => clearTimeout(timer);
+  }, [savedAt]);
   const handleChange = (field: keyof UserProfile, value: any) => setProfile({ ...profile, [field]: value });
   const handleAssetChange = (field: keyof UserProfile['assets'], value: number) => setProfile({ ...profile, assets: { ...profile.assets, [field]: value } });
   const handleContributionChange = (field: keyof UserProfile['contributions'], value: number) => setProfile({ ...profile, contributions: { ...profile.contributions, [field]: value } });
@@ -99,6 +108,11 @@ const InputSection: React.FC<InputSectionProps> = ({ profile, setProfile, onRest
 
   return (
     <div className={containerClass}>
+      <div className={`flex justify-end transition-opacity duration-700 ${showSaved ? 'opacity-100' : 'opacity-0'}`}>
+        <span className="text-xs font-medium text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-900/30 px-2.5 py-1 rounded-full border border-emerald-200 dark:border-emerald-800">
+          ✓ Saved
+        </span>
+      </div>
       {/* Personal Details */}
       <div className={sectionClass}>
         <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 mb-5">

@@ -42,6 +42,7 @@ const App: React.FC = () => {
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [apiKey, setApiKey] = useState('');
   const [isLoaded, setIsLoaded] = useState(false);
+  const [savedAt, setSavedAt] = useState<Date | null>(null);
 
   // Computed Retirement Profile
   // If the user is currently 55 but retiring at 65, we must project their assets
@@ -160,7 +161,7 @@ const App: React.FC = () => {
   useEffect(() => {
     if (!isLoaded) return;
     const timer = setTimeout(() => {
-      db.profiles.put({ ...profile, id: 1 }).catch(e => console.error("Save failed:", e));
+      db.profiles.put({ ...profile, id: 1 }).then(() => setSavedAt(new Date())).catch(e => console.error("Save failed:", e));
     }, 1000);
     return () => clearTimeout(timer);
   }, [profile, isLoaded]);
@@ -243,6 +244,7 @@ const App: React.FC = () => {
               profile={profile}
               setProfile={setProfile}
               onRestartWizard={() => setIsWizardOpen(true)}
+              savedAt={savedAt}
             />
           </div>
 
