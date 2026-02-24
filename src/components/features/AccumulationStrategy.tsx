@@ -113,7 +113,7 @@ const AccumulationStrategy: React.FC<AccumulationStrategyProps> = ({ profile, se
                     </h3>
                     <div className="flex items-center gap-1 bg-slate-100 dark:bg-slate-800 p-1 rounded-lg border border-slate-200 dark:border-slate-700">
                         <button onClick={() => setIsInflationAdjusted(false)} className={`px-4 py-2 text-xs font-bold rounded-md min-h-[36px] transition-colors ${!isInflationAdjusted ? 'bg-white dark:bg-slate-700 text-blue-600 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}>Nominal</button>
-                        <button onClick={() => setIsInflationAdjusted(true)} className={`px-4 py-2 text-xs font-bold rounded-md min-h-[36px] transition-colors ${isInflationAdjusted ? 'bg-white dark:bg-slate-700 text-blue-600 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}>Adj Inflation's $</button>
+                        <button onClick={() => setIsInflationAdjusted(true)} className={`px-4 py-2 text-xs font-bold rounded-md min-h-[36px] transition-colors ${isInflationAdjusted ? 'bg-white dark:bg-slate-700 text-blue-600 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}>Inflation-Adjusted $</button>
                         <Tooltip content="Clarifies the difference between the 'face value' of the portfolio in the future vs. its equivalent value in today's economy." className="mr-1" />
                     </div>
                 </div>
