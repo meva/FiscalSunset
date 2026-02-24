@@ -8,6 +8,7 @@ import TaxReference from './components/features/TaxReference';
 import FireAnalysis from './components/features/FireAnalysis';
 import { calculateStrategy, calculateLongevity } from './services/calculationEngine';
 import { TrendingUp, Calculator, AlertTriangle, Sun, Moon, PiggyBank, Settings, Flame, RefreshCw, HelpCircle, X } from 'lucide-react';
+import ErrorBoundary from './components/common/ErrorBoundary';
 import Footer from './components/layout/Footer';
 import WizardModal from './components/features/wizard/WizardModal';
 import SettingsModal from './components/features/SettingsModal';
@@ -96,11 +97,17 @@ const App: React.FC = () => {
 
 
   useEffect(() => {
-    // Run strategy on the computed RETIREMENT profile
-    const sResult = calculateStrategy(retirementProfile);
-    const lResult = calculateLongevity(retirementProfile, sResult);
-    setStrategyResult(sResult);
-    setLongevityResult(lResult);
+    try {
+      // Run strategy on the computed RETIREMENT profile
+      const sResult = calculateStrategy(retirementProfile);
+      const lResult = calculateLongevity(retirementProfile, sResult);
+      setStrategyResult(sResult);
+      setLongevityResult(lResult);
+    } catch (error) {
+      console.error('Calculation error:', error);
+      setStrategyResult(null);
+      setLongevityResult(null);
+    }
   }, [retirementProfile]); // Depend on retirementProfile instead of profile
 
   useEffect(() => {
@@ -299,36 +306,38 @@ const App: React.FC = () => {
               <div className="absolute right-0 top-0 bottom-0 w-8 bg-gradient-to-l from-slate-200 dark:from-slate-800 to-transparent pointer-events-none rounded-r-xl md:hidden" />
             </div>
 
-            {strategyResult && longevityResult ? (
-              <div className="animate-in fade-in slide-in-from-bottom-2 duration-300">
-                <div className={activeTab === 'withdrawal' ? 'block' : 'hidden'}>
-                  <StrategyResults
-                    result={strategyResult}
-                    profile={retirementProfile}
-                    isDarkMode={isDarkMode}
-                    apiKey={apiKey}
-                    onOpenSettings={() => setIsSettingsOpen(true)}
-                  />
+            <ErrorBoundary onReset={() => setProfile(p => ({ ...p }))}>
+              {strategyResult && longevityResult ? (
+                <div className="animate-in fade-in slide-in-from-bottom-2 duration-300">
+                  <div className={activeTab === 'withdrawal' ? 'block' : 'hidden'}>
+                    <StrategyResults
+                      result={strategyResult}
+                      profile={retirementProfile}
+                      isDarkMode={isDarkMode}
+                      apiKey={apiKey}
+                      onOpenSettings={() => setIsSettingsOpen(true)}
+                    />
+                  </div>
+                  <div className={activeTab === 'accumulation' ? 'block' : 'hidden'}>
+                    <AccumulationStrategy
+                      profile={profile}
+                      setProfile={setProfile}
+                      isDarkMode={isDarkMode}
+                      onRetire={() => setActiveTab('withdrawal')}
+                    />
+                  </div>
+                  <div className={activeTab === 'longevity' ? 'block' : 'hidden'}>
+                    <LongevityAnalysis longevity={longevityResult} profile={retirementProfile} isDarkMode={isDarkMode} />
+                  </div>
+                  <div className={activeTab === 'fire' ? 'block' : 'hidden'}>
+                    <FireAnalysis profile={profile} isDarkMode={isDarkMode} />
+                  </div>
+                  <div className={activeTab === 'scenarios' ? 'block' : 'hidden'}>
+                    <WhatIfAnalysis profile={profile} isDarkMode={isDarkMode} />
+                  </div>
                 </div>
-                <div className={activeTab === 'accumulation' ? 'block' : 'hidden'}>
-                  <AccumulationStrategy
-                    profile={profile}
-                    setProfile={setProfile}
-                    isDarkMode={isDarkMode}
-                    onRetire={() => setActiveTab('withdrawal')}
-                  />
-                </div>
-                <div className={activeTab === 'longevity' ? 'block' : 'hidden'}>
-                  <LongevityAnalysis longevity={longevityResult} profile={retirementProfile} isDarkMode={isDarkMode} />
-                </div>
-                <div className={activeTab === 'fire' ? 'block' : 'hidden'}>
-                  <FireAnalysis profile={profile} isDarkMode={isDarkMode} />
-                </div>
-                <div className={activeTab === 'scenarios' ? 'block' : 'hidden'}>
-                  <WhatIfAnalysis profile={profile} isDarkMode={isDarkMode} />
-                </div>
-              </div>
-            ) : <div className="h-96 flex items-center justify-center text-slate-400">Loading strategy...</div>}
+              ) : <div className="h-96 flex items-center justify-center text-slate-400">Loading strategy...</div>}
+            </ErrorBoundary>
           </div>
         </div>
       </main>
