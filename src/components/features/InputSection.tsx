@@ -11,7 +11,7 @@ interface InputSectionProps {
   savedAt?: Date | null;
 }
 
-const FormattedNumberInput = ({ value, onChange, className, id }: { value: number; onChange: (val: number) => void; className?: string; id?: string }) => {
+const FormattedNumberInput = ({ value, onChange, className, id, ...rest }: { value: number; onChange: (val: number) => void; className?: string; id?: string } & React.InputHTMLAttributes<HTMLInputElement>) => {
   const [displayValue, setDisplayValue] = useState(value.toLocaleString());
   const lastExternalValue = React.useRef(value);
 
@@ -33,11 +33,11 @@ const FormattedNumberInput = ({ value, onChange, className, id }: { value: numbe
     onChange(newVal);
   };
 
-  return <input id={id} type="text" value={displayValue} onChange={handleChange} className={className} />;
+  return <input id={id} type="text" value={displayValue} onChange={handleChange} className={className} {...rest} />;
 };
 
 // Handles percentage inputs (stored as decimal, displayed as percentage)
-const PercentageInput = ({ value, onChange, className, step = 0.1, id }: { value: number; onChange: (val: number) => void; className?: string; step?: number; id?: string }) => {
+const PercentageInput = ({ value, onChange, className, step = 0.1, id, ...rest }: { value: number; onChange: (val: number) => void; className?: string; step?: number; id?: string } & React.InputHTMLAttributes<HTMLInputElement>) => {
   const [displayValue, setDisplayValue] = useState((value * 100).toFixed(1));
 
   useEffect(() => {
@@ -71,7 +71,7 @@ const PercentageInput = ({ value, onChange, className, step = 0.1, id }: { value
     }
   };
 
-  return <input id={id} type="number" step={step} value={displayValue} onChange={handleChange} onBlur={handleBlur} className={className} />;
+  return <input id={id} type="number" step={step} value={displayValue} onChange={handleChange} onBlur={handleBlur} className={className} {...rest} />;
 };
 
 const InputSection: React.FC<InputSectionProps> = ({ profile, setProfile, onRestartWizard, savedAt }) => {
@@ -225,11 +225,11 @@ const InputSection: React.FC<InputSectionProps> = ({ profile, setProfile, onRest
             <div className="relative">
               <span className={iconClass}>$</span>
               <FormattedNumberInput
-                // @ts-ignore explicit id handling needs component update, ignoring for now or adding prop
                 id="spendingNeed"
                 value={profile.spendingNeed}
                 onChange={(val) => handleChange('spendingNeed', val)}
                 className={`${inputClass} pl-8 font-semibold text-lg`}
+                aria-label="Annual Spending Need in Retirement"
               />
             </div>
             {profile.age > profile.baseAge && (
@@ -269,6 +269,7 @@ const InputSection: React.FC<InputSectionProps> = ({ profile, setProfile, onRest
                   value={profile.assets[item.key] || 0}
                   onChange={(val) => handleAssetChange(item.key, val)}
                   className={`${inputClass} pl-8`}
+                  aria-label={item.tooltip ? `${item.label}: ${item.tooltip}` : item.label}
                 />
               </div>
             </div>
