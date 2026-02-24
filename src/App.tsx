@@ -95,8 +95,19 @@ const App: React.FC = () => {
 
   }, [profile]);
 
+  // Profile validation
+  const profileErrors: string[] = [];
+  if (profile.age < profile.baseAge) profileErrors.push('Retirement age must be ≥ current age.');
+  if (profile.spendingNeed <= 0) profileErrors.push('Annual spending need must be greater than $0.');
+  if (profile.baseAge <= 0) profileErrors.push('Current age must be greater than 0.');
+  const isProfileValid = profileErrors.length === 0;
 
   useEffect(() => {
+    if (!isProfileValid) {
+      setStrategyResult(null);
+      setLongevityResult(null);
+      return;
+    }
     try {
       // Run strategy on the computed RETIREMENT profile
       const sResult = calculateStrategy(retirementProfile);
@@ -108,7 +119,7 @@ const App: React.FC = () => {
       setStrategyResult(null);
       setLongevityResult(null);
     }
-  }, [retirementProfile]); // Depend on retirementProfile instead of profile
+  }, [retirementProfile, isProfileValid]); // Depend on retirementProfile instead of profile
 
   useEffect(() => {
     const loadData = async () => {
@@ -238,7 +249,7 @@ const App: React.FC = () => {
           </div>
         </div>
       )}
-      <div className="bg-amber-50 dark:bg-amber-950/30 border-b border-amber-200 dark:border-amber-900/50 px-4 py-2 transition-colors">
+      <div className="bg-amber-100 dark:bg-amber-950/50 border-b border-amber-300 dark:border-amber-900/50 border-l-4 border-l-amber-500 px-4 py-2 transition-colors">
         <div className="max-w-7xl mx-auto flex items-center justify-center gap-2 text-[10px] md:text-xs font-medium text-amber-900 dark:text-amber-200 text-center uppercase tracking-wider">
           <AlertTriangle className="w-3 h-3 text-amber-600" />
           Educational purposes only. No professional financial or tax advice intended.
@@ -334,6 +345,16 @@ const App: React.FC = () => {
                   </div>
                   <div className={activeTab === 'scenarios' ? 'block' : 'hidden'}>
                     <WhatIfAnalysis profile={profile} isDarkMode={isDarkMode} />
+                  </div>
+                </div>
+              ) : !isProfileValid ? (
+                <div className="h-96 flex items-center justify-center">
+                  <div className="bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-900 rounded-xl p-6 max-w-md text-center space-y-3">
+                    <AlertTriangle className="w-8 h-8 text-red-500 mx-auto" />
+                    <h3 className="text-sm font-bold text-red-800 dark:text-red-300">Fix input errors to see results</h3>
+                    <ul className="text-xs text-red-700 dark:text-red-400 space-y-1">
+                      {profileErrors.map((err, i) => <li key={i}>{err}</li>)}
+                    </ul>
                   </div>
                 </div>
               ) : <div className="h-96 flex items-center justify-center text-slate-400">Loading strategy...</div>}
