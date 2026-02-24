@@ -245,11 +245,13 @@ const InputSection: React.FC<InputSectionProps> = ({ profile, setProfile, onRest
 
       {/* Annual Contributions */}
       <div className={sectionClass}>
-        <h2 className={headerClass}>
-          <PlusCircle className="w-5 h-5 text-indigo-600" />
-          Annual Contributions
-        </h2>
-        <p className="text-[10px] text-slate-500 dark:text-slate-400 mb-4 uppercase tracking-wider font-bold">For accumulation phase</p>
+        <div className="mb-5">
+          <h2 className="text-xl font-bold text-slate-800 dark:text-white flex items-center gap-2">
+            <PlusCircle className="w-5 h-5 text-indigo-600" />
+            Annual Contributions
+          </h2>
+          <p className="text-[10px] text-slate-500 dark:text-slate-400 mt-1 uppercase tracking-wider font-bold pl-7">For accumulation phase</p>
+        </div>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {[
             { label: 'Traditional IRA / 401k', key: 'traditionalIRA' as const },
