@@ -86,8 +86,9 @@ const InputSection: React.FC<InputSectionProps> = ({ profile, setProfile, onRest
   const inputClass = "w-full rounded-md border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-900 dark:text-white shadow-sm focus:border-blue-500 focus:ring-blue-500 border p-2 transition-colors";
   const labelClass = "flex items-center gap-1 text-sm font-medium text-slate-600 dark:text-slate-300 mb-1";
   const iconClass = "absolute left-3 top-2 text-slate-400 dark:text-slate-500";
-  const containerClass = "bg-white dark:bg-slate-900 rounded-xl shadow-sm border border-slate-200 dark:border-slate-800 p-6 space-y-8 transition-colors";
-  const headerClass = "text-xl font-bold text-slate-800 dark:text-white flex items-center gap-2 mb-4";
+  const containerClass = "bg-white dark:bg-slate-900 rounded-xl shadow-sm border border-slate-200 dark:border-slate-800 p-6 space-y-4 transition-colors";
+  const sectionClass = "rounded-xl p-5 bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700";
+  const headerClass = "text-xl font-bold text-slate-800 dark:text-white flex items-center gap-2 mb-5";
 
   // const isFutureScenario = (Number(profile.age) || 0) !== profile.baseAge;
   const [activeModal, setActiveModal] = useState<'accumulation' | 'retirement' | null>(null);
@@ -99,8 +100,8 @@ const InputSection: React.FC<InputSectionProps> = ({ profile, setProfile, onRest
   return (
     <div className={containerClass}>
       {/* Personal Details */}
-      <div>
-        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 mb-4">
+      <div className={sectionClass}>
+        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 mb-5">
           <div className="flex items-center gap-3">
             <h2 className="text-xl font-bold text-slate-800 dark:text-white flex items-center gap-2">
               <Briefcase className="w-5 h-5 text-blue-600" />
@@ -210,7 +211,7 @@ const InputSection: React.FC<InputSectionProps> = ({ profile, setProfile, onRest
       </div>
 
       {/* Assets */}
-      <div>
+      <div className={sectionClass}>
         <h2 className={headerClass}>
           <DollarSign className="w-5 h-5 text-green-600" />
           Assets (Portfolio)
@@ -243,7 +244,7 @@ const InputSection: React.FC<InputSectionProps> = ({ profile, setProfile, onRest
       </div>
 
       {/* Annual Contributions */}
-      <div>
+      <div className={sectionClass}>
         <h2 className={headerClass}>
           <PlusCircle className="w-5 h-5 text-indigo-600" />
           Annual Contributions
@@ -273,7 +274,7 @@ const InputSection: React.FC<InputSectionProps> = ({ profile, setProfile, onRest
       </div>
 
       {/* Income Sources */}
-      <div>
+      <div className={sectionClass}>
         <h2 className={headerClass}>
           <Activity className="w-5 h-5 text-purple-600" />
           Income (Annual) While in Retirement
@@ -337,7 +338,7 @@ const InputSection: React.FC<InputSectionProps> = ({ profile, setProfile, onRest
       </div>
 
       {/* Market Assumptions (Accumulation) */}
-      <div>
+      <div className={sectionClass}>
         <h2 className={headerClass}>
           <TrendingUp className="w-5 h-5 text-orange-600" />
           Market Assumptions (Accumulation)
@@ -372,7 +373,7 @@ const InputSection: React.FC<InputSectionProps> = ({ profile, setProfile, onRest
       </div>
 
       {/* Market Assumptions (Retirement) */}
-      <div>
+      <div className={sectionClass}>
         <h2 className={headerClass}>
           <TrendingUp className="w-5 h-5 text-teal-600" />
           Market Assumptions (Retirement)
