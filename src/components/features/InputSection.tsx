@@ -206,7 +206,13 @@ const InputSection: React.FC<InputSectionProps> = ({ profile, setProfile, onRest
                     spouseSocialSecurityStartAge: 67,
                   });
                 } else {
-                  handleChange('filingStatus', newStatus);
+                  setProfile({
+                    ...profile,
+                    filingStatus: newStatus,
+                    spouseAge: profile.spouseAge || 65,
+                    spouseSocialSecurity: profile.spouseSocialSecurity || 24000,
+                    spouseSocialSecurityStartAge: profile.spouseSocialSecurityStartAge || 67,
+                  });
                 }
               }}
               className={inputClass}
@@ -224,14 +230,14 @@ const InputSection: React.FC<InputSectionProps> = ({ profile, setProfile, onRest
               <input
                 id="spouseAge"
                 type="number"
-                value={profile.spouseAge || ''}
+                value={profile.spouseAge || 65}
                 onChange={(e) => {
                   const rawValue = e.target.value;
-                  const updatedValue = rawValue === '' ? 0 : parseInt(rawValue, 10);
+                  const updatedValue = rawValue === '' ? 65 : parseInt(rawValue, 10);
                   handleChange('spouseAge', updatedValue);
                 }}
                 className={inputClass}
-                placeholder="Age"
+                placeholder="65"
               />
             </div>
           )}
