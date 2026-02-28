@@ -20,6 +20,9 @@ const INITIAL_PROFILE: UserProfile = {
   age: 65, // Retirement Start Age
   baseAge: 55, // Current Age
   filingStatus: FilingStatus.Single,
+  spouseAge: 0,
+  spouseSocialSecurity: 0,
+  spouseSocialSecurityStartAge: 67,
   spendingNeed: 60000,
   isSpendingReal: true,
   assets: { traditionalIRA: 250000, rothIRA: 100000, rothBasis: 50000, brokerage: 150000, hsa: 25000 },

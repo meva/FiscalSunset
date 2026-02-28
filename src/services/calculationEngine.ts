@@ -69,6 +69,24 @@ export const calculateSEPPPayment = (balance: number, age: number): number => {
   return balance * (numerator / denominator);
 };
 
+/**
+ * Calculates the additional standard deduction for age 65+.
+ * For MFJ, checks each spouse's age independently.
+ */
+const calculateAgeDeduction = (
+  primaryAge: number,
+  filingStatus: FilingStatus,
+  spouseAge: number = 0
+): number => {
+  if (filingStatus === FilingStatus.MarriedJoint) {
+    let deduction = 0;
+    if (primaryAge >= 65) deduction += AGE_DEDUCTION[filingStatus];
+    if (spouseAge >= 65) deduction += AGE_DEDUCTION[filingStatus];
+    return deduction;
+  }
+  return primaryAge >= 65 ? AGE_DEDUCTION[filingStatus] : 0;
+};
+
 export const getWithdrawalOrder = (
   age: number,
   assets: Assets,
@@ -229,6 +247,14 @@ export const calculateStrategy = (profile: UserProfile): StrategyResult => {
   const isSSActive = age >= (income.socialSecurityStartAge || 62);
   const annualSS = isSSActive ? income.socialSecurity : 0;
 
+  // Partner Social Security (MFJ only) — spouseAge is partner's age at retirement start
+  const spouseAgeAtRetirement = filingStatus === FilingStatus.MarriedJoint
+    ? (profile.spouseAge || 0) : 0;
+  const spouseSSStartAge = profile.spouseSocialSecurityStartAge || 67;
+  const isSpouseSSActive = filingStatus === FilingStatus.MarriedJoint && spouseAgeAtRetirement >= spouseSSStartAge;
+  const annualSpouseSS = isSpouseSSActive ? (profile.spouseSocialSecurity || 0) : 0;
+  const totalAnnualSS = annualSS + annualSpouseSS;
+
   // Calculate annual dividends based on yield (Static for Strategy, Logic handles depletion in Longevity)
   // For the 'Year 1' strategy snapshot, we use the full balance.
   const brokerageDividends = assets.brokerage * income.brokerageDividendYield;
@@ -239,7 +265,7 @@ export const calculateStrategy = (profile: UserProfile): StrategyResult => {
   }
 
   const standardDeduction = STANDARD_DEDUCTION[filingStatus] +
-    (age >= 65 ? AGE_DEDUCTION[filingStatus] * (filingStatus === FilingStatus.MarriedJoint ? 2 : 1) : 0);
+    calculateAgeDeduction(age, filingStatus, spouseAgeAtRetirement);
 
   const qualifiedDividends = brokerageDividends * income.qualifiedDividendRatio;
   const ordinaryDividends = brokerageDividends * (1 - income.qualifiedDividendRatio);
@@ -259,7 +285,7 @@ export const calculateStrategy = (profile: UserProfile): StrategyResult => {
     let currentRothBasis = assets.rothBasis || 0;
 
     const withdrawalPlan: WithdrawalSource[] = [];
-    let grossCash = annualSS + income.pension + brokerageDividends;
+    let grossCash = totalAnnualSS + income.pension + brokerageDividends;
     let ordIncomeForTax = income.pension + ordinaryDividends;
     let capGainsForTax = qualifiedDividends;
     let currentPenalty = 0;
@@ -343,7 +369,7 @@ export const calculateStrategy = (profile: UserProfile): StrategyResult => {
     // Check if we failed to fill gap even with penalties, OR if we triggered penalties
     liquidityGapWarning = gap > 1 || currentPenalty > 0;
 
-    const finalTaxableSS = calculateTaxableSocialSecurity(annualSS, ordIncomeForTax, filingStatus);
+    const finalTaxableSS = calculateTaxableSocialSecurity(totalAnnualSS, ordIncomeForTax, filingStatus);
     const iterationTax = calculateFederalTax(ordIncomeForTax + finalTaxableSS, capGainsForTax, filingStatus, standardDeduction);
 
     lastResult = {
@@ -356,8 +382,8 @@ export const calculateStrategy = (profile: UserProfile): StrategyResult => {
       effectiveTaxRate: iterationTax / (grossCash || 1),
       rmdAmount,
       taxableSocialSecurity: finalTaxableSS,
-      currentYearSocialSecurity: annualSS,
-      provisionalIncome: ordIncomeForTax + (0.5 * annualSS),
+      currentYearSocialSecurity: totalAnnualSS,
+      provisionalIncome: ordIncomeForTax + (0.5 * totalAnnualSS),
       standardDeduction,
       notes: currentPenalty > 0 ? [`Includes $${currentPenalty.toFixed(0)} early withdrawal penalty.`] : [],
       nominalSpendingNeeded
@@ -427,11 +453,23 @@ export const calculateLongevity = (profile: UserProfile, strategy: StrategyResul
 
     // 1. Calculate Inflows (SS + Pension + Dynamic Dividends)
     const ssStartAge = profile.income.socialSecurityStartAge || 62;
-    let currentSS = 0;
+    let currentPrimarySS = 0;
     if (age >= ssStartAge) {
       const yearsSinceStart = age - ssStartAge;
-      currentSS = profile.income.socialSecurity * Math.pow(1 + profile.assumptions.inflationRateInRetirement, yearsSinceStart);
+      currentPrimarySS = profile.income.socialSecurity * Math.pow(1 + profile.assumptions.inflationRateInRetirement, yearsSinceStart);
     }
+
+    // Partner SS (MFJ only) — spouseAge is partner's age at retirement start
+    const spouseRetirementAge = profile.spouseAge || 0;
+    const spouseAgeThisYear = spouseRetirementAge + i;
+    const spouseSSStartAge = profile.spouseSocialSecurityStartAge || 67;
+    let currentSpouseSS = 0;
+    if (profile.filingStatus === FilingStatus.MarriedJoint && spouseAgeThisYear >= spouseSSStartAge) {
+      const yearsSinceSpouseStart = spouseAgeThisYear - spouseSSStartAge;
+      currentSpouseSS = (profile.spouseSocialSecurity || 0) * Math.pow(1 + profile.assumptions.inflationRateInRetirement, yearsSinceSpouseStart);
+    }
+
+    const currentSS = currentPrimarySS + currentSpouseSS;
 
     // Dynamic Dividend calculation based on START of year brokerage balance
     const currentDividends = currentBrokerage * divYield;
@@ -561,7 +599,7 @@ export const calculateLongevity = (profile: UserProfile, strategy: StrategyResul
 
     const taxableSS = calculateTaxableSocialSecurity(currentSS, totalOrdinaryForTax, profile.filingStatus);
     const stdDeduction = STANDARD_DEDUCTION[profile.filingStatus] +
-      (age >= 65 ? AGE_DEDUCTION[profile.filingStatus] * (profile.filingStatus === FilingStatus.MarriedJoint ? 2 : 1) : 0);
+      calculateAgeDeduction(age, profile.filingStatus, spouseAgeThisYear);
 
     const estimatedTax = calculateFederalTax(totalOrdinaryForTax + taxableSS, totalCapGainsForTax, profile.filingStatus, stdDeduction);
     const totalCashFlow = fromBrokerage + fromTrad + fromRoth + fromHSA + totalFixedIncome;
@@ -705,13 +743,22 @@ const getIRMAATierInfo = (
 const calculateSeniorDeduction = (
   age: number,
   magi: number,
-  filingStatus: FilingStatus
+  filingStatus: FilingStatus,
+  spouseAge: number = 0
 ): { deduction: number; headroomToPhaseout: number; inPhaseout: boolean } => {
-  if (age < 65) {
+  // Calculate per-person eligibility for MFJ ($6k per spouse if 65+)
+  let baseDeduction = 0;
+  if (filingStatus === FilingStatus.MarriedJoint) {
+    if (age >= 65) baseDeduction += 6000;
+    if (spouseAge >= 65) baseDeduction += 6000;
+  } else {
+    if (age >= 65) baseDeduction = SENIOR_DEDUCTION[filingStatus];
+  }
+
+  if (baseDeduction === 0) {
     return { deduction: 0, headroomToPhaseout: Infinity, inPhaseout: false };
   }
 
-  const baseDeduction = SENIOR_DEDUCTION[filingStatus];
   const phaseout = SENIOR_DEDUCTION_PHASEOUT[filingStatus];
 
   if (magi <= phaseout.start) {
@@ -753,7 +800,14 @@ export const calculateRothConversionOptimization = (
 
   // Use the passed active SS amount or default to profile (logic should prefer the passed active amount)
   // If activeSocialSecurityAmount is defined, use it. Otherwise rely on profile check.
-  const ssAmount = activeSocialSecurityAmount !== undefined ? activeSocialSecurityAmount : income.socialSecurity;
+  const primarySSAmount = activeSocialSecurityAmount !== undefined ? activeSocialSecurityAmount : income.socialSecurity;
+
+  // Include partner SS for MFJ — spouseAge is partner's age at retirement start
+  const spouseAgeAtRetirement = filingStatus === FilingStatus.MarriedJoint
+    ? (profile.spouseAge || 0) : 0;
+  const spouseSSStartAge = profile.spouseSocialSecurityStartAge || 67;
+  const spouseSSActive = filingStatus === FilingStatus.MarriedJoint && spouseAgeAtRetirement >= spouseSSStartAge;
+  const ssAmount = primarySSAmount + (spouseSSActive ? (profile.spouseSocialSecurity || 0) : 0);
 
   // ========================================
   // SUSTAINABILITY OVERRIDE (Fiduciary Safety Check)
@@ -801,7 +855,7 @@ export const calculateRothConversionOptimization = (
 
   // Standard deduction for base calculations
   const standardDeduction = STANDARD_DEDUCTION[filingStatus] +
-    (age >= 65 ? AGE_DEDUCTION[filingStatus] * (filingStatus === FilingStatus.MarriedJoint ? 2 : 1) : 0);
+    calculateAgeDeduction(age, filingStatus, spouseAgeAtRetirement);
 
   // Current taxable income
   const currentTaxableIncome = Math.max(0, currentOrdinaryIncome + taxableSS - standardDeduction);
@@ -841,7 +895,7 @@ export const calculateRothConversionOptimization = (
   // ========================================
   // CONSTRAINT 3: Senior Deduction Phase-Out
   // ========================================
-  const seniorInfo = calculateSeniorDeduction(age, currentMAGI, filingStatus);
+  const seniorInfo = calculateSeniorDeduction(age, currentMAGI, filingStatus, spouseAgeAtRetirement);
   if (age >= 65 && seniorInfo.headroomToPhaseout < Infinity) {
     constraints.push({
       type: 'senior_phaseout',

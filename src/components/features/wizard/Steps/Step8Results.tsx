@@ -14,6 +14,7 @@ interface CheckProps {
 
 const DUMMY_PROFILE: UserProfile = {
     age: 65, baseAge: 55, filingStatus: FilingStatus.Single,
+    spouseAge: 0, spouseSocialSecurity: 0, spouseSocialSecurityStartAge: 67,
     spendingNeed: 0, isSpendingReal: true,
     assets: { traditionalIRA: 0, rothIRA: 0, rothBasis: 0, brokerage: 0, hsa: 0 },
     contributions: { traditionalIRA: 0, rothIRA: 0, brokerage: 0, hsa: 0 },

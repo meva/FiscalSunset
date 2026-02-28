@@ -190,18 +190,51 @@ const InputSection: React.FC<InputSectionProps> = ({ profile, setProfile, onRest
               placeholder="Target Age"
             />
           </div>
-          <div>
+          <div className={profile.filingStatus === FilingStatus.MarriedJoint ? '' : 'md:col-span-2'}>
             <label htmlFor="filingStatus" className={labelClass}>Filing Status</label>
             <select
               id="filingStatus"
               value={profile.filingStatus}
-              onChange={(e) => handleChange('filingStatus', e.target.value)}
+              onChange={(e) => {
+                const newStatus = e.target.value as FilingStatus;
+                if (newStatus === FilingStatus.Single) {
+                  setProfile({
+                    ...profile,
+                    filingStatus: newStatus,
+                    spouseAge: 0,
+                    spouseSocialSecurity: 0,
+                    spouseSocialSecurityStartAge: 67,
+                  });
+                } else {
+                  handleChange('filingStatus', newStatus);
+                }
+              }}
               className={inputClass}
             >
               <option value={FilingStatus.Single}>Single</option>
               <option value={FilingStatus.MarriedJoint}>Married Filing Jointly</option>
             </select>
           </div>
+          {profile.filingStatus === FilingStatus.MarriedJoint && (
+            <div>
+              <label htmlFor="spouseAge" className={labelClass}>
+                Partner's Retirement Age
+                <Tooltip content="Your partner's age when you begin retirement. Used for the age-65+ deduction — each person 65+ gets an extra deduction." />
+              </label>
+              <input
+                id="spouseAge"
+                type="number"
+                value={profile.spouseAge || ''}
+                onChange={(e) => {
+                  const rawValue = e.target.value;
+                  const updatedValue = rawValue === '' ? 0 : parseInt(rawValue, 10);
+                  handleChange('spouseAge', updatedValue);
+                }}
+                className={inputClass}
+                placeholder="Age"
+              />
+            </div>
+          )}
           <div className="md:col-span-2">
             <div className="flex items-center justify-between mb-1">
               <label htmlFor="spendingNeed" className="text-sm font-medium text-slate-600 dark:text-slate-300 flex items-center gap-1">
@@ -317,7 +350,9 @@ const InputSection: React.FC<InputSectionProps> = ({ profile, setProfile, onRest
         </h2>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
-            <label htmlFor="socialSecurity" className={labelClass}>Social Security Benefit</label>
+            <label htmlFor="socialSecurity" className={labelClass}>
+              {profile.filingStatus === FilingStatus.MarriedJoint ? 'Your SS Benefit' : 'Social Security Benefit'}
+            </label>
             <div className="relative">
               <span className={iconClass}>$</span>
               <FormattedNumberInput
@@ -329,7 +364,9 @@ const InputSection: React.FC<InputSectionProps> = ({ profile, setProfile, onRest
             </div>
           </div>
           <div>
-            <label htmlFor="ssStartAge" className={labelClass}>SS Start Age</label>
+            <label htmlFor="ssStartAge" className={labelClass}>
+              {profile.filingStatus === FilingStatus.MarriedJoint ? 'Your SS Start Age' : 'SS Start Age'}
+            </label>
             <div className="relative">
               <input
                 id="ssStartAge"
@@ -340,6 +377,36 @@ const InputSection: React.FC<InputSectionProps> = ({ profile, setProfile, onRest
               />
             </div>
           </div>
+          {profile.filingStatus === FilingStatus.MarriedJoint && (
+            <>
+              <div>
+                <label htmlFor="spouseSS" className={labelClass}>
+                  Partner SS Benefit
+                  <Tooltip content="Partner's expected annual Social Security benefit. Enter the annual amount." />
+                </label>
+                <div className="relative">
+                  <span className={iconClass}>$</span>
+                  <FormattedNumberInput
+                    id="spouseSS"
+                    value={profile.spouseSocialSecurity || 0}
+                    onChange={(val) => handleChange('spouseSocialSecurity', val)}
+                    className={`${inputClass} pl-8`}
+                  />
+                </div>
+              </div>
+              <div>
+                <label htmlFor="spouseSSAge" className={labelClass}>Partner SS Start Age</label>
+                <input
+                  id="spouseSSAge"
+                  type="number"
+                  value={profile.spouseSocialSecurityStartAge || 67}
+                  onChange={(e) => handleChange('spouseSocialSecurityStartAge', parseInt(e.target.value) || 67)}
+                  className={inputClass}
+                  placeholder="67"
+                />
+              </div>
+            </>
+          )}
           <div className="md:col-span-2">
             <label htmlFor="pension" className={labelClass}>Pension / Annuity</label>
             <div className="relative">
