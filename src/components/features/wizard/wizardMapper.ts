@@ -22,6 +22,9 @@ export const mapWizardStateToProfile = (wizardState: WizardState, currentProfile
         age: retirementAge,
         baseAge: currentAge,
         filingStatus: filingStatus,
+        spouseAge: currentProfile.spouseAge || 0,
+        spouseSocialSecurity: futureIncome.spouseSocialSecurity || 0,
+        spouseSocialSecurityStartAge: futureIncome.spouseSocialSecurityStartAge || 67,
         spendingNeed: annualSpending,
         isSpendingReal: true, // Defaulting to today's dollars as per requirements
         assets: {

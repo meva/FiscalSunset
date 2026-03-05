@@ -43,6 +43,9 @@ export interface UserProfile {
   age: number; // Retirement Start Age (Start of Withdrawals)
   baseAge: number; // Current Age (Start of Plan/Inflation Anchor)
   filingStatus: FilingStatus;
+  spouseAge: number; // Partner's age at retirement start (for MFJ age-65+ deduction)
+  spouseSocialSecurity: number; // Spouse's annual SS benefit
+  spouseSocialSecurityStartAge: number; // Spouse's SS start age
   spendingNeed: number;
   isSpendingReal: boolean; // Is the spending need in today's dollars?
   assets: Assets;

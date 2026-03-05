@@ -22,5 +22,7 @@ export interface WizardState {
         socialSecurity: number;
         socialSecurityStartAge: number;
         pension: number;
+        spouseSocialSecurity: number;
+        spouseSocialSecurityStartAge: number;
     };
 }
