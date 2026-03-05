@@ -190,7 +190,7 @@ const InputSection: React.FC<InputSectionProps> = ({ profile, setProfile, onRest
               placeholder="Target Age"
             />
           </div>
-          <div className={profile.filingStatus === FilingStatus.MarriedJoint ? '' : 'md:col-span-2'}>
+          <div className="md:col-span-2">
             <label htmlFor="filingStatus" className={labelClass}>Filing Status</label>
             <select
               id="filingStatus"
@@ -222,7 +222,7 @@ const InputSection: React.FC<InputSectionProps> = ({ profile, setProfile, onRest
             </select>
           </div>
           {profile.filingStatus === FilingStatus.MarriedJoint && (
-            <div>
+            <div className="md:col-span-2">
               <label htmlFor="spouseAge" className={labelClass}>
                 Partner's Retirement Age
                 <Tooltip content="Your partner's age when you begin retirement. Used for the age-65+ deduction — each person 65+ gets an extra deduction." />
