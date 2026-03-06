@@ -257,7 +257,7 @@ const StrategyResults: React.FC<StrategyResultsProps> = ({ result, profile, isDa
           <ShieldAlert className="w-4 h-4 text-amber-500" />
           <h4 className="text-sm font-bold">Tax Calculation Breakdown</h4>
         </div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 text-xs">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-4 text-xs">
           <div className="p-2 bg-slate-50 dark:bg-slate-800 rounded">
             <span className="text-slate-500">Standard Deduction</span>
             <p className="font-bold text-slate-900 dark:text-white">{formatCurrency(result.standardDeduction)}</p>
@@ -273,6 +273,10 @@ const StrategyResults: React.FC<StrategyResultsProps> = ({ result, profile, isDa
           <div className="p-2 bg-slate-50 dark:bg-slate-800 rounded">
             <span className="text-slate-500">Mandatory RMD</span>
             <p className="font-bold text-slate-900 dark:text-white">{formatCurrency(result.rmdAmount)}</p>
+          </div>
+          <div className="p-2 bg-slate-50 dark:bg-slate-800 rounded">
+            <span className="text-slate-500 flex items-center gap-1">NIIT (3.8%) <Tooltip content="Net Investment Income Tax: 3.8% surtax on investment income (dividends, capital gains) when MAGI exceeds $200K (Single) / $250K (MFJ). IRA distributions increase MAGI but are not subject to NIIT themselves." /></span>
+            <p className="font-bold text-slate-900 dark:text-white">{formatCurrency(result.niitAmount)}</p>
           </div>
         </div>
       </div>

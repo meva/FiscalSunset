@@ -179,3 +179,12 @@ export const SINGLE_LIFE_EXPECTANCY_TABLE: Record<number, number> = {
   70: 18.8, 71: 18.0, 72: 17.2, 73: 16.4, 74: 15.6,
   75: 14.8,
 };
+
+// Net Investment Income Tax (NIIT) - IRC §1411
+// 3.8% on the lesser of: net investment income OR MAGI exceeding threshold
+// Thresholds are NOT indexed for inflation (static since 2013)
+export const NIIT_RATE = 0.038;
+export const NIIT_THRESHOLDS = {
+  [FilingStatus.Single]: 200000,
+  [FilingStatus.MarriedJoint]: 250000,
+};

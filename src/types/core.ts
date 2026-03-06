@@ -75,6 +75,7 @@ export interface StrategyResult {
   taxableSocialSecurity: number;
   currentYearSocialSecurity: number;
   provisionalIncome: number;
+  niitAmount: number; // Net Investment Income Tax (3.8% surtax)
   standardDeduction: number;
   notes: string[];
   nominalSpendingNeeded: number; // Adjusted for inflation if needed
