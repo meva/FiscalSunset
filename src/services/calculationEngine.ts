@@ -2,7 +2,8 @@ import { UserProfile, StrategyResult, WithdrawalSource, FilingStatus, LongevityR
 import {
   STANDARD_DEDUCTION, AGE_DEDUCTION, TAX_BRACKETS, CAP_GAINS_BRACKETS, UNIFORM_LIFETIME_TABLE, RMD_START_AGE,
   SENIOR_DEDUCTION, SENIOR_DEDUCTION_PHASEOUT, SS_TAX_THRESHOLDS, IRMAA_THRESHOLDS, IRMAA_SAFETY_BUFFER,
-  FED_MIDTERM_RATE_120, SINGLE_LIFE_EXPECTANCY_TABLE // Imported
+  FED_MIDTERM_RATE_120, SINGLE_LIFE_EXPECTANCY_TABLE, // Imported
+  NIIT_RATE, NIIT_THRESHOLDS
 } from '../constants';
 
 /**
@@ -24,6 +25,24 @@ const calculateTaxableSocialSecurity = (ssAmount: number, otherIncome: number, f
     0.85 * ssAmount,
     (0.85 * (provisionalIncome - base2)) + secondaryAmount
   );
+};
+
+/**
+ * Calculates Net Investment Income Tax (NIIT) - IRC §1411
+ * 3.8% on the LESSER of:
+ *   (a) Net investment income (dividends, capital gains from brokerage)
+ *   (b) MAGI exceeding threshold ($200K Single, $250K MFJ)
+ * IRA distributions count toward MAGI but NOT net investment income.
+ */
+const calculateNIIT = (
+  netInvestmentIncome: number,
+  magi: number,
+  filingStatus: FilingStatus
+): number => {
+  const threshold = NIIT_THRESHOLDS[filingStatus];
+  const magiExcess = Math.max(0, magi - threshold);
+  if (magiExcess <= 0 || netInvestmentIncome <= 0) return 0;
+  return NIIT_RATE * Math.min(netInvestmentIncome, magiExcess);
 };
 
 /**
@@ -288,6 +307,7 @@ export const calculateStrategy = (profile: UserProfile): StrategyResult => {
     let grossCash = totalAnnualSS + income.pension + brokerageDividends;
     let ordIncomeForTax = income.pension + ordinaryDividends;
     let capGainsForTax = qualifiedDividends;
+    let netInvestmentIncome = brokerageDividends; // Dividends are always NII; brokerage gains added below
     let currentPenalty = 0;
 
     // 0. RMDs (Always First)
@@ -356,7 +376,10 @@ export const calculateStrategy = (profile: UserProfile): StrategyResult => {
         // Add to Cash / Tax / Penalty
         grossCash += pull;
         if (step.taxType === 'Ordinary') ordIncomeForTax += taxableAmt;
-        if (step.taxType === 'CapitalGains') capGainsForTax += taxableAmt;
+        if (step.taxType === 'CapitalGains') {
+          capGainsForTax += taxableAmt;
+          netInvestmentIncome += taxableAmt; // Brokerage gains are NII
+        }
 
         if (step.penalty) {
           currentPenalty += pull * 0.10;
@@ -370,7 +393,12 @@ export const calculateStrategy = (profile: UserProfile): StrategyResult => {
     liquidityGapWarning = gap > 1 || currentPenalty > 0;
 
     const finalTaxableSS = calculateTaxableSocialSecurity(totalAnnualSS, ordIncomeForTax, filingStatus);
-    const iterationTax = calculateFederalTax(ordIncomeForTax + finalTaxableSS, capGainsForTax, filingStatus, standardDeduction);
+    const iterationIncomeTax = calculateFederalTax(ordIncomeForTax + finalTaxableSS, capGainsForTax, filingStatus, standardDeduction);
+
+    // NIIT: MAGI = all income before standard deduction
+    const magi = ordIncomeForTax + finalTaxableSS + capGainsForTax;
+    const niitTax = calculateNIIT(netInvestmentIncome, magi, filingStatus);
+    const iterationTax = iterationIncomeTax + niitTax;
 
     lastResult = {
       totalWithdrawal: grossCash,
@@ -384,6 +412,7 @@ export const calculateStrategy = (profile: UserProfile): StrategyResult => {
       taxableSocialSecurity: finalTaxableSS,
       currentYearSocialSecurity: totalAnnualSS,
       provisionalIncome: ordIncomeForTax + (0.5 * totalAnnualSS),
+      niitAmount: niitTax,
       standardDeduction,
       notes: currentPenalty > 0 ? [`Includes $${currentPenalty.toFixed(0)} early withdrawal penalty.`] : [],
       nominalSpendingNeeded
@@ -601,7 +630,11 @@ export const calculateLongevity = (profile: UserProfile, strategy: StrategyResul
     const stdDeduction = STANDARD_DEDUCTION[profile.filingStatus] +
       calculateAgeDeduction(age, profile.filingStatus, spouseAgeThisYear);
 
-    const estimatedTax = calculateFederalTax(totalOrdinaryForTax + taxableSS, totalCapGainsForTax, profile.filingStatus, stdDeduction);
+    const incomeTax = calculateFederalTax(totalOrdinaryForTax + taxableSS, totalCapGainsForTax, profile.filingStatus, stdDeduction);
+    const longevityNII = currentDividends + brokerageGain;
+    const longevityMAGI = totalOrdinaryForTax + taxableSS + totalCapGainsForTax;
+    const niitTax = calculateNIIT(longevityNII, longevityMAGI, profile.filingStatus);
+    const estimatedTax = incomeTax + niitTax;
     const totalCashFlow = fromBrokerage + fromTrad + fromRoth + fromHSA + totalFixedIncome;
     const effectiveTaxRate = totalCashFlow > 0 ? estimatedTax / totalCashFlow : 0;
 

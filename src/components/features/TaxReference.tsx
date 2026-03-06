@@ -665,7 +665,7 @@ const TaxReference: React.FC = () => {
                             <h4 className="font-semibold text-slate-800 dark:text-white mb-2">Limitations</h4>
                             <ul className="text-sm text-slate-600 dark:text-slate-400 space-y-1">
                                 <li>• State taxes are not included</li>
-                                <li>• Net Investment Income Tax (NIIT) not modeled</li>
+                                <li>• Net Investment Income Tax (NIIT) modeled at 3.8% on investment income above MAGI thresholds</li>
                                 <li>• Tax brackets are estimates and may change</li>
                                 <li>• Does not account for itemized deductions</li>
                                 <li>• Social Security COLA adjustments assumed 0%</li>
