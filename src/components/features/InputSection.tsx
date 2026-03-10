@@ -171,7 +171,7 @@ const InputSection: React.FC<InputSectionProps> = ({ profile, setProfile, onRest
                 handleChange('baseAge', updatedValue);
               }}
               className={inputClass}
-              placeholder="Age Now"
+              placeholder="Current Age"
             />
           </div>
           <div>
@@ -230,14 +230,15 @@ const InputSection: React.FC<InputSectionProps> = ({ profile, setProfile, onRest
               <input
                 id="spouseAge"
                 type="number"
-                value={profile.spouseAge || 65}
+                value={profile.spouseAge}
                 onChange={(e) => {
                   const rawValue = e.target.value;
-                  const updatedValue = rawValue === '' ? 65 : parseInt(rawValue, 10);
+                  const updatedValue = rawValue === '' ? '' : parseInt(rawValue, 10);
+                  // @ts-ignore - handling string temporarily for input
                   handleChange('spouseAge', updatedValue);
                 }}
                 className={inputClass}
-                placeholder="65"
+                placeholder="Partner's Age"
               />
             </div>
           )}
