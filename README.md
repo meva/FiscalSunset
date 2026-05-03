@@ -94,10 +94,10 @@ Before you begin, ensure you have the following installed:
 
 ```bash
 # Clone the repository
-git clone https://github.com/meva/retiresmart-tax-efficient-withdrawal-strategist.git
+git clone https://github.com/<your-org>/FiscalSunset.git
 
 # Navigate to the project directory
-cd retiresmart-tax-efficient-withdrawal-strategist
+cd FiscalSunset
 
 # Install dependencies
 npm install
@@ -144,8 +144,12 @@ The application will be available at `http://localhost:5173` (or the next availa
 # Create an optimized production build
 npm run build
 
+# Web-only production build
+npm run build:web
+
 # Preview the production build locally
 npm run preview
+```
 
 ### Deployment
 
@@ -155,38 +159,60 @@ You can generate a static distribution folder to host the web version anywhere.
 ```bash
 # Generate the 'dist' folder
 ./prepare-dist.sh
+
+# Or run the equivalent npm script sequence manually
+npm run build:web
 ```
 
-This will create a `dist` folder containing:
-- `index.html` (Entry point)
-- `assets/` (Compiled JavaScript and CSS)
+This creates a `dist/` folder containing the static site (including `index.html` and `assets/`).
 
-Upload the contents of this folder to your static file host.
+You can validate the built output locally with:
+
+```bash
+npm run preview
+# or serve the static folder directly
+npm run start
+```
+
+Upload the contents of `dist/` to your static host.
 
 ### Project Structure
 
 ```
 fiscal-sunset/
-├── src/                     # Source code encapsulation
-│   ├── assets/              # Centralized assets (images, logos)
-│   ├── components/          # React components
-│   │   ├── features/        # Feature-specific modules (Accumulation, Withdrawal, etc.)
-│   │   └── layout/          # Global layout (Footer, Header)
-│   ├── constants/           # Tax tables, RMD factors, thresholds
-│   ├── services/            # Pure business logic & algorithm engines
-│   ├── types/               # Centralized TypeScript definitions
-│   ├── hooks/               # Custom React hooks (Persistence, Theme)
-│   ├── utils/               # Generic helpers (Formatting, Math)
-│   ├── App.tsx              # Main application container
-│   └── index.tsx            # Application entry point
-├── public/                  # Static assets (images served at root)
-├── electron/                # Desktop app main/preload scripts
-├── index.html               # Entry HTML file
-├── vite.config.ts           # Vite configuration
-├── tsconfig.json            # TypeScript configuration
-├── package.json             # Scripts & dependencies
-└── README.md                # This file
+├── src/                               # Application source
+│   ├── assets/images/                 # UI imagery
+│   ├── components/                    # React components
+│   │   ├── common/                    # Shared UI primitives
+│   │   ├── features/                  # Feature modules and wizard steps
+│   │   ├── layout/                    # Layout components
+│   │   └── modals/                    # Modal dialogs
+│   ├── constants/                     # App constants
+│   ├── services/                      # Calculation engines & integrations
+│   ├── types/                         # TypeScript domain models
+│   ├── utils/                         # Utility helpers
+│   ├── App.tsx                        # Root app component
+│   └── index.tsx                      # Browser entry point
+├── public/Images/                     # Public static image assets
+├── index.html                         # HTML entry document
+├── metadata.json                      # App metadata
+├── prepare-dist.sh                    # Dist preparation helper
+├── readme-local-install.md            # Supplemental install notes
+├── vite.config.ts                     # Build/dev tooling config
+├── tsconfig.json                      # TypeScript config
+├── package.json                       # Scripts & dependencies
+└── README.md                          # Project documentation
 ```
+
+
+## 🧪 Docs Sanity Checklist
+
+When updating scripts, moving files, or refactoring folders, run this checklist before merging:
+
+- Confirm every command in this README exists in `package.json` scripts (or is a direct shell script in the repo, like `./prepare-dist.sh`).
+- Confirm all referenced directories/files in **Project Structure** actually exist in the repository.
+- If you rename/move files, update both README references and any related docs (for example `readme-local-install.md`).
+- Re-render README in a GitHub-style markdown preview to catch broken fences, lists, and headings.
 
 ## 🧱 Services Architecture
 
